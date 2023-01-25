@@ -1,17 +1,13 @@
 ---
-- name: Helm cli - Agregar key
-  become: true
-  apt_key:
-    url: https://baltocdn.com/helm/signing.asc
+# https://helm.sh/docs/intro/install/#from-script
+- name: Helm cli - Descargar script
+  get_url:
+    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    dest: /tmp/get_helm.sh
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: u+rwx
 
-- name: Helm cli - Agregar repositorio
+- name: Helm cli - Instalar
   become: true
-  apt_repository:
-    repo: "deb [arch=amd64] https://baltocdn.com/helm/stable/debian/ all main"
-    state: present
-
-- name: Helm cli - Instalar cli
-  become: true
-  apt:
-    name: helm
-    state: present
+  script: /tmp/get_helm.sh
