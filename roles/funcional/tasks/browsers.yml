@@ -1,0 +1,48 @@
+---
+- name: Agregar la key de Chrome
+  become: true
+  apt_key:
+    url: https://dl.google.com/linux/linux_signing_key.pub
+  tags:
+    - chrome
+
+- name: Agregar repositorio de Chrome
+  become: true
+  apt_repository:
+    repo: deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
+    filename: google-chrome
+  tags:
+    - chrome
+
+- name: Instalar Google Chrome
+  become: true
+  apt:
+    name: google-chrome-stable
+  tags:
+    - chrome
+
+- name: Browsers - Desinstalar firefox snap
+  snap:
+    name: firefox
+    state: absent
+
+- name: Browsers - Descargar firefox
+  become: true
+  unarchive:
+    src: https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=es-ES
+    dest: /opt/
+    remote_src: yes
+
+- name: Browsers - firefox symlink
+  become: true
+  file:
+    src: /opt/firefox/firefox
+    dest: /usr/local/bin/firefox
+    state: link
+
+- name: Browsers - Lanzador firefox
+  become: true
+  get_url:
+    url: https://raw.githubusercontent.com/mozilla/sumo-kb/main/install-firefox-linux/firefox.desktop
+    dest: /usr/local/share/applications
+    mode: 0644
