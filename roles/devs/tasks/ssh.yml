@@ -1,0 +1,27 @@
+---
+## Crear keys y configurar ssh
+- name: SSH - Crear carpeta para key
+  file:
+    path: "/home/{{ remote_regular_user }}/.ssh"
+    state: directory
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+
+- name: SSH - Generar key "{{ remote_regular_user }}"
+  become_user: "{{ remote_regular_user }}"
+  openssh_keypair:
+    path: "/home/{{ remote_regular_user }}/.ssh/private_key_{{ remote_regular_user }}"
+    type: rsa
+    size: 4096
+    state: present
+    force: true
+    owner: "{{ remote_regular_user }}"
+
+- name: SSH - Copiar configuraciones de sshconfig
+  copy:
+    src: ./files/sshconfig
+    dest: /home/{{ remote_regular_user }}/.ssh/config
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: 744

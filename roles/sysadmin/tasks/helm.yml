@@ -1,0 +1,17 @@
+---
+- name: Helm cli - Agregar key
+  become: true
+  apt_key:
+    url: https://baltocdn.com/helm/signing.asc
+
+- name: Helm cli - Agregar repositorio
+  become: true
+  apt_repository:
+    repo: "deb [arch=amd64] https://baltocdn.com/helm/stable/debian/ all main"
+    state: present
+
+- name: Helm cli - Instalar cli
+  become: true
+  apt:
+    name: helm
+    state: present

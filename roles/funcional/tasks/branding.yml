@@ -1,0 +1,43 @@
+---
+- name: Copiar wallpaper y lockscreenfile
+  become_user: "{{ remote_regular_user }}"
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {
+        src: ./files/isotipo_adhoc.png,
+        dest: "/home/{{ remote_regular_user }}/.wallpaper.jpg",
+      }
+    - {
+        src: ./files/logotipo_adhoc.png,
+        dest: "/home/{{ remote_regular_user }}/.logotipo_adhoc.png",
+      }
+
+- name: Set Wallpaper
+  become_user: "{{ remote_regular_user }}"
+  dconf:
+    key: "/org/gnome/desktop/background/picture-uri"
+    value: "'file:///home/{{ remote_regular_user }}/.wallpaper.jpg'"
+    state: present
+
+- name: Set screensaver picture
+  become_user: "{{ remote_regular_user }}"
+  dconf:
+    key: "/org/gnome/desktop/screensaver/picture-uri"
+    value: "'file:///home/{{ remote_regular_user }}/.logotipo_adhoc.png'"
+    state: present
+
+- name: Set back position
+  become_user: "{{ remote_regular_user }}"
+  dconf:
+    key: "/org/gnome/desktop/background/picture-options"
+    value: "'centered'"
+    state: present
+
+- name: Set back colour
+  become_user: "{{ remote_regular_user }}"
+  dconf:
+    key: "/org/gnome/desktop/background/primary-color"
+    value: "'#d6d6d4'"
+    state: present

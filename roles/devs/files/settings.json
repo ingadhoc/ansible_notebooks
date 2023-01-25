@@ -1,0 +1,143 @@
+{
+   "editor.multiCursorModifier": "ctrlCmd",
+   "window.zoomLevel": 0,
+   "editor.wordWrap": "on",
+
+   // only for python language files
+   "[python]": {
+      "editor.rulers": [
+         80,
+         120,
+         150
+      ],
+      "editor.tabSize": 4,
+      "editor.insertSpaces": true,
+      "editor.wordWrap": "off"
+   },
+   "[terraform]": {
+      "editor.formatOnSave": true
+   },
+   "python.formatting.autopep8Args": [
+      "--max-line-length",
+      "120",
+      "--experimental"
+   ],
+   "cSpell.userWords": [
+      "adhoc",
+      "odoo"
+   ],
+   "workbench.startupEditor": "newUntitledFile",
+   "materialTheme.cache.workbench.settings": {
+      "themeColours": "Darker High Contrast"
+   },
+   "files.insertFinalNewline": true,
+   "python.linting.flake8Enabled": true,
+   "python.linting.pycodestyleEnabled": true,
+   "gitlens.advanced.messages": {
+      "suppressShowKeyBindingsNotice": true
+   },
+   "gitlens.historyExplorer.enabled": false,
+   "editor.minimap.enabled": false,
+   "explorer.confirmDelete": false,
+   "editor.fontFamily": "'Fira Code', 'Droid Sans Mono', 'monospace', monospace, 'Droid Sans Fallback'",
+   "editor.fontSize": 16,
+   "editor.fontLigatures": true,
+   "editor.fontWeight": "400",
+   "editor.renderControlCharacters": true,
+   "workbench.activityBar.visible": true,
+   "python.showStartPage": false,
+   "workbench.iconTheme": "material-icon-theme",
+   "files.watcherExclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/node_modules/*/**": true
+   },
+   "cSpell.language": "en,es",
+   // VIM
+   // // https://medium.com/@hoitz/improved-vim-setup-in-visual-studio-code-bc579501b80c
+   "vim.easymotion": true,
+   "vim.incsearch": true,
+   "vim.useSystemClipboard": true,
+   "vim.useCtrlKeys": true,
+   "vim.hlsearch": true,
+   //"vim.leader": "<space>",
+   "vim.leader": ",",
+   "vim.insertModeKeyBindings": [{
+      "before": ["j", "j"],
+      "after": ["<Esc>"]
+   }],
+   "vim.normalModeKeyBindingsNonRecursive": [
+      {
+         "before": ["<space>"],
+         "commands": ["workbench.action.files.save"]
+      },
+      {
+         "before": ["<leader>", "<space>"],
+         "commands": [":nohl"]
+      },
+      {
+         "before": ["<leader>", "w"],
+         "commands": ["workbench.action.splitEditor"]
+      },
+      {
+         "before": ["<leader>", "t"],
+         "commands": ["workbench.action.toggleSidebarVisibility"]
+      },
+      {
+         "before": ["<leader>", "c"],
+         "commands": [
+               "editor.action.commentLine"
+         ]
+      },
+      {
+         "before": ["<leader>", "f"],
+         "commands": [
+               "revealInExplorer"
+         ]
+      },
+      {
+         "before": ["<leader>", "r", "e"],
+         "commands": [
+               "editor.action.rename"
+         ]
+      },
+      {
+         "before": ["<leader>", "r", "f"],
+         "commands": [
+               "fileutils.renameFile"
+         ]
+      },
+      {
+         "before": ["<leader>", "o", "g"],
+         "commands": [
+               "workbench.action.showAllSymbols"
+         ]
+      },
+      {
+         "before": ["<leader>", "o", "o"],
+         "commands": [
+               "workbench.action.showEditorsInActiveGroup"
+         ]
+      },
+      {
+         "before": ["<leader>", "o", "p"],
+         "commands": [
+               "workbench.action.quickOpen"
+         ]
+      }
+   ],
+   "vim.visualModeKeyBindings": [
+      {
+         "before": ["<leader>", "c"],
+         "commands": [
+               "editor.action.commentLine",
+               "extension.vim_escape"
+         ]
+      }
+   ],
+   "vim.handleKeys": {
+      "<C-a>": false,
+      "<C-f>": false
+   }
+
+}

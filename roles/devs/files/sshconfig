@@ -1,0 +1,15 @@
+########################### GIT ##########################################
+
+Host gitlab.com
+  Preferredauthentications publickey
+  IdentityFile ~/.ssh/id_rsa
+
+Host registry.gitlab.com
+  Preferredauthentications publickey
+  IdentityFile ~/.ssh/id_rsa
+
+Host github.com
+  Preferredauthentications publickey
+  IdentityFile ~/.ssh/id_rsa
+
+IdentityFile ~/.ssh/id_rsa

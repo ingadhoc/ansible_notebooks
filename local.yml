@@ -1,0 +1,59 @@
+---
+# tareas previas al deploy de roles
+- hosts: laptop
+  tags: always
+  become: true
+  pre_tasks:
+    - name: Actualizar caché
+      tags: always
+      apt: update_cache=yes
+      changed_when: False
+
+# deploy roles
+- hosts: laptop
+  tags: funcional
+  become: true
+  roles:
+    - funcional
+
+- hosts: laptop
+  tags: devs
+  become: true
+  roles:
+    - devs
+
+- hosts: laptop
+  tags: sysadmin
+  become: true
+  roles:
+    - sysadmin
+
+- hosts: laptop
+  tags: deploy
+  become: true
+  roles:
+    - deploy
+
+# completar deploy y limpiar caché
+- hosts: laptop
+  become: true
+  tasks:
+  - name: cleanup package cache (debian and ubuntu)
+    tags: always
+    apt:
+      autoclean: yes
+    changed_when: false
+
+  - name: autoremove orphan packages (debian and ubuntu)
+    tags: always
+    apt:
+      autoremove: yes
+      purge: yes
+
+# agregar cron y pull para update automático
+#  - name: Agregar ansible-pull cron job
+#    cron:
+#      name: ansible auto-provision
+#      user: "{{ remote_regular_user }}"
+#      minute: "*/10"
+#      job: ansible-pull -o -U https://github.com/adhoc-dev/ansible.git

@@ -1,0 +1,5 @@
+# También estoy jugando con vagrant así que agrego esos archivos de trabajo:
+.vagrant
+Vagrantfile
+ubuntu-bionic-18.04-cloudimg-console.log
+

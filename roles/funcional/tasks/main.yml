@@ -1,0 +1,16 @@
+---
+- include_vars: ./roles/vars.yml
+  tags: funcional
+
+- block:
+  - import_tasks: packages.yml
+  - import_tasks: anydesk.yml
+  - import_tasks: chrome.yml
+  - import_tasks: ext.yml
+  - import_tasks: gnome.yml
+  - import_tasks: language.yml
+  - import_tasks: meld.yml
+  - import_tasks: fixes.yml
+  - import_tasks: shortcuts.yml
+  - import_tasks: branding.yml
+  - import_tasks: ui_performance.yml

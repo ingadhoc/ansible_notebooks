@@ -1,0 +1,11 @@
+---
+- include_vars: ./roles/vars.yml
+  tags: sysadmin
+
+- block:
+  - import_tasks: terraform.yml
+  - import_tasks: gcloud.yml
+  - import_tasks: zsh.yml
+  - import_tasks: virtualbox.yml
+  - import_tasks: social.yml
+  - import_tasks: helm.yml

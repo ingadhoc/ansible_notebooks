@@ -1,0 +1,38 @@
+---
+- name: Anydesk - Agregar key
+  become: true
+  apt_key:
+    url: https://keys.anydesk.com/repos/DEB-GPG-KEY
+    state: present
+  register: anydesk_repo_key
+
+- name: Anydesk - Agregar repositorio
+  become: true
+  apt_repository:
+    repo: "deb [arch=amd64] http://deb.anydesk.com/ all main"
+  register: anydesk_repo
+
+- name: Anydesk - Actualizar repositorios
+  become: true
+  apt:
+    update_cache: true
+  when: anydesk_repo.changed or anydesk_repo_key.changed
+
+- name: Anydesk - Instalar
+  become: true
+  apt:
+    name: anydesk
+    state: present
+
+- name: Anydesk - Reiniciar servicio
+  become: true
+  systemd:
+    name: anydesk.service
+    state: restarted
+
+- name: Anydesk - Allow unattended access
+  become: true
+  lineinfile:
+    path: /etc/anydesk/system.conf
+    regexp: "^ad.security.interactive_access="
+    line: ad.security.interactive_access=0

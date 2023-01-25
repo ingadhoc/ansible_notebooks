@@ -1,0 +1,9 @@
+# https://pycodestyle.pycqa.org/en/latest/intro.html#configuration
+
+[pycodestyle]
+# set maximum allowed line length (default: 79)
+max-line-length = 120
+# ignore continuation line under-indented for visual indent
+ignore = E128
+# exclude files or directories which match these comma separated patterns (default: .svn,CVS,.bzr,.hg,.git)
+exclude = .git,__pycache__

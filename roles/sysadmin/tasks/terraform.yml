@@ -1,0 +1,17 @@
+---
+- name: Terraform - Agregar key
+  become: true
+  apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+
+- name: Terraform - Agregar repositorio
+  become: true
+  apt_repository:
+    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com focal main"
+    state: present
+
+- name: Terraform - Instalar
+  become: true
+  apt:
+    name: terraform
+    state: present

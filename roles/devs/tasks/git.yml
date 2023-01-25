@@ -1,0 +1,50 @@
+---
+- name: Git - Definiendo code por defecto y configuraciones globales
+  git_config:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    scope: global
+  with_items:
+    - {name: core.editor, value: code --wait}
+    - {name: diff.tool, value: default-difftool}
+    - {name: difftool.default-difftool.cmd, value: code --wait --diff \$LOCAL \$REMOTE}
+    - {name: push.default, value: nothing}
+    - {name: pull.default, value: nothing}
+    - {name: pull.ff, value: only}
+
+- name: Global hooks - Crear carpeta para hooks (prevent push to master)
+  file:
+    path: "/etc/git/hooks"
+    state: directory
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+
+- name: Global hooks - Comando mágico para hooks
+  become_user: "{{ remote_regular_user }}"
+  command: "echo -e '#!/bin/sh\n\nif [ -x `pwd`/.git/hooks/$(basename $0) ];\nthen\n\texec `pwd`/.git/hooks/$(basename $0)\nfi' | sudo tee /etc/git/hooks/{applypatch-msg,commit-msg,fsmonitor-watchman,post-update,pre-applypatch,pre-commit,pre-rebase,pre-receive,prepare-commit-msg,update} > /dev/null"
+  changed_when: false
+
+- name: Global hooks - Copiar archivo pre-push
+  become_user: "{{ remote_regular_user }}"
+  copy:
+    src: ./files/pre-push
+    dest: /etc/git/hooks/pre-push
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: u=rw,g=rw,o=r
+
+- name: Global hooks - Configurar path
+  git_config:
+    name: core.hooksPath
+    value: /etc/git/hooks/
+    scope: global
+
+- name: Adhoc prompt - Copiar archivo .prompt
+  copy:
+    src: ./files/.prompt_git
+    dest: /home/{{ remote_regular_user }}/.prompt_git
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: u=rw,g=rw,o=r
+  changed_when: false
