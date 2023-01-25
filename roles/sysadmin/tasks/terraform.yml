@@ -1,17 +1,22 @@
 ---
-- name: Terraform - Agregar key
-  become: true
-  apt_key:
-    url: https://apt.releases.hashicorp.com/gpg
+- name: Terraform - Descargar binario y extraer
+  unarchive:
+    src: https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_linux_amd64.zip
+    dest: /tmp/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+    remote_src: true
 
-- name: Terraform - Agregar repositorio
-  become: true
-  apt_repository:
-    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com focal main"
-    state: present
+- name: Terraform - Mover binario al path
+  copy:
+    src: /tmp/terraform
+    dest: /usr/bin/terraform
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
 
-- name: Terraform - Instalar
-  become: true
-  apt:
-    name: terraform
-    state: present
+- name: Terraform - Autocomplete package
+  become_user: "{{ remote_regular_user }}"
+  command: "terraform -install-autocomplete"
+  changed_when: False
