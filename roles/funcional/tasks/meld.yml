@@ -11,12 +11,18 @@
     value: "{{ item.value }}"
     state: present
   with_items:
-    - {key: "/org/gnome/meld/indent-width", value: "4"}
-    - {key: "/org/gnome/meld/insert-spaces-instead-of-tabs", value: "true"}
-    - {key: "/org/gnome/meld/highlight-syntax", value: "true"}
-    - {key: "/org/gnome/meld/draw-spaces", value: "['space', 'tab', 'newline', 'nbsp', 'leading', 'text', 'trailing']"}
-    - {key: "/org/gnome/meld/show-line-numbers", value: "true"}
-    - {key: "/org/gnome/meld/highlight-current-line", value: "true"}
-    - {key: "/org/gnome/meld/wrap-mode", value: "'word'"}
-    - {key: "/org/gnome/meld/vc-commit-margin", value: "80"}
-    - {key: "/org/gnome/meld/text-filters", value: "('All whitespace', true, '[ \\\t\\\r\\\f\\\v]*')"}
+    - { key: "/org/gnome/meld/indent-width", value: "4" }
+    - { key: "/org/gnome/meld/insert-spaces-instead-of-tabs", value: "true" }
+    - { key: "/org/gnome/meld/highlight-syntax", value: "true" }
+    - {
+        key: "/org/gnome/meld/draw-spaces",
+        value: "['space', 'tab', 'newline', 'nbsp', 'leading', 'text', 'trailing']",
+      }
+    - { key: "/org/gnome/meld/show-line-numbers", value: "true" }
+    - { key: "/org/gnome/meld/highlight-current-line", value: "true" }
+    - { key: "/org/gnome/meld/wrap-mode", value: "'word'" }
+    - { key: "/org/gnome/meld/vc-commit-margin", value: "80" }
+    - {
+        key: "/org/gnome/meld/text-filters",
+        value: "('All whitespace', true, '[ \\\t\\\r\\\f\\\v]*')",
+      }

@@ -1,10 +1,10 @@
 ---
 - include_vars: ./roles/vars.yml
   tags: deploy
-    
+
 - block:
-  - import_tasks: ../roles/devs/tasks/kubectl.yml
-  - import_tasks: ../roles/devs/tasks/rancher2.yml
-  - import_tasks: ../roles/sysadmin/tasks/gcloud.yml
-  - import_tasks: ../roles/sysadmin/tasks/terraform.yml
-  - import_tasks: project.yml
+    - import_tasks: ../roles/devs/tasks/kubectl.yml
+    - import_tasks: ../roles/devs/tasks/rancher2.yml
+    - import_tasks: ../roles/sysadmin/tasks/gcloud.yml
+    - import_tasks: ../roles/sysadmin/tasks/terraform.yml
+    - import_tasks: project.yml

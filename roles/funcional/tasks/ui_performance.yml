@@ -5,10 +5,19 @@
     value: "{{ item.value }}"
     state: present
   with_items:
-    - { key: "/org/gnome/desktop/interface/clock-show-seconds", value: "'false'" }
-    - { key: "/org/gnome/desktop/interface/enable-animations", value: "'false'" }
+    - {
+        key: "/org/gnome/desktop/interface/clock-show-seconds",
+        value: "'false'",
+      }
+    - {
+        key: "/org/gnome/desktop/interface/enable-animations",
+        value: "'false'",
+      }
     - { key: "/org/gnome/desktop/interface/gtk-theme", value: "'Adwaita-dark'" }
     - { key: "/org/gnome/desktop/interface/cursor-theme", value: "'DMZ-Black'" }
-    - { key: "/org/gnome/desktop/interface/icon-theme", value: "'ubuntu-mono-dark'" }
+    - {
+        key: "/org/gnome/desktop/interface/icon-theme",
+        value: "'ubuntu-mono-dark'",
+      }
     # Determina si el cambio entre áreas de trabajo debería suceder para las ventanas en todos los monitores o sólo para ventanas en el monitor primario.
     - { key: "/org/gnome/mutter/workspaces-only-on-primary", value: "'true'" }

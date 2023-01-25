@@ -31,7 +31,7 @@ vscode_extension_list_devs:
   - streetsidesoftware.code-spell-checker
   - streetsidesoftware.code-spell-checker-spanish
 
-# Kubernetes extension
+  # Kubernetes extension
   - ms-kubernetes-tools.vscode-kubernetes-tools
   # Remote containers
   - ms-vscode-remote.remote-containers
