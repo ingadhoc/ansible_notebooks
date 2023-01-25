@@ -15,3 +15,4 @@
     - import_tasks: branding.yml
     - import_tasks: ui_performance.yml
     - import_tasks: python_funcionales.yml
+    - import_tasks: security.yml

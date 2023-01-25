@@ -1,0 +1,39 @@
+---
+- name: Instalar UFW
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+      - ufw
+      - gufw
+
+- name: Bloquear todas las conexiones entrantes
+  ufw:
+    rule: deny
+    direction: in
+
+- name: Allow outgoing SSH connections
+  ufw:
+    rule: allow
+    direction: out
+    port: 22
+    proto: tcp
+
+- name: Allow outgoing HTTP and HTTPS traffic
+  ufw:
+    rule: allow
+    direction: out
+    port: 80
+    proto: tcp
+
+- name: Allow outgoing HTTP and HTTPS traffic
+  ufw:
+    rule: allow
+    direction: out
+    port: 443
+    proto: tcp
+
+- name: Activar UFW
+  ufw:
+    state: enabled
