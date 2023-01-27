@@ -85,14 +85,12 @@
       - fonts-firacode
       - flameshot
 
-- name: Instalar gnome tweaks (20.04)
+- name: Base - Eliminar programas sin uso
   apt:
-    name: gnome-tweak-tool
-    state: present
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '20.04'
-
-- name: Instalar gnome tweaks (22.04)
-  apt:
-    name: gnome-tweaks
-    state: present
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+    name: "{{ packages }}"
+    state: absent
+  vars:
+    packages:
+      - thunderbird
+      - rhythmbox
+      - remmina
