@@ -25,7 +25,7 @@ echo "[PROYECTO ANSIBLE] CLONAR REPOSITORIO"
 sudo touch /var/log/ansible.log
 sudo chown -R $USER:$USER /var/log/ansible.log
 git clone https://github.com/ingadhoc/ansible_notebooks
-cd ansible
+cd ansible_notebooks
 
 # Para ejecutar el rol base
 function launch {
