@@ -1,0 +1,73 @@
+---
+# https://github.com/hidetatz/kubecolor
+# Agregar alias en .bashrc o .zshrc --> alias kubectl="kubecolor"
+- name: kubecolor - Descargar binario y extraer
+  unarchive:
+    src: https://github.com/hidetatz/kubecolor/releases/download/v0.0.25/kubecolor_0.0.25_Linux_x86_64.tar.gz.tar.xz
+    dest: /tmp/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+    remote_src: true
+
+- name: kubecolor - Mover binario al path
+  copy:
+    src: /tmp/kubecolor
+    dest: /usr/bin/kubecolor
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+
+# https://github.com/derailed/k9s
+- name: k9s - Descargar binario y extraer
+  unarchive:
+    src: https://github.com/derailed/k9s/releases/download/v0.27.1/k9s_Linux_amd64.tar.gz
+    dest: /tmp/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+    remote_src: true
+
+- name: k9s - Mover binario al path
+  copy:
+    src: /tmp/k9s
+    dest: /usr/bin/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+
+# https://github.com/derailed/popeye
+- name: popeye - Descargar binario y extraer
+  unarchive:
+    src: https://github.com/derailed/popeye/releases/download/v0.10.1/popeye_Linux_x86_64.tar.gz
+    dest: /tmp/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+    remote_src: true
+
+- name: popeye - Mover binario al path
+  copy:
+    src: /tmp/popeye
+    dest: /usr/bin/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+
+# https://github.com/robscott/kube-capacity
+- name: kube-capacity - Descargar binario y extraer
+  unarchive:
+    src: https://github.com/robscott/kube-capacity/releases/download/v0.7.3/kube-capacity_0.7.3_Linux_x86_64.tar.gz
+    dest: /tmp/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+    remote_src: true
+
+- name: kube-capacity - Mover binario al path
+  copy:
+    src: /tmp/kube-capacity
+    dest: /usr/bin/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
