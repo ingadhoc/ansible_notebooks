@@ -114,6 +114,7 @@ alias r2='/home/$USER/repositorios/team-tools/devops/rke_byadhoc.sh'
 # kubectl
 source <(kubectl completion zsh)
 alias k='kubectl'
+alias kubectl="kubecolor"
 compdef __start_kubectl k
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
@@ -124,3 +125,6 @@ PROMPT='$(kube_ps1)'$PROMPT
 # McFly - fly through your shell history
 # https://github.com/cantino/mcfly
 eval "$(mcfly init zsh)"
+
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /usr/bin/terraform terraform
