@@ -3,7 +3,7 @@
   become_user: "{{ remote_regular_user }}"
   dconf:
     key: "/org/gnome/shell/favorite-apps"
-    value: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.kde.yakuake.desktop', 'code.desktop']"
+    value: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.kde.yakuake.desktop', 'org.gnome.Terminal.desktop', 'code.desktop']"
 
 - name: Fixes - Copiar archivo .bashrc
   copy:
