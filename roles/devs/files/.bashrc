@@ -120,7 +120,7 @@ fi
 source /home/$USER/.prompt_git >> ~/.bashrc
 
 # Alias para el comando / scrip r2 (rancher2 y k8s)
-alias r2='/home/$USER/team-tools/devops/rke_byadhoc.sh'
+alias r2='/home/$USER/repositorios/team-tools/devops/rke_byadhoc.sh'
 
 # Alias para k8s, rancher2, etc.
 alias k=kubectl

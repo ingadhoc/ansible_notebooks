@@ -20,11 +20,3 @@
   file:
     path: /tmp/rancher-{{ rancher2_version }}
     state: absent
-
-- name: Rancher2 - Descargar script r2
-  get_url:
-    url: https://raw.githubusercontent.com/adhoc-dev/sysadmin-tools/main/rke_byadhoc.sh
-    dest: /home/{{ remote_regular_user }}/.rke_byadhoc.sh
-    owner: "{{ remote_regular_user }}"
-    group: "{{ remote_regular_user }}"
-    mode: u+rwx
