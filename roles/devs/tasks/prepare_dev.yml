@@ -111,3 +111,9 @@
         regexp: "^ODOO_VERSION="
         line: "ODOO_VERSION=16"
         state: present
+
+- name: Local dev - Crear carpeta para repositorios
+  become_user: "{{ remote_regular_user }}"
+  file:
+    path: /home/{{ remote_regular_user }}/repositorios
+    state: directory
