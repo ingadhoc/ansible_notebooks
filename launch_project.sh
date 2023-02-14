@@ -24,6 +24,8 @@ echo '[PREPARAR NOTEBOOK] NOTEBOOK LISTA!'
 echo "[PROYECTO ANSIBLE] CLONAR REPOSITORIO"
 sudo touch /var/log/ansible.log
 sudo chown -R $USER:$USER /var/log/ansible.log
+mkdir repositorios
+cd repositorios
 git clone https://github.com/ingadhoc/ansible_notebooks
 cd ansible_notebooks
 
