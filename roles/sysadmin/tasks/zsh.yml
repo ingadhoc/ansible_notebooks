@@ -1,24 +1,84 @@
 ---
 # Para instalar zsh y omz. La idea es usar stow y dotfiles para el resto de la configuración, theme, plugins, etc.
 - name: zsh - Instalar
-  become: true
   apt:
-    name: zsh
+    name: "{{ packages }}"
     state: present
-
-sudo apt-get install zsh-autosuggestions -y
-
+  vars:
+    packages:
+      - zsh
+      - zsh-autosuggestions
+      - zsh-syntax-highlighting
+      - fonts-powerline
 
 - name: zsh - Copiar archivo de configuración
+  copy:
+    src: ./files/.zshrc
+    dest: /home/{{ remote_regular_user }}/.zshrc
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
 
+- name: zsh - Set as default
+  become: true
+  shell: chsh -s $(which zsh) "{{ remote_regular_user }}"
 
+# https://github.com/ohmyzsh/ohmyzsh
 - name: omz - Descargar script
+  become_user: "{{ remote_regular_user }}"
   get_url:
-    url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
-    dest: /tmp/install.sh
-    mode: '+x'
+    url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+    dest: /tmp/omz_install.sh
+    mode: "+x"
+    force: true
 
 - name: omz - Instalar
-  become: true
-  script: /tmp/install.sh
+  become_user: "{{ remote_regular_user }}"
+  script: /tmp/omz_install.sh --force
 
+# https://github.com/cantino/mcfly
+- name: mcfly - Descargar script
+  get_url:
+    url: https://raw.githubusercontent.com/cantino/mcfly/master/ci/install.sh
+    dest: /tmp/mcfly_install.sh
+    mode: "+x"
+    force: true
+
+- name: mcfly - Instalar
+  become_user: "{{ remote_regular_user }}"
+  script: /tmp/mcfly_install.sh --force --git cantino/mcfly
+
+- name: omz - Clonar varios plugins
+  git:
+    become_user: "{{ remote_regular_user }}"
+    repo: "{{ item.key }}"
+    dest: "{{ item.value }}"
+    clone: yes
+    update: yes
+  with_items:
+    - {
+        key: "https://github.com/zsh-users/zsh-syntax-highlighting.git",
+        value: "~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting",
+      }
+    - {
+        key: "https://github.com/zsh-users/zsh-autosuggestions",
+        value: "~/.oh-my-zsh/custom/plugins/zsh-autosuggestions",
+      }
+    - {
+        key: "https://github.com/zsh-users/zsh-completions",
+        value: "~/.oh-my-zsh/custom}/plugins/zsh-completions",
+      }
+
+# https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/kube-ps1
+- name: omz - kube-ps1 plugin
+  get_url:
+    url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/kube-ps1/kube-ps1.plugin.zshsh
+    dest: /home/{{ remote_regular_user }}/.oh-my-zsh/plugins/kube-ps1/
+    mode: "774"
+
+# https://github.com/ocadaruma/zsh-gcloud-prompt
+- name: zsh - gcloud prompt
+  get_url:
+    url: https://raw.githubusercontent.com/ocadaruma/zsh-gcloud-prompt/master/gcloud.zsh
+    dest: /home/{{ remote_regular_user }}/.oh-my-zsh/plugins/zsh-gcloud-prompt/
+    mode: "774"
