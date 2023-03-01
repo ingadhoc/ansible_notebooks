@@ -5,8 +5,6 @@
     state: present
   vars:
     packages:
-      - vim
-      - vim-gtk3
       - ccze
       - tmux
       - tmuxp
