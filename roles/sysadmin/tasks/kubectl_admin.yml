@@ -71,3 +71,43 @@
     owner: "{{ remote_regular_user }}"
     group: "{{ remote_regular_user }}"
     mode: "774"
+
+- name: kubectl - Clonar projecto kubectx
+  become_user: "{{ remote_regular_user }}"
+  git:
+    repo: https://github.com/ahmetb/kubectx.git
+    dest: /opt/kubectx
+    clone: yes
+    update: yes
+
+- name: kubectl - Crear link para kubectx
+  become_user: "{{ remote_regular_user }}"
+  file:
+    src: /opt/kubectx/kubectx
+    dest: /usr/local/bin/kubectx
+    state: link
+
+- name: kubectl - Crear link para kubens
+  become_user: "{{ remote_regular_user }}"
+  file:
+    src: /opt/kubectx/kubectx
+    dest: /usr/local/bin/kubectx
+    state: link
+
+# https://github.com/rancher/rke
+- name: rke - Descargar binario y extraer
+  unarchive:
+    src: https://github.com/rancher/rke/releases/download/v1.3.17/rke_linux-amd64
+    dest: /tmp/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+    remote_src: true
+
+- name: k9s - Mover binario al path
+  copy:
+    src: /tmp/rke_linux-amd64
+    dest: /usr/bin/rke
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
