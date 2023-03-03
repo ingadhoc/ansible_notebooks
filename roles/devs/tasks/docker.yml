@@ -33,7 +33,7 @@
 
 - name: Setup Docker
   shell: |
-    usermod -aG docker "{{host_username}}"
+    usermod -aG docker "{{ remote_regular_user }}"
     systemctl enable docker
     systemctl start docker
   when: docker_check.rc == 1
@@ -44,19 +44,6 @@
       - docker-compose-plugin
     update_cache: "yes"
     state: present
-
-- name: Docker - Ejecutar comandos como root
-  block:
-    - name: Docker - Crear grupo docker
-      group:
-        name: docker
-        state: present
-
-    - name: Docker - Agregar users al grupo
-      user:
-        name: "{{ remote_regular_user }}"
-        groups: ["docker"]
-        append: "yes"
 
 - name: Docker - Instalar docker-compose
   get_url:
