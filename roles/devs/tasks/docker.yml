@@ -10,21 +10,37 @@
       - lsb-release
     state: present
 
-- name: Docker - Agregar GPG
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
+# - name: Docker - Agregar GPG
+#   apt_key:
+#     url: https://download.docker.com/linux/ubuntu/gpg
+#     state: present
 
-- name: Docker - Agregar repositorio
-  apt_repository:
-    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable
-    state: present
-    filename: docker
+# - name: Docker - Agregar repositorio
+#   apt_repository:
+#     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable
+#     state: present
+#     filename: docker
 
-- name: Docker - Instalar docker y docker compose plugin
+- name: Check Docker Installed
+  shell: which docker
+  register: docker_check
+  ignore_errors: true
+
+# will install the latest version of docker
+- name: Install Docker
+  shell: curl https://get.docker.com/ | sh
+  when: docker_check.rc == 1
+
+- name: Setup Docker
+  shell: |
+    usermod -aG docker "{{host_username}}"
+    systemctl enable docker
+    systemctl start docker
+  when: docker_check.rc == 1
+
+- name: Docker - Instalar docker compose plugin
   apt:
     name:
-      - docker-ce
       - docker-compose-plugin
     update_cache: "yes"
     state: present
