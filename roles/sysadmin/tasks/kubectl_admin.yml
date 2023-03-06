@@ -104,9 +104,45 @@
     mode: "774"
     remote_src: true
 
-- name: k9s - Mover binario al path
+- name: rke - Mover binario al path
   copy:
     src: /tmp/rke_linux-amd64
+    dest: /usr/bin/rke
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+
+# https://github.com/rikatz/kubepug
+- name: kubepug - Descargar binario y extraer
+  unarchive:
+    src: https://github.com/rikatz/kubepug/releases/download/v1.4.0/kubepug_linux_amd64.tar.gz
+    dest: /tmp/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+    remote_src: true
+
+- name: kubepug - Mover binario al path
+  copy:
+    src: /tmp/kubepug_linux_amd64/kubepug
+    dest: /usr/bin/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+
+# https://github.com/ahmetb/kubectl-tree
+- name: kubectl-tree - Descargar binario y extraer
+  unarchive:
+    src: https://github.com/ahmetb/kubectl-tree/releases/download/v0.4.3/kubectl-tree_v0.4.3_linux_amd64.tar.gz
+    dest: /tmp/
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "774"
+    remote_src: true
+
+- name: kubectl-tree - Mover binario al path
+  copy:
+    src: /tmp/kubectl-tree_v0.4.3_linux_amd64/kubepug
     dest: /usr/bin/rke
     owner: "{{ remote_regular_user }}"
     group: "{{ remote_regular_user }}"
