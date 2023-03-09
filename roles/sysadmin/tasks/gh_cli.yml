@@ -1,22 +1,25 @@
 ---
 # https://github.com/cli/cli/blob/trunk/docs/install_linux.md
-- name: Download and add Github CLI key
-  become: true
-  apt_key:
-    url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+- name: SysAdmin - Instalar gh cli
+  block:
+    - name: Download and add Github CLI key
+      become: true
+      apt_key:
+        url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
 
-- name: Change permission of Github CLI key
-  become: true
-  command: sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+    - name: Change permission of Github CLI key
+      become: true
+      command: sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
 
-- name: Add Github CLI repository
-  become: true
-  apt_repository:
-    repo: "deb [arch=amd64] https://cli.github.com/packages stable main"
-    state: present
+    - name: Add Github CLI repository
+      become: true
+      apt_repository:
+        repo: "deb [arch=amd64] https://cli.github.com/packages stable main"
+        state: present
 
-- name: Install Github CLI
-  become: true
-  apt:
-    name: gh
-    state: present
+    - name: Install Github CLI
+      become: true
+      apt:
+        name: gh
+        state: present
+  tags: gh_cli

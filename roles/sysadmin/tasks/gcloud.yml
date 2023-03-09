@@ -1,17 +1,20 @@
 ---
-- name: Gcloud - Agregar key
-  become: true
-  apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+- name: SysAdmin - Instalar gcloud cli
+  block:
+    - name: Gcloud - Agregar key
+      become: true
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
 
-- name: Gcloud - Agregar repositorio
-  become: true
-  apt_repository:
-    repo: "deb [arch=amd64] https://packages.cloud.google.com/apt cloud-sdk main"
-    state: present
+    - name: Gcloud - Agregar repositorio
+      become: true
+      apt_repository:
+        repo: "deb [arch=amd64] https://packages.cloud.google.com/apt cloud-sdk main"
+        state: present
 
-- name: Gcloud - Instalar cli
-  become: true
-  apt:
-    name: google-cloud-cli
-    state: present
+    - name: Gcloud - Instalar cli
+      become: true
+      apt:
+        name: google-cloud-cli
+        state: present
+  tags: gcloud

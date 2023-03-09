@@ -3,4 +3,5 @@
   become_user: "{{ remote_regular_user }}"
   command: "code --install-extension {{ item }}"
   with_items: "{{ vscode_extension_list_sysadmin }}"
-  changed_when: False
+  changed_when: false
+  tags: fixes

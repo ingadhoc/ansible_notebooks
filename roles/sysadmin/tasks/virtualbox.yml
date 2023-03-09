@@ -4,3 +4,4 @@
   apt:
     name: virtualbox
     state: present
+  tags: virtualbox
