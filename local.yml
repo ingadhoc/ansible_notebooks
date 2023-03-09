@@ -3,6 +3,7 @@
 - hosts: laptop
   tags: always
   become: true
+  gather_facts: false
   pre_tasks:
     - name: Actualizar caché
       tags: always
