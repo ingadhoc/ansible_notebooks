@@ -21,7 +21,8 @@
     state: present
 
 - name: Configurar layouts de teclado
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   dconf:
     key: "/org/gnome/desktop/input-sources/sources"
     value: "[('xkb', 'es'), ('xkb', 'us+intl')]"

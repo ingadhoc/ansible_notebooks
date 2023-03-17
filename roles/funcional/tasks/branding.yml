@@ -1,6 +1,7 @@
 ---
 - name: Copiar wallpaper y lockscreenfile
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   copy:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -17,28 +18,32 @@
 - name: Set Wallpaper
   # También se puede ejecutar manualmente, por ejemplo
   # $ gsettings set org.gnome.desktop.background picture-uri file:///home/$USER/.wallpaper.jpg
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   dconf:
     key: "/org/gnome/desktop/background/picture-uri"
     value: "'file:///home/{{ remote_regular_user }}/.wallpaper.jpg'"
     state: present
 
 - name: Set screensaver picture
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   dconf:
     key: "/org/gnome/desktop/screensaver/picture-uri"
     value: "'file:///home/{{ remote_regular_user }}/.logotipo_adhoc.png'"
     state: present
 
 - name: Set back position
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   dconf:
     key: "/org/gnome/desktop/background/picture-options"
     value: "'centered'"
     state: present
 
 - name: Set back colour
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   dconf:
     key: "/org/gnome/desktop/background/primary-color"
     value: "'#d6d6d4'"

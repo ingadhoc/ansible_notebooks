@@ -12,7 +12,8 @@
       - python3-psutil
 
 - name: GNOME Preferences - Shell - Attach Modal Dialogues
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   dconf:
     key: "{{ item.key }}"
     value: "{{ item.value }}"
@@ -29,7 +30,8 @@
     mode: "+x"
 
 - name: GNOME - Instalar gnome extensions con script
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   script: /tmp/install-gnome-extensions.sh --overwrite --enable 744 751 779 1460 3968
   changed_when:
     false

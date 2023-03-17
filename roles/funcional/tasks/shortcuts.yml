@@ -1,6 +1,7 @@
 # Shortcuts
 - name: Shortcuts Move 01
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   dconf:
     key: "{{ item.key }}"
     value: "{{ item.value }}"

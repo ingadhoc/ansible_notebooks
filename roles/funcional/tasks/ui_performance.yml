@@ -1,5 +1,6 @@
 - name: Mejorar performance de UI - Show seconds
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   dconf:
     key: "{{ item.key }}"
     value: "{{ item.value }}"
