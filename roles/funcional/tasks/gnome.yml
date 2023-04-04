@@ -22,10 +22,10 @@
     - { key: "/org/gnome/shell/overrides/attach-modal-dialogs", value: "false" }
     - { key: "/org/gnome/desktop/interface/clock-format", value: "'24h'" }
 
-# Install the Extensions using https://github.com/cyfrost/install-gnome-extensions/
+# Install the Extensions using https://github.com/ToasterUwU/install-gnome-extensions
 - name: GNOME - Descargar script para instalar gnome extensions
   get_url:
-    url: https://raw.githubusercontent.com/cyfrost/install-gnome-extensions/master/install-gnome-extensions.sh
+    url: https://raw.githubusercontent.com/ToasterUwU/install-gnome-extensions/master/install-gnome-extensions.sh
     dest: /tmp/install-gnome-extensions.sh
     mode: "+x"
 
