@@ -13,7 +13,8 @@
       - yakuake
 
 - name: Yakuake - Configuraciones
-  become_user: "{{ remote_regular_user }}"
+  become_method: sudo
+  become_user: "{{ lookup('env','USER') }}"
   copy:
     src: ./files/yakuakerc
     dest: ~/.config/

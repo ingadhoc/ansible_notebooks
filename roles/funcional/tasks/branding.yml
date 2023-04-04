@@ -8,11 +8,11 @@
   with_items:
     - {
         src: ./files/isotipo_adhoc.png,
-        dest: "/home/{{ remote_regular_user }}/.wallpaper.jpg",
+        dest: "/home/{{ lookup('env','USER') }}/.wallpaper.jpg",
       }
     - {
         src: ./files/logotipo_adhoc.png,
-        dest: "/home/{{ remote_regular_user }}/.logotipo_adhoc.png",
+        dest: "/home/{{ lookup('env','USER') }}/.logotipo_adhoc.png",
       }
 
 - name: Set Wallpaper
@@ -22,7 +22,7 @@
   become_user: "{{ lookup('env','USER') }}"
   dconf:
     key: "/org/gnome/desktop/background/picture-uri"
-    value: "'file:///home/{{ remote_regular_user }}/.wallpaper.jpg'"
+    value: "'file:///home/{{ lookup('env','USER') }}/.wallpaper.jpg'"
     state: present
 
 - name: Set screensaver picture
@@ -30,7 +30,7 @@
   become_user: "{{ lookup('env','USER') }}"
   dconf:
     key: "/org/gnome/desktop/screensaver/picture-uri"
-    value: "'file:///home/{{ remote_regular_user }}/.logotipo_adhoc.png'"
+    value: "'file:///home/{{ lookup('env','USER') }}/.logotipo_adhoc.png'"
     state: present
 
 - name: Set back position
