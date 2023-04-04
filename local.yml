@@ -14,27 +14,27 @@
 - hosts: laptop
   tags: funcional
   become: true
-  gather_facts: false
+  gather_facts: true
   roles:
     - funcional
 
 - hosts: laptop
   tags: devs
-  gather_facts: false
+  gather_facts: true
   become: true
   roles:
     - devs
 
 - hosts: laptop
   tags: sysadmin
-  gather_facts: false
+  gather_facts: true
   become: true
   roles:
     - sysadmin
 
 - hosts: laptop
   tags: deploy
-  gather_facts: false
+  gather_facts: true
   become: true
   roles:
     - deploy
