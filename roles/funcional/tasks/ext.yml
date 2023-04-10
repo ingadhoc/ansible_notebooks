@@ -1,6 +1,7 @@
 ---
 # Configuring Ext
 - name: Configurando ext 01
+  tags: ext
   become_method: sudo
   become_user: "{{ lookup('env','USER') }}"
   dconf:

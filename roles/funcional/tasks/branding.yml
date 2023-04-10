@@ -1,50 +1,53 @@
 ---
-- name: Copiar wallpaper y lockscreenfile
-  become_method: sudo
-  become_user: "{{ lookup('env','USER') }}"
-  copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-  with_items:
-    - {
-        src: ./files/isotipo_adhoc.png,
-        dest: "/home/{{ lookup('env','USER') }}/.wallpaper.jpg",
-      }
-    - {
-        src: ./files/logotipo_adhoc.png,
-        dest: "/home/{{ lookup('env','USER') }}/.logotipo_adhoc.png",
-      }
+- name: Branding - Wallpaper
+  tags: branding
+  block:
+    - name: Copiar wallpaper y lockscreenfile
+      become_method: sudo
+      become_user: "{{ lookup('env','USER') }}"
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - {
+            src: ./files/isotipo_adhoc.png,
+            dest: "/home/{{ lookup('env','USER') }}/.wallpaper.jpg",
+          }
+        - {
+            src: ./files/logotipo_adhoc.png,
+            dest: "/home/{{ lookup('env','USER') }}/.logotipo_adhoc.png",
+          }
 
-- name: Set Wallpaper
-  # También se puede ejecutar manualmente, por ejemplo
-  # $ gsettings set org.gnome.desktop.background picture-uri file:///home/$USER/.wallpaper.jpg
-  become_method: sudo
-  become_user: "{{ lookup('env','USER') }}"
-  dconf:
-    key: "/org/gnome/desktop/background/picture-uri"
-    value: "'file:///home/{{ lookup('env','USER') }}/.wallpaper.jpg'"
-    state: present
+    - name: Set Wallpaper
+      # También se puede ejecutar manualmente, por ejemplo
+      # $ gsettings set org.gnome.desktop.background picture-uri file:///home/$USER/.wallpaper.jpg
+      become_method: sudo
+      become_user: "{{ lookup('env','USER') }}"
+      dconf:
+        key: "/org/gnome/desktop/background/picture-uri"
+        value: "'file:///home/{{ lookup('env','USER') }}/.wallpaper.jpg'"
+        state: present
 
-- name: Set screensaver picture
-  become_method: sudo
-  become_user: "{{ lookup('env','USER') }}"
-  dconf:
-    key: "/org/gnome/desktop/screensaver/picture-uri"
-    value: "'file:///home/{{ lookup('env','USER') }}/.logotipo_adhoc.png'"
-    state: present
+    - name: Set screensaver picture
+      become_method: sudo
+      become_user: "{{ lookup('env','USER') }}"
+      dconf:
+        key: "/org/gnome/desktop/screensaver/picture-uri"
+        value: "'file:///home/{{ lookup('env','USER') }}/.logotipo_adhoc.png'"
+        state: present
 
-- name: Set back position
-  become_method: sudo
-  become_user: "{{ lookup('env','USER') }}"
-  dconf:
-    key: "/org/gnome/desktop/background/picture-options"
-    value: "'centered'"
-    state: present
+    - name: Set back position
+      become_method: sudo
+      become_user: "{{ lookup('env','USER') }}"
+      dconf:
+        key: "/org/gnome/desktop/background/picture-options"
+        value: "'centered'"
+        state: present
 
-- name: Set back colour
-  become_method: sudo
-  become_user: "{{ lookup('env','USER') }}"
-  dconf:
-    key: "/org/gnome/desktop/background/primary-color"
-    value: "'#d6d6d4'"
-    state: present
+    - name: Set back colour
+      become_method: sudo
+      become_user: "{{ lookup('env','USER') }}"
+      dconf:
+        key: "/org/gnome/desktop/background/primary-color"
+        value: "'#d6d6d4'"
+        state: present

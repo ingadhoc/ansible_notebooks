@@ -1,4 +1,5 @@
 - name: Mejorar performance de UI - Show seconds
+  tags: performance
   become_method: sudo
   become_user: "{{ lookup('env','USER') }}"
   dconf:

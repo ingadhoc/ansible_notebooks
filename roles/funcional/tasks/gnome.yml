@@ -1,43 +1,49 @@
 ---
-- name: GNOME - Instalar gnome tweaks y dependencias
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - gnome-tweaks
-      - gnome-shell-extension-manager
-      - chrome-gnome-shell
-      - dbus-x11
-      - python3-psutil
+- name: Gnome - Configurar e instalar extensiones
+  tags: gnome
+  block:
+    - name: GNOME - Instalar gnome tweaks y dependencias
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - gnome-tweaks
+          - gnome-shell-extension-manager
+          - chrome-gnome-shell
+          - dbus-x11
+          - python3-psutil
 
-- name: GNOME Preferences - Shell - Attach Modal Dialogues
-  become_method: sudo
-  become_user: "{{ lookup('env','USER') }}"
-  dconf:
-    key: "{{ item.key }}"
-    value: "{{ item.value }}"
-    state: present
-  with_items:
-    - { key: "/org/gnome/shell/overrides/attach-modal-dialogs", value: "false" }
-    - { key: "/org/gnome/desktop/interface/clock-format", value: "'24h'" }
+    - name: GNOME Preferences - Shell - Attach Modal Dialogues
+      become_method: sudo
+      become_user: "{{ lookup('env','USER') }}"
+      dconf:
+        key: "{{ item.key }}"
+        value: "{{ item.value }}"
+        state: present
+      with_items:
+        - {
+            key: "/org/gnome/shell/overrides/attach-modal-dialogs",
+            value: "false",
+          }
+        - { key: "/org/gnome/desktop/interface/clock-format", value: "'24h'" }
 
-# Install the Extensions using https://github.com/ToasterUwU/install-gnome-extensions
-- name: GNOME - Descargar script para instalar gnome extensions
-  get_url:
-    url: https://raw.githubusercontent.com/ToasterUwU/install-gnome-extensions/master/install-gnome-extensions.sh
-    dest: /tmp/install-gnome-extensions.sh
-    mode: "+x"
+    # Install the Extensions using https://github.com/ToasterUwU/install-gnome-extensions
+    - name: GNOME - Descargar script para instalar gnome extensions
+      get_url:
+        url: https://raw.githubusercontent.com/ToasterUwU/install-gnome-extensions/master/install-gnome-extensions.sh
+        dest: /tmp/install-gnome-extensions.sh
+        mode: "+x"
 
-- name: GNOME - Instalar gnome extensions con script
-  become_method: sudo
-  become_user: "{{ lookup('env','USER') }}"
-  script: /tmp/install-gnome-extensions.sh --overwrite --enable 744 751 779 1460 3968
-  changed_when:
-    false
-    # https://extensions.gnome.org/extension/517/caffeine/
-    # https://extensions.gnome.org/extension/744/hide-activities-button/
-    # https://extensions.gnome.org/extension/751/audio-output-switcher/
-    # https://extensions.gnome.org/extension/779/clipboard-indicator/
-    # https://extensions.gnome.org/extension/1460/vitals/
-    # https://extensions.gnome.org/extension/3968/improved-workspace-indicator/
+    - name: GNOME - Instalar gnome extensions con script
+      become_method: sudo
+      become_user: "{{ lookup('env','USER') }}"
+      script: /tmp/install-gnome-extensions.sh --overwrite --enable 744 751 779 1460 3968
+      changed_when:
+        false
+        # https://extensions.gnome.org/extension/517/caffeine/
+        # https://extensions.gnome.org/extension/744/hide-activities-button/
+        # https://extensions.gnome.org/extension/751/audio-output-switcher/
+        # https://extensions.gnome.org/extension/779/clipboard-indicator/
+        # https://extensions.gnome.org/extension/1460/vitals/
+        # https://extensions.gnome.org/extension/3968/improved-workspace-indicator/

@@ -1,96 +1,99 @@
 ---
-- name: Base - Instalar paquetes de sistema, drivers
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - htop
-      - mc
-      - tmux
-      - ubuntu-restricted-extras
-      - apt-transport-https
-      - curl
-      - wget
-      - openssh-client
-      - openssh-server
-      - jq
-      - tldr
-      - ppa-purge
-      - locate
-      - libxshmfence1
+- name: Paquetes - Instalación varios
+  tags: packages_funcional
+  block:
+    - name: Base - Instalar paquetes de sistema, drivers
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - htop
+          - mc
+          - tmux
+          - ubuntu-restricted-extras
+          - apt-transport-https
+          - curl
+          - wget
+          - openssh-client
+          - openssh-server
+          - jq
+          - tldr
+          - ppa-purge
+          - locate
+          - libxshmfence1
 
-- name: Base - Utilidades de compresión
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - zip
-      - gzip
-      - tar
-      - unrar
-      - unzip
-      - p7zip-full
-      - p7zip-rar
+    - name: Base - Utilidades de compresión
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - zip
+          - gzip
+          - tar
+          - unrar
+          - unzip
+          - p7zip-full
+          - p7zip-rar
 
-- name: Base - Instalar otras aplicaciones
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - poedit
-      - fail2ban
-      - ufw
-      - vlc
-      - ffmpeg
+    - name: Base - Instalar otras aplicaciones
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - poedit
+          - fail2ban
+          - ufw
+          - vlc
+          - ffmpeg
 
-- name: Base - Análisis de Hardware, información del sistema
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - htop
-      - inxi
-      - hwinfo
-      - glances
-      - mtr
-      - hardinfo
-      - stacer
-      - screenfetch
+    - name: Base - Análisis de Hardware, información del sistema
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - htop
+          - inxi
+          - hwinfo
+          - glances
+          - mtr
+          - hardinfo
+          - stacer
+          - screenfetch
 
-- name: Base - Performance y  rendimiento de batería
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - tlp
-      - tlp-rdw
-      - acpi-call-dkms
-      - powertop
-      - preload
-      - bleachbit
+    - name: Base - Performance y  rendimiento de batería
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - tlp
+          - tlp-rdw
+          - acpi-call-dkms
+          - powertop
+          - preload
+          - bleachbit
 
-- name: Base - Paquetes varios de entorno gráfico, captura de pantalla, etc.
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - indicator-multiload
-      - alacarte
-      - fonts-firacode
-      - flameshot
+    - name: Base - Paquetes varios de entorno gráfico, captura de pantalla, etc.
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - indicator-multiload
+          - alacarte
+          - fonts-firacode
+          - flameshot
 
-- name: Base - Eliminar programas sin uso
-  apt:
-    name: "{{ packages }}"
-    state: absent
-  vars:
-    packages:
-      - thunderbird
-      - rhythmbox
-      - remmina
+    - name: Base - Eliminar programas sin uso
+      apt:
+        name: "{{ packages }}"
+        state: absent
+      vars:
+        packages:
+          - thunderbird
+          - rhythmbox
+          - remmina

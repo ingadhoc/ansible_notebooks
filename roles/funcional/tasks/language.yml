@@ -1,29 +1,32 @@
 ---
-- name: Completar instalación de en language
-  apt:
-    pkg:
-      - language-pack-en
-      - language-pack-gnome-en
-      - language-pack-en-base
-      - language-pack-gnome-en-base
+- name: Idiomas - Completar instalación
+  tags: language
+  block:
+    - name: Idiomas - Completar instalación de en language
+      apt:
+        pkg:
+          - language-pack-en
+          - language-pack-gnome-en
+          - language-pack-en-base
+          - language-pack-gnome-en-base
 
-- name: Finish installing es language
-  apt:
-    pkg:
-      - language-pack-es
-      - language-pack-gnome-es
-      - language-pack-es-base
-      - language-pack-gnome-es-base
+    - name: Idiomas - Finish installing es language
+      apt:
+        pkg:
+          - language-pack-es
+          - language-pack-gnome-es
+          - language-pack-es-base
+          - language-pack-gnome-es-base
 
-- name: Validar que locale existe
-  locale_gen:
-    name: es_ES.UTF-8
-    state: present
+    - name: Idiomas - Validar que locale existe
+      locale_gen:
+        name: es_ES.UTF-8
+        state: present
 
-- name: Configurar layouts de teclado
-  become_method: sudo
-  become_user: "{{ lookup('env','USER') }}"
-  dconf:
-    key: "/org/gnome/desktop/input-sources/sources"
-    value: "[('xkb', 'es'), ('xkb', 'us+intl')]"
-    state: present
+    - name: Idiomas - Configurar layouts de teclado
+      become_method: sudo
+      become_user: "{{ lookup('env','USER') }}"
+      dconf:
+        key: "/org/gnome/desktop/input-sources/sources"
+        value: "[('xkb', 'es'), ('xkb', 'us+intl')]"
+        state: present
