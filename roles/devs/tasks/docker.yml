@@ -1,54 +1,46 @@
 ---
-- name: Docker - Instalar dependencias
-  apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg-agent
-      - software-properties-common
-      - lsb-release
-    state: present
+- name: Docker - Instalación + compose
+  tags: docker
+  block:
+    - name: Docker - Instalar dependencias
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+          - lsb-release
+        state: present
 
-# - name: Docker - Agregar GPG
-#   apt_key:
-#     url: https://download.docker.com/linux/ubuntu/gpg
-#     state: present
+    - name: Check Docker Installed
+      shell: which docker
+      register: docker_check
+      ignore_errors: true
 
-# - name: Docker - Agregar repositorio
-#   apt_repository:
-#     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable
-#     state: present
-#     filename: docker
+    # will install the latest version of docker
+    - name: Install Docker
+      shell: curl https://get.docker.com/ | sh
+      when: docker_check.rc == 1
 
-- name: Check Docker Installed
-  shell: which docker
-  register: docker_check
-  ignore_errors: true
+    - name: Setup Docker
+      shell: |
+        usermod -aG docker "{{ remote_regular_user }}"
+        systemctl enable docker
+        systemctl start docker
+      when: docker_check.rc == 1
 
-# will install the latest version of docker
-- name: Install Docker
-  shell: curl https://get.docker.com/ | sh
-  when: docker_check.rc == 1
+    - name: Docker - Instalar docker compose plugin
+      apt:
+        name:
+          - docker-compose-plugin
+        update_cache: "yes"
+        state: present
 
-- name: Setup Docker
-  shell: |
-    usermod -aG docker "{{ remote_regular_user }}"
-    systemctl enable docker
-    systemctl start docker
-  when: docker_check.rc == 1
-
-- name: Docker - Instalar docker compose plugin
-  apt:
-    name:
-      - docker-compose-plugin
-    update_cache: "yes"
-    state: present
-
-- name: Docker - Instalar docker-compose
-  get_url:
-    url: https://github.com/docker/compose/releases/download/v2.7.0/docker-compose-linux-x86_64
-    dest: /usr/local/bin/docker-compose
-    owner: "{{ remote_regular_user }}"
-    group: "{{ remote_regular_user }}"
-    mode: "+x"
+    - name: Docker - Instalar docker-compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.7.0/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "+x"

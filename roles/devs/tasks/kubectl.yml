@@ -1,18 +1,21 @@
 ---
-- name: kubectl - Agregar key
-  become: true
-  apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-    state: present
-
-- name: kubectl - Agregar repositorio
-  become: true
-  apt_repository:
-    repo: "deb [arch=amd64] https://apt.kubernetes.io/ kubernetes-xenial main"
-    state: present
-
 - name: kubectl - Instalar
-  become: true
-  apt:
-    name: kubectl
-    state: present
+  tags: kubectl
+  block:
+    - name: kubectl - Agregar key
+      become: true
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: kubectl - Agregar repositorio
+      become: true
+      apt_repository:
+        repo: "deb [arch=amd64] https://apt.kubernetes.io/ kubernetes-xenial main"
+        state: present
+
+    - name: kubectl - Instalar
+      become: true
+      apt:
+        name: kubectl
+        state: present

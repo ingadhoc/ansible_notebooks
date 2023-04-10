@@ -1,57 +1,62 @@
 ---
-- name: Python3 - Instalar dependencias y paquetes (22.04)
-  apt:
-    name: "{{ packages }}"
-    state: present
-  vars:
-    packages:
-      - ipython3
-      - python3-setuptools
-      - python3-pip-whl
-      - python3-pip
-      - pylint
-      - python3
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+- name: Python3 - Instalar dependencias, librerías pip y paquetes
+  tags: python
+  block:
+    - name: Python3 - Instalar dependencias y paquetes
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - ipython3
+          - python3-setuptools
+          - python3-pip-whl
+          - python3-pip
+          - pylint
+          - python3
 
-- name: Python - Instalar pylint-odoo, flake8, pep8, pre-commit
-  become: true
-  pip:
-    name: "{{ items }}"
-    extra_args: --upgrade --pre
-  vars:
-    items:
-      - pylint-odoo
-      - flake8
-      - pep8
-      - pre-commit
+    - name: Python - Instalar pylint-odoo, flake8, pep8, pre-commit
+      become: true
+      pip:
+        name: "{{ items }}"
+        extra_args: --upgrade --pre
+      vars:
+        items:
+          - pylint-odoo
+          - flake8
+          - pep8
+          - pre-commit
 
-# Instalar lint hooks
-- name: Lint hooks - Limpiar carpeta
-  file:
-    path: /home/{{ remote_regular_user }}/lint-hook
-    state: absent
-    force: true
+- name: Lint hooks - Configuración
+  tags: lint_hooks
+  block:
+    # Instalar lint hooks
+    - name: Lint hooks - Limpiar carpeta
+      file:
+        path: /home/{{ remote_regular_user }}/lint-hook
+        state: absent
+        force: true
 
-- name: Lint hooks - Clonar repositorio
-  become_user: "{{ remote_regular_user }}"
-  git:
-    repo: https://github.com/OCA/maintainer-quality-tools
-    dest: /home/{{ remote_regular_user }}/lint-hook
-    version: master
+    - name: Lint hooks - Clonar repositorio
+      become_user: "{{ remote_regular_user }}"
+      git:
+        repo: https://github.com/OCA/maintainer-quality-tools
+        dest: /home/{{ remote_regular_user }}/lint-hook
+        version: master
 
-- name: Lint hooks - Instalar requirements
-  pip:
-    chdir: /home/{{ remote_regular_user }}/lint-hook
-    requirements: requirements.txt
+    - name: Lint hooks - Instalar requirements
+      pip:
+        chdir: /home/{{ remote_regular_user }}/lint-hook
+        requirements: requirements.txt
 
-# Fix pendiente: Usar módulo name y no command
-# - name: Crear link simbólico
-#   file:
-#     src: /home/{{ remote_regular_user }}/lint-hook/*
-#     dest: /usr/share/git-core/templates/hooks/
-#     state: link
-#     force: true
+    # Fix pendiente: Usar módulo name y no command
+    # - name: Crear link simbólico
+    #   file:
+    #     src: /home/{{ remote_regular_user }}/lint-hook/*
+    #     dest: /usr/share/git-core/templates/hooks/
+    #     state: link
+    #     force: true
 
-- name: Lint hooks - Crear link simbólico con comando
-  command: ln -sf /home/{{ remote_regular_user }}/lint-hook/git/* /usr/share/git-core/templates/hooks
-  changed_when: false
+    - name: Lint hooks - Crear link simbólico con comando
+      command: ln -sf /home/{{ remote_regular_user }}/lint-hook/git/* /usr/share/git-core/templates/hooks
+      changed_when: false
