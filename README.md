@@ -58,6 +58,47 @@ $ gcloud auth login
 # https://hub.docker.com/settings/security
 ```
 
+## Roles > Tasks > Tags
+
+- funcional
+  - anydesk
+  - branding
+  - chrome / firefox
+  - ext
+  - funcional_fixes
+  - gnome
+  - language
+  - meld
+  - packages_funcional
+  - python_funcionales
+  - ufw
+  - shortcuts
+  - performance
+- devs
+  - code
+  - docker
+  - devs_fixes
+  - git
+  - kubectl
+  - packages_dev
+  - yakuake
+  - local
+  - python
+  - lint_hooks
+  - rancher
+  - ssh
+- sysadmin
+  - sysadmin_fixes
+  - gcloud
+  - gh_cli
+  - helm_cli
+  - kubectl_plugins
+  - social
+  - terraform
+  - virtualbox
+  - zsh
+  - omz
+
 ### Testeando con [vagrant](vagrantup.com)
 
 _"Vagrant es una herramienta que nos ayuda a crear y manejar máquinas virtuales con un mismo entorno de trabajo. Nos permite definir los servicios a instalar así como también sus configuraciones. Está pensado para trabajar en entornos locales y lo podemos utilizar con shell scripts, Chef, Puppet o Ansible"._

@@ -4,4 +4,4 @@
   command: "code --install-extension {{ item }}"
   with_items: "{{ vscode_extension_list_sysadmin }}"
   changed_when: false
-  tags: fixes
+  tags: sysadmin_fixes
