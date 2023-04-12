@@ -37,7 +37,7 @@
           lineinfile:
             path: /home/{{ remote_regular_user }}/odoo/13/.env
             regexp: "^ODOO_MINOR="
-            line: "ODOO_MINOR=13.0-enterprise"
+            line: "ODOO_MINOR=13.0"
             state: present
 
         - name: Local dev - Editar domain de .env
@@ -68,7 +68,7 @@
           lineinfile:
             path: /home/{{ remote_regular_user }}/odoo/15/.env
             regexp: "^ODOO_MINOR="
-            line: "ODOO_MINOR=15.0-enterprise"
+            line: "ODOO_MINOR=15.0"
             state: present
 
         - name: Local dev - Editar domain de .env
