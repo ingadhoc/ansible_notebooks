@@ -44,10 +44,10 @@
         dest: /home/{{ remote_regular_user }}/lint-hook
         version: master
 
-    - name: Lint hooks - Instalar requirements
-      pip:
-        chdir: /home/{{ remote_regular_user }}/lint-hook
-        requirements: requirements.txt
+#    - name: Lint hooks - Instalar requirements
+#      pip:
+#        chdir: /home/{{ remote_regular_user }}/lint-hook
+#        requirements: requirements.txt
 
     # Fix pendiente: Usar módulo name y no command
     # - name: Crear link simbólico
