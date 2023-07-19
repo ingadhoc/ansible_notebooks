@@ -7,9 +7,9 @@
       apt_key:
         url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
 
-    - name: Change permission of Github CLI key
-      become: true
-      command: sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+#    - name: Change permission of Github CLI key
+#      become: true
+#      command: sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
 
     - name: Add Github CLI repository
       become: true
