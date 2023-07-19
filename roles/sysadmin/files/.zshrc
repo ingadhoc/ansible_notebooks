@@ -70,10 +70,11 @@ ZSH_THEME="agnoster"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(z git docker zsh-autocomplete zsh-syntax-highlighting zsh-autosuggestions kubectl colorize command-not-found docker docker-compose gcloud python pip history sudo dirhistory)
+plugins=(z git docker zsh-syntax-highlighting zsh-autosuggestions kubectl colorize command-not-found docker docker-compose gcloud python pip history sudo dirhistory)
 
 #source ~/.oh-my-zsh/plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
-#source $ZSH/oh-my-zsh.sh
+fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
+source $ZSH/oh-my-zsh.sh
 
 # User configuration
 export DEFAULT_USER="$(whoami)"
