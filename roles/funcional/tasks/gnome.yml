@@ -11,6 +11,7 @@
           - gnome-tweaks
           - gnome-shell-extension-manager
           - chrome-gnome-shell
+          - gnome-shell-extensions
           - dbus-x11
           - python3-psutil
 
