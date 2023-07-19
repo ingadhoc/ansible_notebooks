@@ -1,48 +1,58 @@
 #!/usr/bin/env bash
-# Script para preparar notebooks. Instala dependencias, clona el repositorio del proyecto y luego aplica el rol base "Funcional".
+# Script para preparar notebooks en Adhoc. Instala dependencias, clona el proyecto de ansible y aplica el rol Funcional.
 
-# Actualizar sistema
-echo "[PREPARAR NOTEBOOK] ACTUALIZAR AMBIENTE DE TRABAJO"
-sudo apt-get -y update
-sudo apt-get -y upgrade
+# Verificar ejecución con sudo
+if [[ $EUID -ne 0 ]]; then
+  echo "Este script requiere privilegios root. Ejecutar con sudo"
+  exit 1
+fi
 
-# Instalar requerimientos
-echo "[PREPARAR NOTEBOOK] INSTALAR GIT Y STOW"
-sudo apt-get install -y git stow
+# Función para instalar paquetes (si no están instalados)
+function install_package_if_not_installed {
+  if ! dpkg -s "$1" &>/dev/null; then
+    apt install -y "$1"
+  fi
+}
 
-# Instalar dependencias de Ansible
-echo '[PREPARAR NOTEBOOK] INSTALAR DEPENDENCIAS'
-sudo apt-get install -y python3-setuptools
+# Actualización completa del sistema
+printf "[PREPARAR NOTEBOOK] ACTUALIZAR AMBIENTE DE TRABAJO\n"
+apt update -y
+apt upgrade -y
 
-# Instalar Ansible
-echo "[PREPARAR NOTEBOOK] INSTALAR ANSIBLE"
-sudo apt-get install -y ansible
+# Instalar dependencias
+printf "[PREPARAR NOTEBOOK] INSTALAR GIT Y STOW\n"
+install_package_if_not_installed git
+install_package_if_not_installed stow
 
-echo '[PREPARAR NOTEBOOK] NOTEBOOK LISTA!'
+# Instalar dependencias de ansible
+printf "[PREPARAR NOTEBOOK] INSTALAR DEPENDENCIAS\n"
+install_package_if_not_installed python3-setuptools
 
-# Deploy projecto Ansible, implementación
-echo "[PROYECTO ANSIBLE] CLONAR REPOSITORIO"
-sudo touch /var/log/ansible.log
-sudo chown -R $USER:$USER /var/log/ansible.log
-git clone https://github.com/ingadhoc/ansible_notebooks
-cd ansible_notebooks
+# Instalar ansible
+printf "[PREPARAR NOTEBOOK] INSTALAR ANSIBLE\n"
+install_package_if_not_installed ansible
 
-# Para ejecutar el rol base
+printf "[PREPARAR NOTEBOOK] NOTEBOOK LISTA!\n"
+
+# Clonar proyecto y ejecutar rol Funcional
+printf "[PROYECTO ANSIBLE] CLONAR REPOSITORIO\n"
+PROJECT_DIR="/opt/ansible_notebooks"
+LOG_FILE="/var/log/ansible.log"
+git clone https://github.com/ingadhoc/ansible_notebooks "$PROJECT_DIR"
+chown -R $USER:$USER "$LOG_FILE"
+
 function launch {
-    read -e -p "COMENZAR PREPARACIÓN DEL ROL BASE? ( 'si', 'no' ): " LAUNCH_OPTION
+  read -e -p "COMENZAR PREPARACIÓN DEL ROL BASE? ( 'si', 'no' ): " LAUNCH_OPTION
 
-    while [[ "$LAUNCH_OPTION" != "si" && "$LAUNCH_OPTION" != "no" ]]; do
-        read -e -p "Por favor seleccionar una opción correcta ( 'si', 'no' ): " LAUNCH_OPTION
-    done
+  while [[ "$LAUNCH_OPTION" != "si" && "$LAUNCH_OPTION" != "no" ]]; do
+    read -e -p "Por favor seleccionar una opción correcta ( 'si', 'no' ): " LAUNCH_OPTION
+  done
 
-    if [[ "$LAUNCH_OPTION" == "si" ]]; then
-        ansible-playbook --tags "funcional" local.yml -K --verbose
-    fi
-
-    if [[ "$LAUNCH_OPTION" == "no" ]]; then
-        read -e -p "Gracias por lanzar el proyecto, ver README.md para más información."
-    fi
-
+  if [[ "$LAUNCH_OPTION" == "si" ]]; then
+    ansible-playbook --tags "funcional" "$PROJECT_DIR/local.yml" -K --verbose
+  else
+    read -e -p "Gracias por lanzar el proyecto, ver README.md para más información."
+  fi
 }
 
 launch
