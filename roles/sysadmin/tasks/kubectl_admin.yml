@@ -5,7 +5,7 @@
     # Agregar alias en .bashrc o .zshrc --> alias kubectl="kubecolor"
     - name: kubecolor - Descargar binario y extraer
       unarchive:
-        src: https://github.com/hidetatz/kubecolor/releases/download/v0.0.25/kubecolor_0.0.25_Linux_x86_64.tar.gz.tar.xz
+        src: https://github.com/hidetatz/kubecolor/releases/download/v0.0.25/kubecolor_0.0.25_Linux_x86_64.tar.gz
         dest: /tmp/
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
@@ -75,36 +75,30 @@
         mode: "774"
 
     - name: kubectl - Clonar projecto kubectx
-      become_user: "{{ remote_regular_user }}"
-      git:
-        repo: https://github.com/ahmetb/kubectx.git
-        dest: /opt/kubectx
-        clone: yes
-        update: yes
-
-    - name: kubectl - Crear link para kubectx
-      become_user: "{{ remote_regular_user }}"
-      file:
-        src: /opt/kubectx/kubectx
-        dest: /usr/local/bin/kubectx
-        state: link
-
-    - name: kubectl - Crear link para kubens
-      become_user: "{{ remote_regular_user }}"
-      file:
-        src: /opt/kubectx/kubectx
-        dest: /usr/local/bin/kubectx
-        state: link
-
-    # https://github.com/rancher/rke
-    - name: rke - Descargar binario y extraer
       unarchive:
-        src: https://github.com/rancher/rke/releases/download/v1.3.17/rke_linux-amd64
+        src: https://github.com/ahmetb/kubectx/releases/download/v0.9.5/kubectx_v0.9.5_linux_x86_64.tar.gz
         dest: /tmp/
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
         mode: "774"
         remote_src: true
+
+    - name: kubectx - Mover binario al path
+      copy:
+        src: /tmp/kubectx
+        dest: /usr/bin/
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "774"
+
+    # https://github.com/rancher/rke
+    - name: rke - Descargar binario y extraer
+      get_url:
+        url: https://github.com/rancher/rke/releases/download/v1.3.17/rke_linux-amd64
+        dest: /tmp/
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "774"
 
     - name: rke - Mover binario al path
       copy:
@@ -126,7 +120,7 @@
 
     - name: kubepug - Mover binario al path
       copy:
-        src: /tmp/kubepug_linux_amd64/kubepug
+        src: /tmp/kubepug
         dest: /usr/bin/
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
@@ -144,8 +138,8 @@
 
     - name: kubectl-tree - Mover binario al path
       copy:
-        src: /tmp/kubectl-tree_v0.4.3_linux_amd64/kubepug
-        dest: /usr/bin/rke
+        src: /tmp/kubectl-tree
+        dest: /usr/bin/
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
         mode: "774"
