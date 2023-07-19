@@ -13,13 +13,8 @@
           - zsh-syntax-highlighting
           - fonts-powerline
 
-    - name: zsh - Copiar archivo de configuración
-      copy:
-        src: ./files/.zshrc
-        dest: /home/{{ remote_regular_user }}/.zshrc
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+    - name: zsh - Enlace simbólico de archivo de configuración
+      command: ln -sf ./files/.zshrc /home/{{ remote_regular_user }}/.zshrc
 
     - name: zsh - Set as default
       become: true
@@ -55,7 +50,6 @@
 
     - name: omz - Clonar varios plugins
       git:
-        become_user: "{{ remote_regular_user }}"
         repo: "{{ item.key }}"
         dest: "{{ item.value }}"
         clone: yes
@@ -77,7 +71,7 @@
     # https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/kube-ps1
     - name: omz - kube-ps1 plugin
       get_url:
-        url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/kube-ps1/kube-ps1.plugin.zshsh
+        url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/kube-ps1/kube-ps1.plugin.zsh
         dest: /home/{{ remote_regular_user }}/.oh-my-zsh/plugins/kube-ps1/
         mode: "774"
 
