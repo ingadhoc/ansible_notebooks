@@ -4,7 +4,6 @@
 
 - block:
     - import_tasks: packages.yml
-    - import_tasks: anydesk.yml
     - import_tasks: browsers.yml
     - import_tasks: ext.yml
     - import_tasks: gnome.yml
