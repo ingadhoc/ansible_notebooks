@@ -3,20 +3,26 @@
   tags: chrome
   become: true
   block:
-    - name: Agregar la key de Chrome
-      shell: wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-archive-keyring.gpg
+    - name: Chrome - Chequear si ya existe key
+      stat:
+        path: /usr/share/keyrings/google-archive-keyring.gpg
+      register: keyring_file
 
-    - name: Agregar repositorio de Chrome
+    - name: Chrome - Agregar key
+      shell: wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-archive-keyring.gpg
+      when: not keyring_file.stat.exists
+
+    - name: Chrome - Agregar repositorio
       shell: echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list | apt update
 
-    - name: Instalar Google Chrome
+    - name: Chrome - Instalar
       apt:
         name: google-chrome-stable
 
 - name: Browsers - Firefox
   tags: firefox
   block:
-    - name: Browsers - Instalar firefox
+    - name: Firefox - Instalar snap
       snap:
         name:
           - firefox
