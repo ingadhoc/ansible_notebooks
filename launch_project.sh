@@ -50,7 +50,7 @@ while [[ "$LAUNCH_OPTION" != "Y" && "$LAUNCH_OPTION" != "N" ]]; do
 done
 
 if [[ "$LAUNCH_OPTION" == "Y" ]]; then
-  ansible-playbook --tags "funcional" "$REPO_DIR/local.yml" -K --verbose
+  cd $REPO_DIR && ansible-playbook --tags "funcional" local.yml -K --verbose
 else
   echo "Gracias por lanzar el proyecto, ver README.md para más información."
 fi
