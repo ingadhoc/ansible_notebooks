@@ -1,18 +1,13 @@
 ---
 - name: kubectl - Instalar
   tags: kubectl
+  become: true
   block:
-    - name: kubectl - Agregar key
-      become: true
-      apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        state: present
+    - name: Agregar la key de kubectl
+      shell: wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-archive-keyring.gpg
 
-    - name: kubectl - Agregar repositorio
-      become: true
-      apt_repository:
-        repo: "deb [arch=amd64] https://apt.kubernetes.io/ kubernetes-xenial main"
-        state: present
+    - name: Agregar repositorio de kubectl
+      shell: echo "deb [signed-by=/usr/share/keyrings/google-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list | apt update
 
     - name: kubectl - Instalar
       become: true
