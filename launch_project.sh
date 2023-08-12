@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Script para preparar notebooks en Adhoc. Instala dependencias, clona el proyecto de ansible y aplica el rol Funcional.
+## Script para preparar notebooks en Adhoc. Instala dependencias,
+## clona el proyecto de ansible y aplica el rol Funcional.
 
 # Verificar ejecución con sudo
 if [[ $EUID -ne 0 ]]; then
@@ -9,23 +10,20 @@ fi
 
 # Función para instalar paquetes (si no están instalados)
 function install_package_if_not_installed {
-  if ! dpkg -s "$1" &>/dev/null; then
-    apt install -y "$1"
-  fi
+  dpkg -s "$1" &>/dev/null || apt install -y "$1"
 }
 
 # Actualización completa del sistema
 printf "[PREPARAR NOTEBOOK] ACTUALIZAR AMBIENTE DE TRABAJO\n"
-apt update -y
-apt upgrade -y
+apt update -y && apt upgrade -y
 
-# Instalar dependencias
+# Instalar herramientas
 printf "[PREPARAR NOTEBOOK] INSTALAR GIT Y STOW\n"
 install_package_if_not_installed git
 install_package_if_not_installed stow
 
 # Instalar dependencias de ansible
-printf "[PREPARAR NOTEBOOK] INSTALAR DEPENDENCIAS\n"
+printf "[PREPARAR NOTEBOOK] INSTALAR DEPENDENCIAS DE ANSIBLE\n"
 install_package_if_not_installed python3-setuptools
 
 # Instalar ansible
@@ -35,24 +33,24 @@ install_package_if_not_installed ansible
 printf "[PREPARAR NOTEBOOK] NOTEBOOK LISTA!\n"
 
 # Clonar proyecto y ejecutar rol Funcional
+REPO_DIR="/home/$SUDO_USER/repositorios/ansible_notebooks"
+
 printf "[PROYECTO ANSIBLE] CLONAR REPOSITORIO\n"
-PROJECT_DIR="/opt/ansible_notebooks"
-LOG_FILE="/var/log/ansible.log"
-git clone https://github.com/ingadhoc/ansible_notebooks "$PROJECT_DIR"
-chown -R $USER:$USER "$LOG_FILE"
+if [ ! -d "$REPO_DIR" ]; then
+  mkdir -p "$REPO_DIR"
+fi
+chown -R $SUDO_USER:$SUDO_USER "/home/$SUDO_USER/repositorios/"
+sudo -u $SUDO_USER git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
 
-function launch {
-  read -e -p "COMENZAR PREPARACIÓN DEL ROL BASE? ( 'si', 'no' ): " LAUNCH_OPTION
+# Ejecutar rol Funcional
+read -e -p "COMENZAR PREPARACIÓN DEL ROL FUNCIONAL? ( 'Y', 'N' ): " LAUNCH_OPTION
 
-  while [[ "$LAUNCH_OPTION" != "si" && "$LAUNCH_OPTION" != "no" ]]; do
-    read -e -p "Por favor seleccionar una opción correcta ( 'si', 'no' ): " LAUNCH_OPTION
-  done
+while [[ "$LAUNCH_OPTION" != "Y" && "$LAUNCH_OPTION" != "N" ]]; do
+  read -e -p "Por favor seleccionar una de estas opciones ( 'Y', 'N' ): " LAUNCH_OPTION
+done
 
-  if [[ "$LAUNCH_OPTION" == "si" ]]; then
-    ansible-playbook --tags "funcional" "$PROJECT_DIR/local.yml" -K --verbose
-  else
-    read -e -p "Gracias por lanzar el proyecto, ver README.md para más información."
-  fi
-}
-
-launch
+if [[ "$LAUNCH_OPTION" == "Y" ]]; then
+  ansible-playbook --tags "funcional" "$REPO_DIR/local.yml" -K --verbose
+else
+  echo "Gracias por lanzar el proyecto, ver README.md para más información."
+fi
