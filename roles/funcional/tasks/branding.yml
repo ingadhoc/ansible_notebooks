@@ -1,9 +1,9 @@
 ---
 - name: Branding - Wallpaper
   tags: branding
+  become: true
   block:
     - name: Copiar wallpaper y lockscreenfile
-      become_method: sudo
       become_user: "{{ lookup('env','USER') }}"
       copy:
         src: "{{ item.src }}"
@@ -21,7 +21,6 @@
     - name: Set Wallpaper
       # También se puede ejecutar manualmente, por ejemplo
       # $ gsettings set org.gnome.desktop.background picture-uri file:///home/$USER/.wallpaper.jpg
-      become_method: sudo
       become_user: "{{ lookup('env','USER') }}"
       dconf:
         key: "/org/gnome/desktop/background/picture-uri"
@@ -29,7 +28,6 @@
         state: present
 
     - name: Set screensaver picture
-      become_method: sudo
       become_user: "{{ lookup('env','USER') }}"
       dconf:
         key: "/org/gnome/desktop/screensaver/picture-uri"
@@ -37,7 +35,6 @@
         state: present
 
     - name: Set back position
-      become_method: sudo
       become_user: "{{ lookup('env','USER') }}"
       dconf:
         key: "/org/gnome/desktop/background/picture-options"
@@ -45,7 +42,6 @@
         state: present
 
     - name: Set back colour
-      become_method: sudo
       become_user: "{{ lookup('env','USER') }}"
       dconf:
         key: "/org/gnome/desktop/background/primary-color"
