@@ -8,7 +8,7 @@
     - import_tasks: ext.yml
     - import_tasks: gnome.yml
     - import_tasks: language.yml
-    - import_tasks: meld.yml
+
     - import_tasks: fixes.yml
     - import_tasks: shortcuts.yml
     - import_tasks: branding.yml

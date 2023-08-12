@@ -4,6 +4,7 @@
 
 - block:
     - import_tasks: packages_dev.yml
+    - import_tasks: meld.yml
     - import_tasks: code.yml
     - import_tasks: python.yml
     - import_tasks: git.yml
