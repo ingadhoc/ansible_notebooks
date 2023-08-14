@@ -1,48 +1,44 @@
 ---
 - name: Branding - Wallpaper
   tags: branding
-  become: true
   block:
     - name: Copiar wallpaper y lockscreenfile
-      become_user: "{{ lookup('env','USER') }}"
       copy:
+        owner: "{{ ansible_env.SUDO_USER }}"
+        group: "{{ ansible_env.SUDO_USER }}"
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
       with_items:
         - {
             src: ./files/isotipo_adhoc.png,
-            dest: "/home/{{ lookup('env','USER') }}/.wallpaper.jpg",
+            dest: "/home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg",
           }
         - {
             src: ./files/logotipo_adhoc.png,
-            dest: "/home/{{ lookup('env','USER') }}/.logotipo_adhoc.png",
+            dest: "/home/{{ ansible_env.SUDO_USER }}/.logotipo_adhoc.png",
           }
 
     - name: Set Wallpaper
       # También se puede ejecutar manualmente, por ejemplo
       # $ gsettings set org.gnome.desktop.background picture-uri file:///home/$USER/.wallpaper.jpg
-      become_user: "{{ lookup('env','USER') }}"
       dconf:
         key: "/org/gnome/desktop/background/picture-uri"
-        value: "'file:///home/{{ lookup('env','USER') }}/.wallpaper.jpg'"
+        value: "'file:///home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg'"
         state: present
 
     - name: Set screensaver picture
-      become_user: "{{ lookup('env','USER') }}"
       dconf:
         key: "/org/gnome/desktop/screensaver/picture-uri"
-        value: "'file:///home/{{ lookup('env','USER') }}/.logotipo_adhoc.png'"
+        value: "'file:///home/{{ ansible_env.SUDO_USER }}/.logotipo_adhoc.png'"
         state: present
 
     - name: Set back position
-      become_user: "{{ lookup('env','USER') }}"
       dconf:
         key: "/org/gnome/desktop/background/picture-options"
         value: "'centered'"
         state: present
 
     - name: Set back colour
-      become_user: "{{ lookup('env','USER') }}"
       dconf:
         key: "/org/gnome/desktop/background/primary-color"
         value: "'#d6d6d4'"

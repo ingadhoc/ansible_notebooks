@@ -8,10 +8,9 @@
     - import_tasks: ext.yml
     - import_tasks: gnome.yml
     - import_tasks: language.yml
-
-    - import_tasks: fixes.yml
     - import_tasks: shortcuts.yml
     - import_tasks: branding.yml
     - import_tasks: ui_performance.yml
     - import_tasks: python_funcionales.yml
     - import_tasks: security.yml
+    - import_tasks: fixes.yml
