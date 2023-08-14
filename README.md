@@ -1,35 +1,40 @@
 # Laboratorio Ansible
 
-Laboratorio de pruebas de ansible, con el objetivo de automatizar la preparación de laptops para puestos Funcionales, Desarrollo y SysAdmins en Adhoc. Para resumir, un espacio experimental y de aprendizaje para preparar "notebooks as a service".  
-Para información interna más detallada, procedimiento, pendientes, etc., revisar [este documento](https://docs.google.com/document/d/1iDylKWfjRL9SO_GR_1j7HjQhFixYsFz9Vv3Mi0WstPQ).
+Laboratorio usando Ansible, con el objetivo de automatizar la preparación de laptops para usos funcionales (Mesa de Ayuda, Consultoría, Comercial) y técnicos (Sistemas, Producto, Infraestructura) en Adhoc.  
+Para información interna más detallada, procedimiento, pendientes, etc., revisar [este documento](https://docs.google.com/document/d/1TY5cQnNCOAxVRk4fFKHlBfWAa5qECUpH1jIjoCY0M4s/).
 
-### Roles
+## Roles para ejecutar
 
-- funcional > Operaciones, Mesa de Ayuda, Comercial, Administración (aunque usan Windows),
-- devs > Sistemas,
-- sysadmin > DevOps, SRE, Infraestructura,
+- funcional > Mesa de Ayuda, Consultoría, Comercial
+- devs > Sistemas, Producto
+- sysadmin > DevOps, Infraestructura,
 - deploy > Implementación express de herramientas para deploy de Infraestructura (k8s).
+
+### IMPORTANTE X.ORG
+
+- antes de empezar todo el proceso, es requisito usar Ubuntu en modo x.org (configuración gráfica por incompatibilidad de algunas aplicaciones).
+- cuando inicia Ubuntu (o después de cerrar sesión), en la pantalla donde hay que ingresar la contraseña hacer click en la ruedita abajo a la derecha y seleccionar "Ubuntu on Xorg"
+- sólo se hace una vez
 
 ## Preparación equipo
 
-En principio se puede lanzar el proyecto con un script (que además instala dependencias necesarias). Al ejecutarlo, se instala el rol "Funcional", que es común y necesario para el resto de los roles. Hasta tanto evolucione, se recomienda reiniciar el equipo luego de aplicar cada rol (y continuar):
+Se puede lanzar el proyecto con un script, que instala dependencias, clona el repositorio, etc.. Al ejecutarlo, ofrece aplicar el rol "Funcional", que es común y dependencia del resto de los roles. Hasta tanto evolucione, **se recomienda reiniciar el equipo luego de aplicar cada rol**:
 
 ```bash
-# Probando deploy con script
-$ sudo apt install curl
-$ bash -c "$(curl -fsSL https://raw.githubusercontent.com/ingadhoc/ansible_notebooks/master/launch_project.sh)"
-# Revisar o editar script
-$ wget https://raw.githubusercontent.com/ingadhoc/ansible_notebooks/master/launch_project.sh
-$ sudo bash launch_project.sh
+# Descargar script
+$ wget http://bit.ly/adhoc-ansible
+# Inspeccionar brevemente
+$ nano adhoc-ansible
+$ sudo bash adhoc-ansible
 ```
 
-### Deploy artesanal ambientes de trabajo (Funcional / Devs / SysAdmin)
+### Deploy artesanal (funcional / devs / sysadmin / deploy)
 
 ```bash
 # Dependencias
-$ apt install python3-setuptools ansible git stow
+$ sudo apt install python3-setuptools ansible git stow
 # Clonar repositorio con playbooks, tasks, etc.
-$ git clone https://github.com/ingadhoc/ansible_notebooks && cd ansible
+$ git clone https://github.com/ingadhoc/ansible_notebooks && cd ansible ansible_notebooks
 # Deployar roles
 $ ansible-playbook --tags "funcional" local.yml -K --verbose
 $ ansible-playbook --tags "devs" local.yml -K --verbose
@@ -96,6 +101,7 @@ $ gcloud auth login
   - social
   - terraform
   - virtualbox
+    - vagrant
   - zsh
   - omz
 
@@ -108,13 +114,11 @@ _"Vagrant es una herramienta que nos ayuda a crear y manejar máquinas virtuales
 Levantar, ejecutar, acceder, etc.:
 
 ```sh
-$ vagrant init generic/ubuntu2004
 $ vagrant init generic/ubuntu2204
 $ vagrant up
 $ vagrant ssh
 $ logout
 $ vagrant box list
-generic/ubuntu2004 (virtualbox, 4.1.4)
 generic/ubuntu2204 (virtualbox, 4.1.10)
 
 $ vagrant snapshot save [vm-name] NAME
