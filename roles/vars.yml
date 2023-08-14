@@ -14,20 +14,10 @@ vscode_extension_list_devs:
   - ms-python.python
   # Markdown linting and style checking for Visual Studio Code
   - DavidAnson.vscode-markdownlint
-  # Beautify code in place for VS Code
-  - HookyQR.beautify
-  ## Muestra en rojo los espacios inutilizados
-  - shardulm94.trailing-spaces
-  # Provides path completion
-  - ionutvmi.path-autocomplete
-  # XML Tools for Visual Studio Code
-  - dotjoshjohnson.xml
   # Supercharge the Git capabilities built into Visual Studio Code
   - eamodio.gitlens
   # Odoo snippets
   - mstuttgart.odoo-snippets
-  # Icons
-  - pkief.material-icon-theme
   # Check spell (En & Es)
   - streetsidesoftware.code-spell-checker
   - streetsidesoftware.code-spell-checker-spanish
@@ -55,5 +45,3 @@ vscode_extension_list_sysadmin:
   - ms-vscode-remote.vscode-remote-extensionpack
   # YAML Language Support by Red Hat, with built-in Kubernetes syntax support
   - redhat.vscode-yaml
-  # Makes it easy to create, manage, and debug containerized applications.
-  - ms-azuretools.vscode-docker
