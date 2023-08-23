@@ -1,10 +1,10 @@
 ---
 - name: Git - Configuraciones varias
   become: true
-  become_user: "{{ ansible_env.SUDO_USER }}"
   tags: git
   block:
     - name: Git - Definiendo code por defecto y configuraciones globales
+      become_user: "{{ ansible_env.SUDO_USER }}"
       git_config:
         name: "{{ item.name }}"
         value: "{{ item.value }}"
@@ -19,14 +19,15 @@
         - { name: push.default, value: nothing }
         - { name: pull.default, value: nothing }
         - { name: pull.ff, value: only }
+        - { name: core.hooksPath, value: /etc/git/hooks/ }
 
     - name: Global hooks - Crear carpeta para hooks (prevent push to master)
       file:
         path: "/etc/git/hooks"
         state: directory
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+        owner: "{{ ansible_env.SUDO_USER }}"
+        group: root
+        mode: "775"
 
     - name: Global hooks - Comando mágico para hooks
       command: "echo -e '#!/bin/sh\n\nif [ -x `pwd`/.git/hooks/$(basename $0) ];\nthen\n\texec `pwd`/.git/hooks/$(basename $0)\nfi' | sudo tee /etc/git/hooks/{applypatch-msg,commit-msg,fsmonitor-watchman,post-update,pre-applypatch,pre-commit,pre-rebase,pre-receive,prepare-commit-msg,update} > /dev/null"
@@ -36,21 +37,15 @@
       copy:
         src: ./files/pre-push
         dest: /etc/git/hooks/pre-push
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
+        owner: "{{ ansible_env.SUDO_USER }}"
+        group: "{{ ansible_env.SUDO_USER }}"
         mode: u=rw,g=rw,o=r
-
-    - name: Global hooks - Configurar path
-      git_config:
-        name: core.hooksPath
-        value: /etc/git/hooks/
-        scope: global
 
     - name: Adhoc prompt - Copiar archivo .prompt
       copy:
         src: ./files/.prompt_git
-        dest: /home/{{ remote_regular_user }}/.prompt_git
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
+        dest: /home/{{ ansible_env.SUDO_USER }}/.prompt_git
+        owner: "{{ ansible_env.SUDO_USER }}"
+        group: "{{ ansible_env.SUDO_USER }}"
         mode: u=rw,g=rw,o=r
       changed_when: false

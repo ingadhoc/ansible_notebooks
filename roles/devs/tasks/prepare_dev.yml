@@ -115,8 +115,3 @@
             regexp: "^ODOO_VERSION="
             line: "ODOO_VERSION=16"
             state: present
-
-    - name: Local dev - Script initial setup para acomodar volúmenes y otros
-      become_user: "{{ ansible_env.SUDO_USER }}"
-      script:
-        path: "/home/{{ ansible_env.SUDO_USER }}/odoo/16/scripts/initial_setup.sh"
