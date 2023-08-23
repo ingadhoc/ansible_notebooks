@@ -10,4 +10,4 @@
     - import_tasks: social.yml
     - import_tasks: helm.yml
     - import_tasks: kubectl_admin.yml
-    - import_takss: fixes.yml
+    - import_tasks: fixes.yml
