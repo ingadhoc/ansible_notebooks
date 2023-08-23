@@ -2,6 +2,9 @@
 ## Script para preparar notebooks en Adhoc. Instala dependencias,
 ## clona el proyecto de ansible y aplica el rol Funcional.
 
+# Guardar el nombre de usuario que está ejecutando el script
+SCRIPT_USER=$SUDO_USER
+
 # Verificar ejecución con sudo
 if [[ $EUID -ne 0 ]]; then
   echo "Este script requiere privilegios root. Ejecutar con sudo"
@@ -32,15 +35,20 @@ install_package_if_not_installed ansible
 
 printf "[PREPARAR NOTEBOOK] NOTEBOOK LISTA!\n"
 
+# Crear el archivo ansible.log en /var/log con los permisos adecuados
+ANSIBLE_LOG_FILE="/var/log/ansible.log"
+touch "$ANSIBLE_LOG_FILE"
+chown "$SCRIPT_USER:$SCRIPT_USER" "$ANSIBLE_LOG_FILE"
+
 # Clonar proyecto y ejecutar rol Funcional
-REPO_DIR="/home/$SUDO_USER/repositorios/ansible_notebooks"
+REPO_DIR="/home/$SCRIPT_USER/repositorios/ansible_notebooks"
 
 printf "[PROYECTO ANSIBLE] CLONAR REPOSITORIO\n"
 if [ ! -d "$REPO_DIR" ]; then
   mkdir -p "$REPO_DIR"
 fi
-chown -R $SUDO_USER:$SUDO_USER "/home/$SUDO_USER/repositorios/"
-sudo -u $SUDO_USER git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
+chown -R "$SCRIPT_USER:$SCRIPT_USER" "/home/$SCRIPT_USER/repositorios/"
+sudo -u "$SCRIPT_USER" git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
 
 # Ejecutar rol Funcional
 read -e -p "COMENZAR PREPARACIÓN DEL ROL FUNCIONAL? ( 'Y', 'N' ): " LAUNCH_OPTION
@@ -50,7 +58,7 @@ while [[ "$LAUNCH_OPTION" != "Y" && "$LAUNCH_OPTION" != "N" ]]; do
 done
 
 if [[ "$LAUNCH_OPTION" == "Y" ]]; then
-  cd $REPO_DIR && ansible-playbook --tags "funcional" local.yml -K --verbose
+  cd "$REPO_DIR" && ansible-playbook --tags "funcional" local.yml -K --verbose
 else
   echo "Gracias por lanzar el proyecto, ver README.md para más información."
 fi
