@@ -1,0 +1,11 @@
+---
+- name: SysAdmin - Instalación paquetes y dependencias varias
+  tags: packages_sysadmin
+  block:
+    - name: Instalar paquetes y dependencias
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - ansible-lint

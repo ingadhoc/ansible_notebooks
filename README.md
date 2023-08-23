@@ -18,7 +18,7 @@ Para información interna más detallada, procedimiento, pendientes, etc., revis
 
 ## Preparación equipo
 
-Se puede lanzar el proyecto con un script, que instala dependencias, clona el repositorio, etc.. Al ejecutarlo, ofrece aplicar el rol "Funcional", que es común y dependencia del resto de los roles. Hasta tanto evolucione, **se recomienda reiniciar el equipo luego de aplicar cada rol**:
+Se puede lanzar el proyecto con un script, que instala dependencias, clona el repositorio, etc.. Al ejecutarlo, ofrece aplicar el rol "Funcional", que es común y dependencia del resto de los roles:
 
 ```bash
 # Descargar script
@@ -38,6 +38,7 @@ $ git clone https://github.com/ingadhoc/ansible_notebooks && cd ansible ansible_
 # Deployar roles
 $ ansible-playbook --tags "funcional" local.yml -K --verbose
 $ ansible-playbook --tags "devs" local.yml -K --verbose
+# Reiniciar la notebook luego de aplicar el rol dev para que apliquen los cambios y configuraciones (docker as root por ejemplo)
 $ ansible-playbook --tags "sysadmin" local.yml -K --verbose
 ```
 
