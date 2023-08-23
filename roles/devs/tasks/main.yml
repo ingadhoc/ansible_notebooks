@@ -13,4 +13,5 @@
     - import_tasks: fixes.yml
     - import_tasks: prepare_dev.yml
     - import_tasks: ssh.yml
+    - import_tasks: gh_cli.yml
     - import_tasks: docker.yml

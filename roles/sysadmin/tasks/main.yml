@@ -9,5 +9,4 @@
     - import_tasks: virtualbox.yml
     - import_tasks: social.yml
     - import_tasks: helm.yml
-    - import_tasks: gh_cli.yml
     - import_tasks: kubectl_admin.yml
