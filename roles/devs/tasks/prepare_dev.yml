@@ -11,45 +11,45 @@
         mode: "g+rwx"
 
     - name: Local dev - Agregar user al grupo root
-      ansible.builtin.user:
-        name: "{{ remote_regular_user }}"
+      user:
+        name: "{{ ansible_env.SUDO_USER }}"
         groups: ["root"]
         append: "yes"
 
     # Descargar, instalar, levantar odoo 13, 15 y 16
     - name: Local dev - Crear carpeta local para Odoo
-      become_user: "{{ remote_regular_user }}"
+      become_user: "{{ ansible_env.SUDO_USER }}"
       file:
-        path: /home/{{ remote_regular_user }}/odoo
+        path: /home/{{ ansible_env.SUDO_USER }}/odoo
         state: directory
 
     - name: Ambiente local - Preparar odoo 13
       block:
         - name: Local dev - Clonar repositorio de Odoo v13
-          become_user: "{{ remote_regular_user }}"
+          become_user: "{{ ansible_env.SUDO_USER }}"
           git:
             repo: https://github.com/ingadhoc/docker-compose-odoo.git
-            dest: /home/{{ remote_regular_user }}/odoo/13
+            dest: /home/{{ ansible_env.SUDO_USER }}/odoo/13
             clone: yes
             update: yes
 
         - name: Local dev - Editar odoo_minor de .env
           lineinfile:
-            path: /home/{{ remote_regular_user }}/odoo/13/.env
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/13/.env
             regexp: "^ODOO_MINOR="
             line: "ODOO_MINOR=13.0"
             state: present
 
         - name: Local dev - Editar domain de .env
           lineinfile:
-            path: /home/{{ remote_regular_user }}/odoo/13/.env
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/13/.env
             regexp: "^DOMAIN="
             line: "DOMAIN=13.odoo.localhost"
             state: present
 
         - name: Local dev - Editar odoo_version de .env
           lineinfile:
-            path: /home/{{ remote_regular_user }}/odoo/13/.env
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/13/.env
             regexp: "^ODOO_VERSION="
             line: "ODOO_VERSION=13"
             state: present
@@ -57,30 +57,30 @@
     - name: Ambiente local - Preparar odoo 15
       block:
         - name: Local dev - Clonar repositorio de Odoo v15
-          become_user: "{{ remote_regular_user }}"
+          become_user: "{{ ansible_env.SUDO_USER }}"
           git:
             repo: https://github.com/ingadhoc/docker-compose-odoo.git
-            dest: /home/{{ remote_regular_user }}/odoo/15
+            dest: /home/{{ ansible_env.SUDO_USER }}/odoo/15
             clone: yes
             update: yes
 
         - name: Local dev - Editar odoo_minor de .env
           lineinfile:
-            path: /home/{{ remote_regular_user }}/odoo/15/.env
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/15/.env
             regexp: "^ODOO_MINOR="
             line: "ODOO_MINOR=15.0"
             state: present
 
         - name: Local dev - Editar domain de .env
           lineinfile:
-            path: /home/{{ remote_regular_user }}/odoo/15/.env
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/15/.env
             regexp: "^DOMAIN="
             line: "DOMAIN=15.odoo.localhost"
             state: present
 
         - name: Local dev - Editar odoo_version de .env
           lineinfile:
-            path: /home/{{ remote_regular_user }}/odoo/15/.env
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/15/.env
             regexp: "^ODOO_VERSION="
             line: "ODOO_VERSION=15"
             state: present
@@ -88,36 +88,35 @@
     - name: Ambiente local - Preparar odoo 16
       block:
         - name: Local dev - Clonar repositorio de Odoo v16
-          become_user: "{{ remote_regular_user }}"
+          become_user: "{{ ansible_env.SUDO_USER }}"
           git:
             repo: https://github.com/ingadhoc/docker-compose-odoo.git
-            dest: /home/{{ remote_regular_user }}/odoo/16
+            dest: /home/{{ ansible_env.SUDO_USER }}/odoo/16
             clone: yes
             update: yes
 
         - name: Local dev - Editar odoo_minor de .env
           lineinfile:
-            path: /home/{{ remote_regular_user }}/odoo/16/.env
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/16/.env
             regexp: "^ODOO_MINOR="
             line: "ODOO_MINOR=16.0"
             state: present
 
         - name: Local dev - Editar domain de .env
           lineinfile:
-            path: /home/{{ remote_regular_user }}/odoo/16/.env
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/16/.env
             regexp: "^DOMAIN="
             line: "DOMAIN=16.odoo.localhost"
             state: present
 
         - name: Local dev - Editar odoo_version de .env
           lineinfile:
-            path: /home/{{ remote_regular_user }}/odoo/16/.env
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/16/.env
             regexp: "^ODOO_VERSION="
             line: "ODOO_VERSION=16"
             state: present
 
-    - name: Local dev - Crear carpeta para repositorios
-      become_user: "{{ remote_regular_user }}"
-      file:
-        path: /home/{{ remote_regular_user }}/repositorios
-        state: directory
+    - name: Local dev - Script initial setup para acomodar volúmenes y otros
+      become_user: "{{ ansible_env.SUDO_USER }}"
+      script:
+        path: "/home/{{ ansible_env.SUDO_USER }}/odoo/16/scripts/initial_setup.sh"

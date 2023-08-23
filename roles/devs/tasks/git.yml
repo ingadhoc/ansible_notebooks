@@ -1,5 +1,7 @@
 ---
 - name: Git - Configuraciones varias
+  become: true
+  become_user: "{{ ansible_env.SUDO_USER }}"
   tags: git
   block:
     - name: Git - Definiendo code por defecto y configuraciones globales
@@ -27,12 +29,10 @@
         mode: "774"
 
     - name: Global hooks - Comando mágico para hooks
-      become_user: "{{ remote_regular_user }}"
       command: "echo -e '#!/bin/sh\n\nif [ -x `pwd`/.git/hooks/$(basename $0) ];\nthen\n\texec `pwd`/.git/hooks/$(basename $0)\nfi' | sudo tee /etc/git/hooks/{applypatch-msg,commit-msg,fsmonitor-watchman,post-update,pre-applypatch,pre-commit,pre-rebase,pre-receive,prepare-commit-msg,update} > /dev/null"
       changed_when: false
 
     - name: Global hooks - Copiar archivo pre-push
-      become_user: "{{ remote_regular_user }}"
       copy:
         src: ./files/pre-push
         dest: /etc/git/hooks/pre-push
