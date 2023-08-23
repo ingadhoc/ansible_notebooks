@@ -1,6 +1,8 @@
 ---
 - name: Branding - Wallpaper
   tags: branding
+  become: true
+  become_user: "{{ ansible_env.SUDO_USER }}"
   block:
     - name: Copiar wallpaper y lockscreenfile
       copy:
