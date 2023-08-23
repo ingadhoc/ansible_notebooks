@@ -1,3 +1,5 @@
+.vscode
+
 # También estoy jugando con vagrant así que agrego esos archivos de trabajo:
 .vagrant
 Vagrantfile
