@@ -105,9 +105,10 @@ export DEFAULT_USER="$(whoami)"
 # Git-AdHoc Prompt
 #source /home/$USER/.prompt_git >> ~/.zshrc
 
-alias upd='sudo apt update'
-alias upg='sudo apt upgrade'
+alias upd='sudo nala update'
+alias upg='sudo nala upgrade'
 alias untar='tar -zxvf' # Unpack .tar file
+alias dps='docker ps --format="table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'
 
 # Alias para el comando / scrip r2 (rancher2 y k8s)
 alias r2='/home/$USER/repositorios/team-tools/devops/rke_byadhoc.sh'
@@ -116,6 +117,7 @@ alias r2='/home/$USER/repositorios/team-tools/devops/rke_byadhoc.sh'
 source <(kubectl completion zsh)
 alias k='kubectl'
 alias kubectl="kubecolor"
+alias ktx="kubectx"
 compdef __start_kubectl k
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
@@ -129,3 +131,8 @@ eval "$(mcfly init zsh)"
 
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /usr/bin/terraform terraform
+
+# zsh-gcloud-prompt: Show current gcloud config in zsh prompt
+autoload -Uz colors; colors
+source ~/.oh-my-zsh/custom/plugins/zsh-gcloud-prompt/gcloud.zsh
+RPROMPT='%{$fg[cyan]%}($ZSH_GCLOUD_PROMPT)%{$reset_color%}'
