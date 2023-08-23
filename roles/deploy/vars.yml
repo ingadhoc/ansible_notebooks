@@ -1,0 +1,47 @@
+---
+# Usuario genérico para ejecutar algunas tareas
+remote_regular_user: "{{ ansible_env.SUDO_USER }}"
+
+# Versiones para devs y sysadmin
+docker-compose_version: "v2.7.0"
+rancher2_version: "v2.6.5"
+rke_version: "v1.3.12"
+terraform_version: "1.3.7"
+
+# Extensiones predefinidas para devs
+vscode_extension_list_devs:
+  # Install Visual Studio Code extensions.
+  - ms-python.python
+  # Markdown linting and style checking for Visual Studio Code
+  - DavidAnson.vscode-markdownlint
+  # Supercharge the Git capabilities built into Visual Studio Code
+  - eamodio.gitlens
+  # Odoo snippets
+  - mstuttgart.odoo-snippets
+  # Check spell (En & Es)
+  - streetsidesoftware.code-spell-checker
+  - streetsidesoftware.code-spell-checker-spanish
+
+  # Kubernetes extension
+  - ms-kubernetes-tools.vscode-kubernetes-tools
+  # Remote containers
+  - ms-vscode-remote.remote-containers
+  # Remote development
+  - ms-vscode-remote.vscode-remote-extensionpack
+
+# Extensiones predefinidas para sysadmin
+vscode_extension_list_sysadmin:
+  # Ansible language support
+  - redhat.ansible
+  # Syntax highlighting and autocompletion for Terraform
+  - hashicorp.terraform
+  # Develop, deploy and debug Kubernetes applications
+  - ms-kubernetes-tools.vscode-kubernetes-tools
+  # Code snippets of kubernetes for Visual Studio Code.
+  - ipedrazas.kubernetes-snippets
+  # Provides path completion for visual studio code.
+  - ionutvmi.path-autocomplete
+  # Open any folder or repository inside a Docker container and take advantage of Visual Studio Code's full feature set.
+  - ms-vscode-remote.vscode-remote-extensionpack
+  # YAML Language Support by Red Hat, with built-in Kubernetes syntax support
+  - redhat.vscode-yaml

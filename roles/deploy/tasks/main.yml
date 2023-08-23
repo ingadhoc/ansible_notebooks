@@ -1,5 +1,5 @@
 ---
-- include_vars: ./roles/vars.yml
+- include_vars: ./roles/deploy/vars.yml
   tags: deploy
 
 - block:
