@@ -1,3 +1,23 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
 remote_regular_user: "{{ ansible_env.SUDO_USER }}"
+terraform_version: "1.5.6"
+
+# Extensiones predefinidas para sysadmin
+vscode_extension_list_sysadmin:
+  # Ansible language support
+  - redhat.ansible
+  # Syntax highlighting and autocompletion for Terraform
+  - hashicorp.terraform
+  # Develop, deploy and debug Kubernetes applications
+  - ms-kubernetes-tools.vscode-kubernetes-tools
+  # Code snippets of kubernetes for Visual Studio Code.
+  - ipedrazas.kubernetes-snippets
+  # Provides path completion for visual studio code.
+  - ionutvmi.path-autocomplete
+  # Open any folder or repository inside a Docker container and take advantage of Visual Studio Code's full feature set.
+  - ms-vscode-remote.vscode-remote-extensionpack
+  # YAML Language Support by Red Hat, with built-in Kubernetes syntax support
+  - redhat.vscode-yaml
+  # knative
+  - redhat.vscode-knative
