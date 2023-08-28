@@ -49,6 +49,7 @@ if [ ! -d "$REPO_DIR" ]; then
 fi
 chown -R "$SCRIPT_USER:$SCRIPT_USER" "/home/$SCRIPT_USER/repositorios/"
 sudo -u "$SCRIPT_USER" git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
+cd $REPO_DIR
 
 # Ejecutar rol Funcional
 read -e -p "COMENZAR PREPARACIÓN DEL ROL FUNCIONAL? ( 'Y', 'N' ): " LAUNCH_OPTION
@@ -58,7 +59,7 @@ while [[ "$LAUNCH_OPTION" != "Y" && "$LAUNCH_OPTION" != "N" ]]; do
 done
 
 if [[ "$LAUNCH_OPTION" == "Y" ]]; then
-  cd "$REPO_DIR" && ansible-playbook --tags "funcional" local.yml -K --verbose
+  ansible-playbook --tags "funcional" local.yml -K --verbose
 else
   echo "Gracias por lanzar el proyecto, ver README.md para más información."
 fi
