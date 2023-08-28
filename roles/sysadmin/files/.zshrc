@@ -118,6 +118,7 @@ source <(kubectl completion zsh)
 alias k='kubectl'
 alias kubectl="kubecolor"
 alias ktx="kubectx"
+alias kedit='KUBE_EDITOR="nano" kubectl edit'
 compdef __start_kubectl k
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
