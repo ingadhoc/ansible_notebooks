@@ -5,30 +5,3 @@
     name: virtualbox
     state: present
   tags: virtualbox
-
-- name: Instalar Vagrant y HashiCorp GPG Key
-  become: true
-  tags: vagrant
-  block:
-    - name: Descargar y agregar la llave GPG de HashiCorp
-      get_url:
-        url: https://apt.releases.hashicorp.com/gpg
-        dest: /usr/share/keyrings/hashicorp-archive-keyring.gpg
-
-    - name: Importar la llave GPG a apt keyring
-      command: gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg /usr/share/keyrings/hashicorp-archive-keyring.gpg
-
-    - name: Agregar repositorio de HashiCorp a sources.list.d
-      lineinfile:
-        path: /etc/apt/sources.list.d/hashicorp.list
-        line: "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
-        create: yes
-
-    - name: Actualizar lista de paquetes
-      apt:
-        update_cache: yes
-
-    - name: Instalar Vagrant
-      apt:
-        name: vagrant
-        state: latest
