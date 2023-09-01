@@ -75,10 +75,4 @@
         dest: /home/{{ remote_regular_user }}/.oh-my-zsh/plugins/kube-ps1/
         mode: "774"
 
-    # https://github.com/ocadaruma/zsh-gcloud-prompt
-    - name: omz - gcloud prompt
-      get_url:
-        url: https://raw.githubusercontent.com/ocadaruma/zsh-gcloud-prompt/master/gcloud.zsh
-        dest: /home/{{ remote_regular_user }}/.oh-my-zsh/plugins/zsh-gcloud-prompt/
-        mode: "774"
   tags: omz
