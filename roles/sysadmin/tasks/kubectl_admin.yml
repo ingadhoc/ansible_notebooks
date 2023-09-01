@@ -1,5 +1,6 @@
 ---
 - name: SysAdmin - Plugins para kubectl
+  tags: kubectl_plugins
   block:
     # https://github.com/hidetatz/kubecolor
     # Agregar alias en .bashrc o .zshrc --> alias kubectl="kubecolor"
@@ -143,4 +144,21 @@
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
         mode: "774"
-  tags: kubectl_plugins
+
+    # https://github.com/FairwindsOps/pluto
+    - name: pluto - Descargar binario y extraer
+      unarchive:
+        src: https://github.com/FairwindsOps/pluto/releases/download/v5.18.3/pluto_5.18.3_linux_amd64.tar.gz
+        dest: /tmp/
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "774"
+        remote_src: true
+
+    - name: pluto - Mover binario al path
+      copy:
+        src: /tmp/pluto
+        dest: /usr/bin/
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "774"
