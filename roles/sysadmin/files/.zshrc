@@ -126,9 +126,9 @@ export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 source /home/$USER/.oh-my-zsh/plugins/kube-ps1/kube-ps1.plugin.zsh
 PROMPT='$(kube_ps1)'$PROMPT
 
-# McFly - fly through your shell history
-# https://github.com/cantino/mcfly
-eval "$(mcfly init zsh)"
+# # McFly - fly through your shell history
+# # https://github.com/cantino/mcfly
+# eval "$(mcfly init zsh)"
 
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /usr/bin/terraform terraform
@@ -137,3 +137,5 @@ complete -o nospace -C /usr/bin/terraform terraform
 autoload -Uz colors; colors
 source ~/.oh-my-zsh/custom/plugins/zsh-gcloud-prompt/gcloud.zsh
 RPROMPT='%{$fg[cyan]%}($ZSH_GCLOUD_PROMPT)%{$reset_color%}'
+
+eval "$(atuin init zsh)"
