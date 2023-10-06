@@ -35,7 +35,7 @@ $ sudo bash adhoc-ansible
 $ sudo apt install python3-setuptools ansible git stow
 # Clonar repositorio con playbooks, tasks, etc.
 $ git clone https://github.com/ingadhoc/ansible_notebooks && cd ansible ansible_notebooks
-# Deployar roles
+# Deployar roles EN ESTE ORDEN ya que cada uno es dependencia del siguiente
 $ ansible-playbook --tags "funcional" local.yml -K --verbose
 $ ansible-playbook --tags "devs" local.yml -K --verbose
 # Reiniciar la notebook luego de aplicar el rol dev para que apliquen los cambios y configuraciones (docker as root por ejemplo)

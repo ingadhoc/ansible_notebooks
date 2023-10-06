@@ -51,15 +51,15 @@ chown -R "$SCRIPT_USER:$SCRIPT_USER" "/home/$SCRIPT_USER/repositorios/"
 sudo -u "$SCRIPT_USER" git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
 cd $REPO_DIR
 
-# Ejecutar rol Funcional
-read -e -p "COMENZAR PREPARACIÓN DEL ROL FUNCIONAL? ( 'Y', 'N' ): " LAUNCH_OPTION
+# Mostrar las instrucciones para el usuario
+echo "Deployar roles EN ESTE ORDEN ya que cada uno es dependencia del siguiente:"
+echo "Rol funcional para Operaciones, Comercial, RRHH"
+echo "$ ansible-playbook --tags \"funcional\" local.yml -K --verbose"
+echo "Rol dev para I+D"
+echo "$ ansible-playbook --tags \"devs\" local.yml -K --verbose"
+echo "#IMPORTANTE: Reiniciar la notebook luego de aplicar el rol dev para que apliquen los cambios y configuraciones (docker as root por ejemplo)"
+echo "Rol sysadmin para Infraestructura & DevOps"
+echo "$ ansible-playbook --tags \"sysadmin\" local.yml -K --verbose"
 
-while [[ "$LAUNCH_OPTION" != "Y" && "$LAUNCH_OPTION" != "N" ]]; do
-  read -e -p "Por favor seleccionar una de estas opciones ( 'Y', 'N' ): " LAUNCH_OPTION
-done
-
-if [[ "$LAUNCH_OPTION" == "Y" ]]; then
-  ansible-playbook --tags "funcional" local.yml -K --verbose
-else
-  echo "Gracias por lanzar el proyecto, ver README.md para más información."
-fi
+# Nota adicional para el usuario
+echo "Gracias por lanzar el proyecto, ver README.md para más información."
