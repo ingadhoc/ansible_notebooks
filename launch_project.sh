@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 ## Script para preparar notebooks en Adhoc. Instala dependencias,
-## clona el proyecto de ansible y aplica el rol Funcional.
+## clona el proyecto de ansible y ofrece instrucciones.
+
+# Colores ANSI
+RED="\033[1;31m"
+GREEN="\033[1;32m"
+YELLOW="\033[1;33m"
+BLUE="\033[1;34m"
+MAGENTA="\033[1;35m"
+CYAN="\033[1;36m"
+RESET="\033[0m"
+BOLD="\033[1m"
+NORMAL="\033[0m"
+YELLOW_BG="\033[43m"
 
 # Guardar el nombre de usuario que está ejecutando el script
 SCRIPT_USER=$SUDO_USER
@@ -52,14 +64,20 @@ sudo -u "$SCRIPT_USER" git clone https://github.com/ingadhoc/ansible_notebooks.g
 cd $REPO_DIR
 
 # Mostrar las instrucciones para el usuario
-echo "Deployar roles EN ESTE ORDEN ya que cada uno es dependencia del siguiente:"
-echo "Rol funcional para Operaciones, Comercial, RRHH"
-echo "$ ansible-playbook --tags \"funcional\" local.yml -K --verbose"
-echo "Rol dev para I+D"
-echo "$ ansible-playbook --tags \"devs\" local.yml -K --verbose"
-echo "#IMPORTANTE: Reiniciar la notebook luego de aplicar el rol dev para que apliquen los cambios y configuraciones (docker as root por ejemplo)"
-echo "Rol sysadmin para Infraestructura & DevOps"
-echo "$ ansible-playbook --tags \"sysadmin\" local.yml -K --verbose"
+echo -e "${RED}Deployar roles EN ESTE ORDEN${RESET} ya que cada uno es dependencia del siguiente:"
+echo -e "==========================================================="
+
+echo -e "${GREEN}Rol funcional para Operaciones, Comercial, RRHH:${RESET}"
+echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"funcional\" local.yml -K --verbose${NORMAL}"
+echo -e "==========================================================="
+
+echo -e "${GREEN}Rol dev para I+D:${RESET}"
+echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"devs\" local.yml -K --verbose${NORMAL}"
+echo -e "${BLUE}#IMPORTANTE:${RESET} Reiniciar la notebook luego de aplicar el rol dev para que apliquen los cambios y configuraciones (docker as root por ejemplo)"
+
+echo -e "==========================================================="
+echo -e "${GREEN}Rol sysadmin para Infraestructura & DevOps:${RESET}"
+echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"sysadmin\" local.yml -K --verbose${NORMAL}"
 
 # Nota adicional para el usuario
-echo "Gracias por lanzar el proyecto, ver README.md para más información."
+echo -e "${MAGENTA}Gracias por lanzar el proyecto, ver README.md para más información.${RESET}"
