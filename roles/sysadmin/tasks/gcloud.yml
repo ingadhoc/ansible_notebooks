@@ -1,8 +1,19 @@
 ---
+# https://cloud.google.com/sdk/docs/install?hl=es-419#deb
 - name: SysAdmin - Instalar gcloud cli
   tags: gcloud
   block:
-    - name: Gcloud - Instalar cli
-      snap:
-        name: google-cloud-cli
-        classic: true
+    - name: gcloud cli - Importar key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: gcloud cli - Agregar repositorio
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main"
+        state: present
+
+    - name: gcloud cli - Instalar SDK
+      apt:
+        name: google-cloud-sdk
+        state: present
