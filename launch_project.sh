@@ -61,10 +61,10 @@ if [ ! -d "$REPO_DIR" ]; then
 fi
 chown -R "$SCRIPT_USER:$SCRIPT_USER" "/home/$SCRIPT_USER/repositorios/"
 sudo -u "$SCRIPT_USER" git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
-cd $REPO_DIR
 
 # Mostrar las instrucciones para el usuario
 echo -e "${RED}Deployar roles EN ESTE ORDEN${RESET} ya que cada uno es dependencia del siguiente:"
+echo -e "${BOLD}${YELLOW_BG}$ cd ~/repositorios/ansible_notebooks${NORMAL}"
 echo -e "==========================================================="
 
 echo -e "${GREEN}Rol funcional para Operaciones, Comercial, RRHH:${RESET}"
