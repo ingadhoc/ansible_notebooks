@@ -63,7 +63,8 @@ chown -R "$SCRIPT_USER:$SCRIPT_USER" "/home/$SCRIPT_USER/repositorios/"
 sudo -u "$SCRIPT_USER" git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
 
 # Mostrar las instrucciones para el usuario
-echo -e "${RED}Deployar roles EN ESTE ORDEN${RESET} ya que cada uno es dependencia del siguiente:"
+echo -e "${BLUE}#IMPORTANTE:${RESET} Reiniciar luego de aplicar cada rol para que se apliquen los cambios y configuraciones (gnome extensions, docker as root por ejemplo)."
+echo -e "${RED}Deployar EN ESTE ORDEN${RESET} ya que cada uno es dependencia del siguiente:"
 echo -e "${BOLD}${YELLOW_BG}$ cd ~/repositorios/ansible_notebooks${NORMAL}"
 echo -e "==========================================================="
 
@@ -73,7 +74,6 @@ echo -e "==========================================================="
 
 echo -e "${GREEN}Rol dev para I+D:${RESET}"
 echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"devs\" local.yml -K --verbose${NORMAL}"
-echo -e "${BLUE}#IMPORTANTE:${RESET} Reiniciar la notebook luego de aplicar el rol dev para que apliquen los cambios y configuraciones (docker as root por ejemplo)"
 
 echo -e "==========================================================="
 echo -e "${GREEN}Rol sysadmin para Infraestructura & DevOps:${RESET}"
