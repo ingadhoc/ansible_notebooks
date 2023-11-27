@@ -105,8 +105,8 @@ export DEFAULT_USER="$(whoami)"
 # Git-AdHoc Prompt
 #source /home/$USER/.prompt_git >> ~/.zshrc
 
-alias upd='sudo nala update'
-alias upg='sudo nala upgrade'
+alias upd='sudo apt update'
+alias upg='sudo apt upgrade'
 alias untar='tar -zxvf' # Unpack .tar file
 alias dps='docker ps --format="table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'
 
@@ -139,3 +139,7 @@ source ~/.oh-my-zsh/custom/plugins/zsh-gcloud-prompt/gcloud.zsh
 RPROMPT='%{$fg[cyan]%}($ZSH_GCLOUD_PROMPT)%{$reset_color%}'
 
 eval "$(atuin init zsh)"
+
+# Enable Helm experimental support for OCI images
+# https://ranchermanager.docs.rancher.com/getting-started/installation-and-upgrade/install-upgrade-on-a-kubernetes-cluster/rancher-on-gke
+export HELM_EXPERIMENTAL_OCI=1
