@@ -1,5 +1,6 @@
 ---
 - name: Ambiente local - Descarga y preparación de entornos
+  gather_facts: true
   tags: local
   block:
     # Workarounds y parches para preparar el ambiente local de desarrollo
