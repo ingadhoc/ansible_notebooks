@@ -1,6 +1,5 @@
 ---
 - name: Ambiente local - Descarga y preparación de entornos
-  gather_facts: true
   tags: local
   block:
     # Workarounds y parches para preparar el ambiente local de desarrollo
@@ -17,7 +16,7 @@
         groups: ["root"]
         append: "yes"
 
-    # Descargar, instalar, levantar odoo 13, 15 y 16
+    # Descargar, instalar, levantar odoo 13, 15, 16 y 17
     - name: Local dev - Crear carpeta local para Odoo
       become_user: "{{ ansible_env.SUDO_USER }}"
       file:
@@ -55,13 +54,6 @@
             line: "ODOO_VERSION=13"
             state: present
 
-        - name: Local dev - Editar PG version en docker-compose
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/13/docker-compose.yml
-            regexp: "^image: postgres:"
-            line: "image: postgres:12"
-            state: present
-
     - name: Ambiente local - Preparar odoo 15
       block:
         - name: Local dev - Clonar repositorio de Odoo v15
@@ -93,13 +85,6 @@
             line: "ODOO_VERSION=15"
             state: present
 
-        - name: Local dev - Editar PG version en docker-compose
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/15/docker-compose.yml
-            regexp: "^image: postgres:"
-            line: "image: postgres:14"
-            state: present
-
     - name: Ambiente local - Preparar odoo 16
       block:
         - name: Local dev - Clonar repositorio de Odoo v16
@@ -129,6 +114,13 @@
             path: /home/{{ ansible_env.SUDO_USER }}/odoo/16/.env
             regexp: "^ODOO_VERSION="
             line: "ODOO_VERSION=16"
+            state: present
+
+        - name: Local dev - Editar PG version en docker-compose
+          lineinfile:
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/16/docker-compose.yml
+            regexp: "    image: postgres:15"
+            line: "    image: postgres:14"
             state: present
 
     - name: Ambiente local - Preparar odoo 17
