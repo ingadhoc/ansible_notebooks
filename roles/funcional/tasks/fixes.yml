@@ -49,3 +49,11 @@
         key: "/org/gnome/shell/extensions/dash-to-dock/click-action"
         value: "'minimize'"
         state: present
+
+    - name: Fixes - Copiar archivo .bashrc
+      copy:
+        src: files/.bashrc
+        dest: /home/{{ remote_regular_user }}/.bashrc
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "774"
