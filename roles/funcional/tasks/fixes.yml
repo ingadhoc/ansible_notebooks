@@ -10,35 +10,35 @@
         key: "/org/gnome/shell/favorite-apps"
         value: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop','org.gnome.Terminal.desktop','org.gnome.Flameshot.desktop']"
 
-    # Make Nautilus capable of browse recursively
-    - name: Fixes - Agregar repositorio para nautilus
-      become: true
-      apt_repository:
-        repo: ppa:lubomir-brindza/nautilus-typeahead
+    # # Make Nautilus capable of browse recursively
+    # - name: Fixes - Agregar repositorio para nautilus
+    #   become: true
+    #   apt_repository:
+    #     repo: ppa:lubomir-brindza/nautilus-typeahead
 
-    - name: Fixes - Actualizar nautilus a latest
-      become: true
-      apt:
-        name: nautilus
-        state: present
-        update_cache: true
+    # - name: Fixes - Actualizar nautilus a latest
+    #   become: true
+    #   apt:
+    #     name: nautilus
+    #     state: present
+    #     update_cache: true
 
-    - name: Fixes - Enable nautilus location & interactive search
-      become_method: sudo
-      become_user: "{{ lookup('env','USER') }}"
-      dconf:
-        key: "{{ item.key }}"
-        value: "{{ item.value }}"
-        state: present
-      with_items:
-        - {
-            key: "/org/gnome/nautilus/preferences/always-use-location-entry",
-            value: "true",
-          }
-        - {
-            key: "/org/gnome/nautilus/preferences/enable-interactive-search",
-            value: "true",
-          }
+    # - name: Fixes - Enable nautilus location & interactive search
+    #   become_method: sudo
+    #   become_user: "{{ lookup('env','USER') }}"
+    #   dconf:
+    #     key: "{{ item.key }}"
+    #     value: "{{ item.value }}"
+    #     state: present
+    #   with_items:
+    #     - {
+    #         key: "/org/gnome/nautilus/preferences/always-use-location-entry",
+    #         value: "true",
+    #       }
+    #     - {
+    #         key: "/org/gnome/nautilus/preferences/enable-interactive-search",
+    #         value: "true",
+    #       }
 
     # Para desactivar el minimize to click:
     # gsettings reset org.gnome.shell.extensions.dash-to-dock click-action
