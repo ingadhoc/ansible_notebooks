@@ -145,3 +145,6 @@ eval "$(atuin init zsh)"
 # Enable Helm experimental support for OCI images
 # https://ranchermanager.docs.rancher.com/getting-started/installation-and-upgrade/install-upgrade-on-a-kubernetes-cluster/rancher-on-gke
 export HELM_EXPERIMENTAL_OCI=1
+
+# Para ejecutar fácilmente el mantenimiento preventivo de Adhoc en las notebooks
+alias mantenimiento='sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/adhoc-dev/sysadmin-tools/main/script_mantenimiento_post.sh)"'
