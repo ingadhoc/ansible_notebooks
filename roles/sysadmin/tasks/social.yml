@@ -1,8 +1,0 @@
----
-- name: SysAdmin - Instalar apps mensajería (social)
-  block:
-    - name: Social - Instalar discord
-      snap:
-        name:
-          - discord
-  tags: social

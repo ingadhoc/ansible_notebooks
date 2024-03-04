@@ -99,7 +99,6 @@ $ gcloud auth login
   - gh_cli
   - helm_cli
   - kubectl_plugins
-  - social
   - terraform
   - virtualbox
     - vagrant
