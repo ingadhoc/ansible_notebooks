@@ -1,19 +1,28 @@
----
-# https://cloud.google.com/sdk/docs/install?hl=es-419#deb
 - name: SysAdmin - Instalar gcloud cli
   tags: gcloud
+  become: true
   block:
-    - name: gcloud cli - Importar key
-      apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        state: present
+    - name: Crear el directorio /usr/share/keyrings si no existe
+      file:
+        path: /usr/share/keyrings
+        state: directory
+        mode: "0755"
 
-    - name: gcloud cli - Agregar repositorio
-      apt_repository:
-        repo: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main"
-        state: present
+    - name: Descargar y almacenar la llave GPG de Google Cloud SDK
+      shell: |
+        curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
 
-    - name: gcloud cli - Instalar SDK
+    - name: Agregar el repositorio de Google Cloud SDK
+      lineinfile:
+        path: /etc/apt/sources.list.d/google-cloud-sdk.list
+        line: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main"
+        create: yes
+
+    - name: Actualizar el índice de paquetes de apt
+      apt:
+        update_cache: yes
+
+    - name: Instalar google-cloud-sdk
       apt:
         name: google-cloud-sdk
         state: present
