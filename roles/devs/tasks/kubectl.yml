@@ -3,14 +3,41 @@
   tags: kubectl
   become: true
   block:
-    - name: Agregar la key de kubectl
-      shell: curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+    - name: Actualizar el índice de paquetes de apt
+      apt:
+        update_cache: yes
 
-    - name: Agregar repositorio de kubectl
-      shell: echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list | apt update
+    - name: Instalar paquetes necesarios
+      apt:
+        name: "{{ packages }}"
+        state: latest
+      vars:
+        packages:
+          - apt-transport-https
+          - ca-certificates
+          - curl
 
-    - name: kubectl - Instalar
-      become: true
+    - name: Crear el directorio /etc/apt/keyrings si no existe
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Descargar y almacenar la llave GPG de Kubernetes
+      shell: |
+        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.26/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+    - name: Agregar el repositorio de Kubernetes
+      lineinfile:
+        path: /etc/apt/sources.list.d/kubernetes.list
+        line: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.26/deb/ /"
+        create: yes
+
+    - name: Actualizar el índice de paquetes de apt nuevamente
+      apt:
+        update_cache: yes
+
+    - name: Instalar kubectl
       apt:
         name: kubectl
         state: present
