@@ -60,7 +60,7 @@ autoinstall:
     - flameshot
           
   late-commands:
-    - curtin in-target -- sh -c "touch /var/log/ansible.log && chown adhoc:adhoc /var/log/ansible.log"
-    - curtin in-target -- sh -c "mkdir -p /home/adhoc/repositorios/ansible_notebooks && chown -R adhoc:adhoc /home/adhoc/repositorios/"
-    - curtin in-target -- sh -c "git clone https://github.com/ingadhoc/ansible_notebooks.git /home/adhoc/repositorios/ansible_notebooks"
+    - curtin in-target -- touch /var/log/ansible.log && chown adhoc:adhoc /var/log/ansible.log
+    - curtin in-target -- mkdir -p /home/adhoc/repositorios/ansible_notebooks && chown -R adhoc:adhoc /home/adhoc/repositorios/
+    - curtin in-target -- git clone https://github.com/ingadhoc/ansible_notebooks.git /home/adhoc/repositorios/ansible_notebooks
     - curtin in-target -- apt remove -y thunderbird rhythmbox remmina
