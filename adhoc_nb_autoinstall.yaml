@@ -1,3 +1,4 @@
+# Configurations and applications to apply when installing Ubuntu 24.04 LTS
 autoinstall:
   version: 1
   identity:
@@ -58,6 +59,13 @@ autoinstall:
     - alacarte
     - fonts-firacode
     - flameshot
+    - zip
+    - gzip
+    - tar
+    - unrar
+    - unzip
+    - p7zip-full
+    - p7zip-rar
           
   late-commands:
     - curtin in-target -- touch /var/log/ansible.log && chown adhoc:adhoc /var/log/ansible.log
