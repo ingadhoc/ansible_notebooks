@@ -39,7 +39,7 @@
     - name: GNOME - Instalar gnome extensions con script
       become_method: sudo
       become_user: "{{ lookup('env','USER') }}"
-      script: /tmp/install-gnome-extensions.sh --overwrite --enable 744 779 1485 3968
+      script: /tmp/install-gnome-extensions.sh --overwrite --enable 744 779 1485
       changed_when:
         false
         # https://extensions.gnome.org/extension/517/caffeine/
