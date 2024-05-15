@@ -19,11 +19,11 @@
       apt:
         name: google-chrome-stable
 
-- name: Browsers - Firefox
-  tags: firefox
-  block:
-    - name: Firefox - Instalar snap
-      snap:
-        name:
-          - firefox
-        classic: true
+# - name: Browsers - Firefox
+#   tags: firefox
+#   block:
+#     - name: Firefox - Instalar snap
+#       snap:
+#         name:
+#           - firefox
+#         classic: true
