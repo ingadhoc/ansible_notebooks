@@ -1,22 +1,25 @@
 ---
 - name: SysAdmin - Instalar terraform cli
   block:
-    - name: Terraform - Descargar binario y extraer
-      unarchive:
-        src: https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_linux_amd64.zip
-        dest: /tmp/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-        remote_src: true
+    - name: Terraform - Borrar binario existente si existe
+      file:
+        path: /usr/local/bin/terraform
+        state: absent
+      ignore_errors: true
 
-    - name: Terraform - Mover binario al path
-      copy:
-        src: /tmp/terraform
-        dest: /usr/local/bin/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+    - name: Terraform - Descargar y agregar la clave GPG de HashiCorp
+      shell: |
+        wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+      become: true
+
+    - name: Terraform - Añadir repositorio de HashiCorp
+      shell: |
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+      become: true
+
+    - name: Terraform - Actualizar lista de paquetes e instalar terraform
+      shell: sudo apt update && sudo apt install -y terraform
+      become: true
 
     - name: Terraform - Autocomplete package
       become_user: "{{ remote_regular_user }}"
