@@ -8,12 +8,7 @@
       vars:
         packages:
           - zsh
-          - zsh-autosuggestions
-          - zsh-syntax-highlighting
           - fonts-powerline
-
-    - name: zsh - Enlace simbólico de archivo de configuración
-      command: ln -sf ./files/.zshrc /home/{{ remote_regular_user }}/.zshrc
 
     - name: zsh - Set as default
       become: true
@@ -41,16 +36,15 @@
       get_url:
         url: https://raw.githubusercontent.com/atuinsh/atuin/main/install.sh
         dest: /tmp/atuin_install.sh
-        mode: "0755" # This sets the script as executable
+        mode: "0755"
         force: true
-      check_mode: no # Ensures the task runs even in check mode
+      check_mode: no
 
     - name: Install Atuin
-      become: true # Only use 'become' if necessary
       become_user: "{{ remote_regular_user }}"
       shell: /tmp/atuin_install.sh --force --git atuinsh/atuin
       args:
-        executable: /bin/bash # Ensures that bash is used for running the script
+        executable: /bin/bash
 
     - name: omz - Clonar varios plugins
       git:
@@ -61,20 +55,47 @@
       with_items:
         - {
             key: "https://github.com/zsh-users/zsh-syntax-highlighting.git",
-            value: "~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting",
+            value: "/home/{{ remote_regular_user }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting",
           }
         - {
             key: "https://github.com/zsh-users/zsh-autosuggestions",
-            value: "~/.oh-my-zsh/custom/plugins/zsh-autosuggestions",
+            value: "/home/{{ remote_regular_user }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions",
           }
         - {
             key: "https://github.com/zsh-users/zsh-completions",
-            value: "~/.oh-my-zsh/custom}/plugins/zsh-completions",
+            value: "/home/{{ remote_regular_user }}/.oh-my-zsh/custom/plugins/zsh-completions",
+          }
+        - {
+            key: "https://github.com/ocadaruma/zsh-gcloud-prompt.git",
+            value: "/home/{{ remote_regular_user }}/.oh-my-zsh/custom/plugins/zsh-gcloud-prompt",
           }
 
     # https://github.com/ohmyzsh/ohmyzsh/tree/master/plugins/kube-ps1
+    - name: omz - Crear directorio kube-ps1
+      file:
+        path: /home/{{ remote_regular_user }}/.oh-my-zsh/custom/plugins/kube-ps1/
+        state: directory
+        mode: "0775"
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+
     - name: omz - kube-ps1 plugin
       get_url:
         url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/kube-ps1/kube-ps1.plugin.zsh
-        dest: /home/{{ remote_regular_user }}/.oh-my-zsh/plugins/kube-ps1/
-        mode: "774"
+        dest: /home/{{ remote_regular_user }}/.oh-my-zsh/custom/plugins/kube-ps1/
+        mode: "0774"
+
+    - name: zsh - Copiar archivo de configuración
+      copy:
+        src: /home/{{ remote_regular_user }}/repositorios/ansible_notebooks/roles/sysadmin/files/.zshrc
+        dest: /home/{{ remote_regular_user }}/.zshrc
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "0644"
+
+    - name: zsh - Recargar configuración de zsh
+      shell: source /home/{{ remote_regular_user }}/.zshrc
+      args:
+        executable: /bin/zsh
+      become_user: "{{ remote_regular_user }}"
+      changed_when: false
