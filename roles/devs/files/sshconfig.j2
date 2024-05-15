@@ -2,14 +2,12 @@
 
 Host gitlab.com
 Preferredauthentications publickey
-IdentityFile ~/.ssh/id_rsa
+IdentityFile ~/.ssh/private_key_{{ remote_regular_user }}
 
 Host registry.gitlab.com
 Preferredauthentications publickey
-IdentityFile ~/.ssh/id_rsa
+IdentityFile ~/.ssh/private_key_{{ remote_regular_user }}
 
 Host github.com
 Preferredauthentications publickey
-IdentityFile ~/.ssh/id_rsa
-
-IdentityFile ~/.ssh/id_rsa
+IdentityFile ~/.ssh/private_key_{{ remote_regular_user }}
