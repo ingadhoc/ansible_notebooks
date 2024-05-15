@@ -9,3 +9,4 @@
       vars:
         packages:
           - ansible-lint
+          - kubecolor
