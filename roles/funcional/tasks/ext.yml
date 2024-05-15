@@ -15,22 +15,22 @@
         key: "/org/gnome/shell/extensions/wsmatrix/show-overview-grid",
         value: "true",
       }
-    - {
-        key: "/org/gnome/shell/extensions/openweather/city",
-        value: "'-32.9575, -60.639444>Rosario, Santa Fe>-1'",
-      }
-    - {
-        key: "/org/gnome/shell/extensions/openweather/unit",
-        value: "'celsius'",
-      }
-    - {
-        key: "/org/gnome/shell/extensions/openweather/wind-speed-unit",
-        value: "'m/s'",
-      }
-    - {
-        key: "/org/gnome/shell/extensions/openweather/pressure-unit",
-        value: "'hPa'",
-      }
+    # - {
+    #     key: "/org/gnome/shell/extensions/openweather/city",
+    #     value: "'-32.9575, -60.639444>Rosario, Santa Fe>-1'",
+    #   }
+    # - {
+    #     key: "/org/gnome/shell/extensions/openweather/unit",
+    #     value: "'celsius'",
+    #   }
+    # - {
+    #     key: "/org/gnome/shell/extensions/openweather/wind-speed-unit",
+    #     value: "'m/s'",
+    #   }
+    # - {
+    #     key: "/org/gnome/shell/extensions/openweather/pressure-unit",
+    #     value: "'hPa'",
+    #   }
     - {
         key: "/org/gnome/shell/extensions/dash-to-dock/scroll-action",
         value: "'cycle-windows'",
