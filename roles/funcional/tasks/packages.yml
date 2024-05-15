@@ -21,7 +21,8 @@
           - tldr
           - ppa-purge
           - locate
-          - libxshmfence1
+          # - libxshmfence1
+          - bash-completion
 
     - name: Base - Utilidades de compresión
       apt:
@@ -29,11 +30,11 @@
         state: present
       vars:
         packages:
-          - zip
-          - gzip
-          - tar
-          - unrar
-          - unzip
+          # - zip
+          # - gzip
+          # - tar
+          # - unrar
+          # - unzip
           - p7zip-full
           - p7zip-rar
 
@@ -45,7 +46,7 @@
         packages:
           - poedit
           - fail2ban
-          - ufw
+          # - ufw
           - vlc
           - ffmpeg
 
@@ -55,7 +56,6 @@
         state: present
       vars:
         packages:
-          - htop
           - inxi
           - hwinfo
           - glances
@@ -70,8 +70,8 @@
         state: present
       vars:
         packages:
-          - tlp
-          - tlp-rdw
+          # - tlp
+          # - tlp-rdw
           - acpi-call-dkms
           - powertop
           - preload
@@ -84,9 +84,9 @@
       vars:
         packages:
           - indicator-multiload
-          - alacarte
+          # - alacarte
           - fonts-firacode
-          - flameshot
+          # - flameshot
 
     - name: Base - Eliminar programas sin uso
       apt:
@@ -94,7 +94,11 @@
         state: absent
       vars:
         packages:
-          - thunderbird
+          # - thunderbird
           - rhythmbox
           - remmina
 
+    - name: Base - Eliminar snaps sin uso
+      snap:
+        name: thunderbird
+        state: absent
