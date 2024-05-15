@@ -9,10 +9,10 @@
       vars:
         packages:
           - ccze
-          - tmux
+          # - tmux
           - tmuxp
           - xclip
-          - bash-completion
+          # - bash-completion
           - yakuake
 
 - name: Yakuake - Instalación y configuración
