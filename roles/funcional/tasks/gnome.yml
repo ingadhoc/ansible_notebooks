@@ -42,6 +42,7 @@
       script: /tmp/install-gnome-extensions.sh --overwrite --enable 744 779 1485
       changed_when:
         false
+        # Requiere activarlas manualmente luego de reiniciar
         # https://extensions.gnome.org/extension/517/caffeine/
         # https://extensions.gnome.org/extension/744/hide-activities-button/
         # https://extensions.gnome.org/extension/779/clipboard-indicator/
