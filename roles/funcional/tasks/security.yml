@@ -2,14 +2,14 @@
 - name: UFW - Instalar y configurar
   tags: ufw
   block:
-    - name: Instalar UFW
-      apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - ufw
-          - gufw
+    # - name: Instalar UFW
+    #   apt:
+    #     name: "{{ packages }}"
+    #     state: present
+    #   vars:
+    #     packages:
+    #       - ufw
+    #       - gufw
 
     - name: Bloquear todas las conexiones entrantes
       ufw:
