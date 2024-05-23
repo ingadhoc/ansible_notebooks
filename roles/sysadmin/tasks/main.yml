@@ -7,7 +7,6 @@
     - import_tasks: gcloud.yml
     - import_tasks: zsh.yml
     - import_tasks: virtualbox.yml
-    # - import_tasks: social.yml
     - import_tasks: helm.yml
     - import_tasks: kubectl_admin.yml
     - import_tasks: fixes.yml
