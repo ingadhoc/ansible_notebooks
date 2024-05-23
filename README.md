@@ -3,22 +3,21 @@
 Laboratorio usando Ansible, con el objetivo de automatizar la preparación de laptops para usos funcionales (Mesa de Ayuda, Consultoría, Comercial) y técnicos (Sistemas, Producto, Infraestructura) en Adhoc.  
 Para información interna más detallada, procedimiento, pendientes, etc., revisar [este documento](https://docs.google.com/document/d/1TY5cQnNCOAxVRk4fFKHlBfWAa5qECUpH1jIjoCY0M4s/).
 
-## Roles para ejecutar
+## IMPORTANTE: DEBIAN
 
-- funcional > Mesa de Ayuda, Consultoría, Comercial
-- devs > Sistemas, Producto
-- sysadmin > DevOps, Infraestructura,
+- Intentando evitar quedar atados a Ubuntu / Canonical, comenzamos a experimentar con el uso de Debian12.
+  - adicionalmente, notamos que cada imagen de Ubuntu es más pesada y tiene más aplicaciones que la anterior, además de forzar el uso de snap y otras decisiones técnicamente discutibles.
+
+### Roles para ejecutar
+
+- funcional > Mesa de Ayuda, Consultoría, Comercial.
+- devs > I + D.
+- sysadmin > DevOps, Infraestructura.
 - deploy > Implementación express de herramientas para deploy de Infraestructura (k8s).
-
-### IMPORTANTE X.ORG
-
-- antes de empezar todo el proceso, es requisito usar Ubuntu en modo x.org (configuración gráfica por incompatibilidad de algunas aplicaciones).
-- cuando inicia Ubuntu (o después de cerrar sesión), en la pantalla donde hay que ingresar la contraseña hacer click en la ruedita abajo a la derecha y seleccionar "Ubuntu on Xorg"
-- sólo se hace una vez
 
 ## Preparación equipo
 
-Se puede lanzar el proyecto con un script, que instala dependencias, clona el repositorio, etc.. Al ejecutarlo, ofrece aplicar el rol "Funcional", que es común y dependencia del resto de los roles:
+Se puede lanzar el proyecto con un script, que instala dependencias, clona el repositorio, etc.. Al finalizar ofrece los comandos para implementar cada uno de los roles:
 
 ```bash
 # Descargar script
@@ -28,18 +27,31 @@ $ nano adhoc-ansible
 $ sudo bash adhoc-ansible
 ```
 
-### Deploy artesanal (funcional / devs / sysadmin / deploy)
+### Deploy manual
 
 ```bash
 # Dependencias
-$ sudo apt install python3-setuptools ansible git stow
+$ sudo apt install python3-setuptools ansible git
 # Clonar repositorio con playbooks, tasks, etc.
-$ git clone https://github.com/ingadhoc/ansible_notebooks && cd ansible ansible_notebooks
+$ git clone https://github.com/ingadhoc/ansible_notebooks && cd ansible_notebooks
 # Deployar roles EN ESTE ORDEN ya que cada uno es dependencia del siguiente
 $ ansible-playbook --tags "funcional" local.yml -K --verbose
 $ ansible-playbook --tags "devs" local.yml -K --verbose
 # Reiniciar la notebook luego de aplicar el rol dev para que apliquen los cambios y configuraciones (docker as root por ejemplo)
 $ ansible-playbook --tags "sysadmin" local.yml -K --verbose
+```
+
+## TROUBLESHOOTING
+
+### sudoers (adhoc is not in the sudoers file)
+
+```bash
+$ su
+$ sudo nano /etc/sudoers
+# User privilege specification
+root  ALL=(ALL:ALL) ALL
+# Agregamos:
+adhoc  ALL=(ALL:ALL) ALL
 ```
 
 ## Post instalación
@@ -60,52 +72,9 @@ $ rancher2 login https://ra.adhoc.ar/v3 --token {bearer-token}
 
 # Login en gcloud (para sysadmin)
 $ gcloud auth login
-# Configurar DockerHub, luego de generar el token en la organización
-# https://hub.docker.com/settings/security
 ```
 
-## Roles > Tasks > Tags
-
-- funcional
-  - anydesk
-  - branding
-  - chrome / firefox
-  - ext
-  - funcional_fixes
-  - gnome
-  - language
-  - meld
-  - packages_funcional
-  - python_funcionales
-  - ufw
-  - shortcuts
-  - performance
-- devs
-  - code
-  - docker
-  - devs_fixes
-  - git
-  - kubectl
-  - packages_dev
-  - yakuake
-  - local
-  - python
-  - lint_hooks
-  - rancher
-  - ssh
-- sysadmin
-  - sysadmin_fixes
-  - gcloud
-  - gh_cli
-  - helm_cli
-  - kubectl_plugins
-  - terraform
-  - virtualbox
-    - vagrant
-  - zsh
-  - omz
-
-### Testeando con [vagrant](vagrantup.com)
+### Experimental: Testeando con [vagrant](vagrantup.com)
 
 _"Vagrant es una herramienta que nos ayuda a crear y manejar máquinas virtuales con un mismo entorno de trabajo. Nos permite definir los servicios a instalar así como también sus configuraciones. Está pensado para trabajar en entornos locales y lo podemos utilizar con shell scripts, Chef, Puppet o Ansible"._
 
@@ -114,22 +83,22 @@ _"Vagrant es una herramienta que nos ayuda a crear y manejar máquinas virtuales
 Levantar, ejecutar, acceder, etc.:
 
 ```sh
-$ vagrant init generic/ubuntu2204
+$ vagrant init generic/debian12
 $ vagrant up
 $ vagrant ssh
 $ logout
 $ vagrant box list
-generic/ubuntu2204 (virtualbox, 4.1.10)
+generic/debian12 (virtualbox, 4.1.10)
 
 $ vagrant snapshot save [vm-name] NAME
-$ vagrant snapshot save default ubuntu2204
-==> default: Snapshotting the machine as 'ubuntu2204'...
+$ vagrant snapshot save default debian12
+==> default: Snapshotting the machine as 'debian12'...
 $ vagrant snapshot restore [vm-name] NAME
-$ vagrant snapshot restore default vm_2204
+$ vagrant snapshot restore default vm_debian12
 
 $ vagrant snapshot list
 ==> default:
-ubuntu2204
+debian12
 $ vagrant global-status
 id       name    provider   state  directory
 -----------------------------------------------------------------------
@@ -140,5 +109,5 @@ $ vagrant snapshot pop
 
 $ vagrant destroy
 $ vagrant box list
-$ vagrant box remove hashicorp/bionic64
+$ vagrant box remove generic/debian12
 ```
