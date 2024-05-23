@@ -11,7 +11,7 @@
           - htop
           - mc
           - tmux
-          - ubuntu-restricted-extras
+          # - ubuntu-restricted-extras
           - apt-transport-https
           - curl
           - wget
@@ -19,7 +19,7 @@
           - openssh-server
           - jq
           - tldr
-          - ppa-purge
+          # - ppa-purge
           - locate
           - libxshmfence1
 
@@ -32,10 +32,10 @@
           - zip
           - gzip
           - tar
-          - unrar
+          # - unrar
           - unzip
           - p7zip-full
-          - p7zip-rar
+          # - p7zip-rar
 
     - name: Base - Instalar otras aplicaciones
       apt:
@@ -70,8 +70,8 @@
         state: present
       vars:
         packages:
-          - tlp
-          - tlp-rdw
+          # - tlp
+          # - tlp-rdw
           - acpi-call-dkms
           - powertop
           - preload
@@ -83,7 +83,7 @@
         state: present
       vars:
         packages:
-          - indicator-multiload
+          # - indicator-multiload
           - alacarte
           - fonts-firacode
           - flameshot
@@ -97,3 +97,7 @@
           - thunderbird
           - rhythmbox
           - remmina
+          - gnome-games
+          - gnome-maps
+          - gnome-weather
+          - gnome-calendar
