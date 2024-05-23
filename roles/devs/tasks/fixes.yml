@@ -2,11 +2,11 @@
 - name: Devs - Fixes básicos
   tags: devs_fixes
   block:
-    - name: Fixes - Agregar apps al panel lateral
-      become_user: "{{ remote_regular_user }}"
-      dconf:
-        key: "/org/gnome/shell/favorite-apps"
-        value: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.kde.yakuake.desktop', 'org.gnome.Terminal.desktop', 'code.desktop']"
+    # - name: Fixes - Agregar apps al panel lateral
+    #   become_user: "{{ remote_regular_user }}"
+    #   dconf:
+    #     key: "/org/gnome/shell/favorite-apps"
+    #     value: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.kde.yakuake.desktop', 'org.gnome.Terminal.desktop', 'code.desktop']"
 
     - name: Fixes - Copiar archivo .bashrc
       copy:
