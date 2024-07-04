@@ -72,10 +72,10 @@
         packages:
           # - tlp
           # - tlp-rdw
-          - acpi-call-dkms
-          - powertop
-          - preload
-          - bleachbit
+          # - acpi-call-dkms
+          # - powertop
+          # - preload
+          # - bleachbit
 
     - name: Base - Paquetes varios de entorno gráfico, captura de pantalla, etc.
       apt:
