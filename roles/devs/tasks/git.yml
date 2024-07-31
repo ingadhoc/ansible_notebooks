@@ -3,6 +3,14 @@
   become: true
   tags: git
   block:
+    - name: Crear carpeta oculta .git en el home del usuario
+      file:
+        path: "/home/{{ ansible_env.SUDO_USER }}/.git/hooks"
+        state: directory
+        owner: "{{ ansible_env.SUDO_USER }}"
+        group: root
+        mode: "775"
+
     - name: Git - Definiendo code por defecto y configuraciones globales
       become_user: "{{ ansible_env.SUDO_USER }}"
       git_config:
@@ -19,27 +27,27 @@
         - { name: push.default, value: nothing }
         - { name: pull.default, value: nothing }
         - { name: pull.ff, value: only }
-        - { name: core.hooksPath, value: /etc/git/hooks/ }
+        - { name: core.hooksPath, value: "/home/{{ ansible_env.SUDO_USER }}/.git/hooks" }
 
     - name: Global hooks - Crear carpeta para hooks (prevent push to master)
       file:
-        path: "/etc/git/hooks"
+        path: "/home/{{ ansible_env.SUDO_USER }}/.git/hooks"
         state: directory
         owner: "{{ ansible_env.SUDO_USER }}"
         group: root
         mode: "775"
 
     - name: Global hooks - Comando mágico para hooks
-      command: "echo -e '#!/bin/sh\n\nif [ -x `pwd`/.git/hooks/$(basename $0) ];\nthen\n\texec `pwd`/.git/hooks/$(basename $0)\nfi' | sudo tee /etc/git/hooks/{applypatch-msg,commit-msg,fsmonitor-watchman,post-update,pre-applypatch,pre-commit,pre-rebase,pre-receive,prepare-commit-msg,update} > /dev/null"
+      command: "echo -e '#!/bin/sh\n\nif [ -x `pwd`/.git/hooks/$(basename $0) ];\nthen\n\texec `pwd`/.git/hooks/$(basename $0)\nfi' | tee /home/{{ ansible_env.SUDO_USER }}/.git/hooks/{applypatch-msg,commit-msg,fsmonitor-watchman,post-update,pre-applypatch,pre-commit,pre-rebase,pre-receive,prepare-commit-msg,update} > /dev/null"
       changed_when: false
 
     - name: Global hooks - Copiar archivo pre-push
       copy:
         src: ./files/pre-push
-        dest: /etc/git/hooks/pre-push
+        dest: /home/{{ ansible_env.SUDO_USER }}/.git/hooks/pre-push
         owner: "{{ ansible_env.SUDO_USER }}"
         group: "{{ ansible_env.SUDO_USER }}"
-        mode: u=rw,g=rw,o=r
+        mode: u=rwx,g=rwx,o=rx
 
     - name: Adhoc prompt - Copiar archivo .prompt
       copy:
