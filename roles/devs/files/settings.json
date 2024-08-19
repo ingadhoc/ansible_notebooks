@@ -46,6 +46,7 @@
     "**/node_modules/*/**": true
   },
   "cSpell.language": "en,es",
+  "python.languageServer": "None",
   // VIM
   // // https://medium.com/@hoitz/improved-vim-setup-in-visual-studio-code-bc579501b80c
   "vim.easymotion": true,
