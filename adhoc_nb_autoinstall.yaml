@@ -58,7 +58,7 @@ autoinstall:
     - alacarte
     - fonts-firacode
     - flameshot
-          
+
   late-commands:
     - curtin in-target -- touch /var/log/ansible.log && chown adhoc:adhoc /var/log/ansible.log
     - curtin in-target -- mkdir -p /home/adhoc/repositorios/ansible_notebooks && chown -R adhoc:adhoc /home/adhoc/repositorios/

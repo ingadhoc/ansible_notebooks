@@ -122,11 +122,27 @@ alias adhoc-anydesk='sudo bash -c "$(curl -fsSL https://raw.githubusercontent.co
 # Para ejecutar fácilmente el mantenimiento preventivo de Adhoc en las notebooks
 alias mantenimiento='sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/adhoc-dev/sysadmin-tools/main/script_mantenimiento_post.sh)"'
 
-# Git-AdHoc Prompt
-source /home/$USER/.prompt_git >> ~/.bashrc
-
 # Alias para el comando / scrip r2 (rancher2 y k8s)
 alias r2='/home/$USER/repositorios/team-tools/devops/rke_byadhoc.sh'
+complete -C /home/$USER/repositorios/team-tools/devops/rke_byadhoc.sh r2
 
 # Alias para k8s, rancher2, etc.
-alias k=kubectl
+alias k='rancher2 kubectl'
+
+if command -v rancher2 >/dev/null 2>&1 && command -v kubectl >/dev/null 2>&1; then
+    source <(kubectl completion bash)
+    complete -o default -F __start_kubectl k
+fi
+
+if command -v terraform >/dev/null 2>&1; then
+    complete -C /usr/bin/terraform terraform
+fi
+
+# Shell History search
+[[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
+. "$HOME/.atuin/bin/env"
+eval "$(atuin init bash)"
+
+# AdHoc Prompt
+[[ -f ~/.adhoc_bash_ps.sh ]] && source ~/.adhoc_bash_ps.sh
+
