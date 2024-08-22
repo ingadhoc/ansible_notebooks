@@ -2,163 +2,111 @@
 - name: SysAdmin - Plugins para kubectl
   tags: kubectl_plugins
   block:
-    # https://github.com/hidetatz/kubecolor
-    # Agregar alias en .bashrc o .zshrc --> alias kubectl="kubecolor"
-    - name: kubecolor - Descargar binario y extraer
-      unarchive:
-        src: https://github.com/hidetatz/kubecolor/releases/download/v0.0.25/kubecolor_0.0.25_Linux_x86_64.tar.gz
-        dest: /tmp/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-        remote_src: true
-
-    - name: kubecolor - Mover binario al path
+    - name: Copiar Installer
       copy:
-        src: /tmp/kubecolor
-        dest: /usr/bin/kubecolor
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+        src: files/install_gh_bin.sh
+        dest: /tmp/install_gh_bin.sh
+        mode: "0774"
 
-    # https://github.com/derailed/k9s
-    - name: k9s - Descargar binario y extraer
-      unarchive:
-        src: https://github.com/derailed/k9s/releases/download/v0.27.1/k9s_Linux_amd64.tar.gz
-        dest: /tmp/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-        remote_src: true
+    - name: Execute Installer
+      command: /tmp/install_gh_bin.sh
+      become: true
 
-    - name: k9s - Mover binario al path
-      copy:
-        src: /tmp/k9s
-        dest: /usr/bin/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+    - name: Instalar kubectx
+      when: ansible_facts['distribution'] == 'Debian'
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - kubens
+          - kubectx
 
-    # https://github.com/derailed/popeye
-    - name: popeye - Descargar binario y extraer
-      unarchive:
-        src: https://github.com/derailed/popeye/releases/download/v0.10.1/popeye_Linux_x86_64.tar.gz
-        dest: /tmp/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-        remote_src: true
+    # # https://github.com/derailed/popeye
+    # - name: popeye - Descargar binario y extraer
 
-    - name: popeye - Mover binario al path
-      copy:
-        src: /tmp/popeye
-        dest: /usr/bin/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+    #   unarchive:
+    #     src: https://github.com/derailed/popeye/releases/download/v0.21.3/popeye_linux_amd64.tar.gz
+    #     dest: /tmp/
+    #     owner: "{{ remote_regular_user }}"
+    #     group: "{{ remote_regular_user }}"
+    #     mode: "774"
+    #     remote_src: true
 
-    # https://github.com/robscott/kube-capacity
-    - name: kube-capacity - Descargar binario y extraer
-      unarchive:
-        src: https://github.com/robscott/kube-capacity/releases/download/v0.7.3/kube-capacity_0.7.3_Linux_x86_64.tar.gz
-        dest: /tmp/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-        remote_src: true
+    # - name: popeye - Mover binario al path
+    #   copy:
+    #     src: /tmp/popeye
+    #     dest: /usr/bin/
+    #     owner: "{{ remote_regular_user }}"
+    #     group: "{{ remote_regular_user }}"
+    #     mode: "774"
 
-    - name: kube-capacity - Mover binario al path
-      copy:
-        src: /tmp/kube-capacity
-        dest: /usr/bin/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+    # # https://github.com/robscott/kube-capacity
+    # - name: kube-capacity - Descargar binario y extraer
+    #   unarchive:
+    #     src: https://github.com/robscott/kube-capacity/releases/download/v0.8.0/kube-capacity_v0.8.0_linux_x86_64.tar.gz
+    #     dest: /tmp/
+    #     owner: "{{ remote_regular_user }}"
+    #     group: "{{ remote_regular_user }}"
+    #     mode: "774"
+    #     remote_src: true
 
-    - name: kubectl - Clonar projecto kubectx
-      unarchive:
-        src: https://github.com/ahmetb/kubectx/releases/download/v0.9.5/kubectx_v0.9.5_linux_x86_64.tar.gz
-        dest: /tmp/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-        remote_src: true
+    # - name: kube-capacity - Mover binario al path
+    #   copy:
+    #     src: /tmp/kube-capacity
+    #     dest: /usr/bin/
+    #     owner: "{{ remote_regular_user }}"
+    #     group: "{{ remote_regular_user }}"
+    #     mode: "774"
 
-    - name: kubectx - Mover binario al path
-      copy:
-        src: /tmp/kubectx
-        dest: /usr/bin/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+    # - name: kubectx - Clonar projecto kubectx
+    #   unarchive:
+    #     src: https://github.com/ahmetb/kubectx/releases/download/v0.9.5/kubectx_v0.9.5_linux_x86_64.tar.gz
+    #     dest: /tmp/
+    #     owner: "{{ remote_regular_user }}"
+    #     group: "{{ remote_regular_user }}"
+    #     mode: "774"
+    #     remote_src: true
 
-    # https://github.com/rancher/rke
-    - name: rke - Descargar binario y extraer
-      get_url:
-        url: https://github.com/rancher/rke/releases/download/v1.3.17/rke_linux-amd64
-        dest: /tmp/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+    # - name: kubectx - Mover binario al path
+    #   copy:
+    #     src: /tmp/kubectx
+    #     dest: /usr/bin/
+    #     owner: "{{ remote_regular_user }}"
+    #     group: "{{ remote_regular_user }}"
+    #     mode: "774"
 
-    - name: rke - Mover binario al path
-      copy:
-        src: /tmp/rke_linux-amd64
-        dest: /usr/bin/rke
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+    # # https://github.com/rancher/rke
+    # - name: rke - Descargar binario y extraer
+    #   get_url:
+    #     url: https://github.com/rancher/rke/releases/download/v1.6.1/rke_linux-amd64
+    #     dest: /tmp/
+    #     owner: "{{ remote_regular_user }}"
+    #     group: "{{ remote_regular_user }}"
+    #     mode: "774"
 
-    # https://github.com/rikatz/kubepug
-    - name: kubepug - Descargar binario y extraer
-      unarchive:
-        src: https://github.com/rikatz/kubepug/releases/download/v1.4.0/kubepug_linux_amd64.tar.gz
-        dest: /tmp/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-        remote_src: true
+    # - name: rke - Mover binario al path
+    #   copy:
+    #     src: /tmp/rke_linux-amd64
+    #     dest: /usr/bin/rke
+    #     owner: "{{ remote_regular_user }}"
+    #     group: "{{ remote_regular_user }}"
+    #     mode: "774"
 
-    - name: kubepug - Mover binario al path
-      copy:
-        src: /tmp/kubepug
-        dest: /usr/bin/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+    # # https://github.com/FairwindsOps/pluto
+    # - name: pluto - Descargar binario y extraer
+    #   unarchive:
+    #     src: https://github.com/FairwindsOps/pluto/releases/download/v5.20.1/pluto_5.20.1_linux_amd64.tar.gz
+    #     dest: /tmp/
+    #     owner: "{{ remote_regular_user }}"
+    #     group: "{{ remote_regular_user }}"
+    #     mode: "774"
+    #     remote_src: true
 
-    # https://github.com/ahmetb/kubectl-tree
-    - name: kubectl-tree - Descargar binario y extraer
-      unarchive:
-        src: https://github.com/ahmetb/kubectl-tree/releases/download/v0.4.3/kubectl-tree_v0.4.3_linux_amd64.tar.gz
-        dest: /tmp/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-        remote_src: true
-
-    - name: kubectl-tree - Mover binario al path
-      copy:
-        src: /tmp/kubectl-tree
-        dest: /usr/bin/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-
-    # https://github.com/FairwindsOps/pluto
-    - name: pluto - Descargar binario y extraer
-      unarchive:
-        src: https://github.com/FairwindsOps/pluto/releases/download/v5.18.3/pluto_5.18.3_linux_amd64.tar.gz
-        dest: /tmp/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-        remote_src: true
-
-    - name: pluto - Mover binario al path
-      copy:
-        src: /tmp/pluto
-        dest: /usr/bin/
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+    # - name: pluto - Mover binario al path
+    #   copy:
+    #     src: /tmp/pluto
+    #     dest: /usr/bin/
+    #     owner: "{{ remote_regular_user }}"
+    #     group: "{{ remote_regular_user }}"
+    #     mode: "774"

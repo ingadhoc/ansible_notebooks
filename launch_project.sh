@@ -33,9 +33,8 @@ printf "[PREPARAR NOTEBOOK] ACTUALIZAR AMBIENTE DE TRABAJO\n"
 apt update -y && apt upgrade -y
 
 # Instalar herramientas
-printf "[PREPARAR NOTEBOOK] INSTALAR GIT Y STOW\n"
+printf "[PREPARAR NOTEBOOK] INSTALAR GIT\n"
 install_package_if_not_installed git
-install_package_if_not_installed stow
 
 # Instalar dependencias de ansible
 printf "[PREPARAR NOTEBOOK] INSTALAR DEPENDENCIAS DE ANSIBLE\n"

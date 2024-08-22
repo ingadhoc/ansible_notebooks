@@ -116,17 +116,21 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Verifica si está instalado Anydesk, sino instala, y muestra el ID
-alias adhoc-anydesk='sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/adhoc-dev/sysadmin-tools/main/check_anydesk.sh)"'
+complete -C /home/$USER/repositorios/team-tools/devops/rke_byadhoc.sh r2
 
-# Para ejecutar fácilmente el mantenimiento preventivo de Adhoc en las notebooks
-alias mantenimiento='sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/adhoc-dev/sysadmin-tools/main/script_mantenimiento_post.sh)"'
+# if command -v rancher2 >/dev/null 2>&1 && command -v kubectl >/dev/null 2>&1; then
+#     source <(kubectl completion bash)
+#     complete -o default -F __start_kubectl k
+# fi
 
-# Git-AdHoc Prompt
-source /home/$USER/.prompt_git >> ~/.bashrc
+if command -v terraform >/dev/null 2>&1; then
+    complete -C /usr/bin/terraform terraform
+fi
 
-# Alias para el comando / scrip r2 (rancher2 y k8s)
-alias r2='/home/$USER/repositorios/team-tools/devops/rke_byadhoc.sh'
+# # Shell History search
+# [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
+# . "$HOME/.atuin/bin/env"
+# eval "$(atuin init bash)"
 
-# Alias para k8s, rancher2, etc.
-alias k=kubectl
+# AdHoc Prompt
+[[ -f ~/.adhoc_bash_ps.sh ]] && source ~/.adhoc_bash_ps.sh

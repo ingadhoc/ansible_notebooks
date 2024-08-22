@@ -1,7 +1,52 @@
 ---
-- name: Virtualbox - Instalar
+- name: VirtualBox - Instalar app y sus dependencias en Debian 12
   become: true
-  apt:
-    name: virtualbox
-    state: present
-  tags: virtualbox
+  when: ansible_facts['distribution'] == 'Debian'
+  block:
+    - name: VirtualBox - Instalar dependencias necesarias
+      apt:
+        name:
+          - curl
+          - wget
+          - gnupg2
+          - lsb-release
+        state: present
+
+    - name: VirtualBox - Descargar la clave GPG
+      get_url:
+        url: "https://www.virtualbox.org/download/oracle_vbox_2016.asc"
+        dest: "/tmp/oracle_vbox_2016.asc"
+
+    - name: VirtualBox - Añadir la clave GPG
+      command: >
+        gpg --dearmor -o /etc/apt/trusted.gpg.d/vbox.gpg /tmp/oracle_vbox_2016.asc
+      args:
+        creates: /etc/apt/trusted.gpg.d/vbox.gpg
+
+    - name: VirtualBox - Añadir el repositorio
+      apt_repository:
+        repo: "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib"
+        state: present
+        filename: "virtualbox"
+
+    - name: VirtualBox - Actualizar lista de paquetes
+      apt:
+        update_cache: yes
+
+    - name: VirtualBox - Instalar headers del kernel y dkms
+      apt:
+        name:
+          - "linux-headers-{{ ansible_kernel }}"
+          - dkms
+        state: present
+
+    - name: VirtualBox - Instalar
+      apt:
+        name: virtualbox-7.0
+        state: present
+
+    - name: VirtualBox - Añadir usuario al grupo vboxusers
+      user:
+        name: "{{ remote_regular_user }}"
+        groups: vboxusers
+        append: true

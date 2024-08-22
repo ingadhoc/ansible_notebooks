@@ -3,10 +3,19 @@
   tags: devs_fixes
   block:
     - name: Fixes - Agregar apps al panel lateral
+      when: ansible_facts['distribution'] == 'Ubuntu'
       become_user: "{{ remote_regular_user }}"
       dconf:
         key: "/org/gnome/shell/favorite-apps"
         value: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.kde.yakuake.desktop', 'org.gnome.Terminal.desktop', 'code.desktop']"
+
+    - name: Fixes - Bash Aliases
+      copy:
+        src: files/.bash_aliases
+        dest: /home/{{ remote_regular_user }}/.bash_aliases
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "644"
 
     - name: Fixes - Copiar archivo .bashrc
       copy:
@@ -14,4 +23,12 @@
         dest: /home/{{ remote_regular_user }}/.bashrc
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
-        mode: "774"
+        mode: "644"
+
+    - name: Fixes - Copiar archivo .adhoc_bash_ps.sh
+      copy:
+        src: files/.adhoc_bash_ps.sh
+        dest: /home/{{ remote_regular_user }}/.adhoc_bash_ps.sh
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "644"

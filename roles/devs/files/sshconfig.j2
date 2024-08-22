@@ -1,0 +1,22 @@
+########################### GIT ##########################################
+
+Host registry.gitlab.com
+    Preferredauthentications publickey
+    IdentityFile ~/.ssh/id_rsa
+
+Host github.com
+    Preferredauthentications publickey
+    IdentityFile ~/.ssh/id_rsa
+
+Host *
+    ServerAliveInterval 30
+    ConnectTimeout 10
+    ConnectionAttempts 3
+    # Reuse open conections
+    ControlMaster auto
+    #ControlPath ~/.ssh/sockets/%r@%h-%p
+    ControlPersist 10m
+    # Disable Insecure protocols
+    Ciphers aes256-ctr,aes192-ctr,aes128-ctr
+    MACs hmac-sha2-256,hmac-sha2-512
+    KexAlgorithms curve25519-sha256@libssh.org

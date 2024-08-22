@@ -2,7 +2,9 @@
 - name: Idiomas - Completar instalación
   tags: language
   block:
+
     - name: Idiomas - Completar instalación de en language
+      when: ansible_facts['distribution'] == 'Ubuntu'
       apt:
         pkg:
           - language-pack-en
@@ -11,6 +13,7 @@
           - language-pack-gnome-en-base
 
     - name: Idiomas - Finish installing es language
+      when: ansible_facts['distribution'] == 'Ubuntu'
       apt:
         pkg:
           - language-pack-es

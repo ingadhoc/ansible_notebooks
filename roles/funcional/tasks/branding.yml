@@ -28,6 +28,12 @@
         value: "'file:///home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg'"
         state: present
 
+    - name: Set Wallpaper - Dark mode
+      dconf:
+        key: "/org/gnome/desktop/background/picture-uri-dark"
+        value: "'file:///home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg'"
+        state: present
+
     - name: Set screensaver picture
       dconf:
         key: "/org/gnome/desktop/screensaver/picture-uri"
