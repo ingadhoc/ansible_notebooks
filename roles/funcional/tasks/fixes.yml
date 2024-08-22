@@ -3,22 +3,24 @@
 - name: Fixes - varios
   tags: funcional_fixes
   block:
-    # - name: Fixes - Agregar apps al panel lateral
-    #   become_method: sudo
-    #   become_user: "{{ lookup('env','USER') }}"
-    #   dconf:
-    #     key: "/org/gnome/shell/favorite-apps"
-    #     value: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop','org.gnome.Terminal.desktop','org.gnome.Flameshot.desktop']"
+    - name: Fixes - Agregar apps al panel lateral
+      when: ansible_facts['distribution'] == 'Ubuntu'
+      become_method: sudo
+      become_user: "{{ lookup('env','USER') }}"
+      dconf:
+        key: "/org/gnome/shell/favorite-apps"
+        value: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop','org.gnome.Terminal.desktop','org.gnome.Flameshot.desktop']"
 
     # Para desactivar el minimize to click:
     # gsettings reset org.gnome.shell.extensions.dash-to-dock click-action
-    # - name: Fixes - Minimize to click
-    #   become_method: sudo
-    #   become_user: "{{ lookup('env','USER') }}"
-    #   dconf:
-    #     key: "/org/gnome/shell/extensions/dash-to-dock/click-action"
-    #     value: "'minimize'"
-    #     state: present
+    - name: Fixes - Minimize to click
+      when: ansible_facts['distribution'] == 'Ubuntu'
+      become_method: sudo
+      become_user: "{{ lookup('env','USER') }}"
+      dconf:
+        key: "/org/gnome/shell/extensions/dash-to-dock/click-action"
+        value: "'minimize'"
+        state: present
 
     - name: Fixes - Copiar archivo .bashrc
       copy:

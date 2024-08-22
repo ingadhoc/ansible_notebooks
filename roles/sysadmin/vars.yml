@@ -1,7 +1,6 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
 remote_regular_user: "{{ ansible_env.SUDO_USER }}"
-terraform_version: "1.8.3"
 
 # Extensiones predefinidas para sysadmin
 vscode_extension_list_sysadmin:

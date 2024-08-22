@@ -54,6 +54,7 @@
       apt:
         autoremove: yes
         purge: yes
+
 # agregar cron y pull para update automático
 #  - name: Agregar ansible-pull cron job
 #    cron:

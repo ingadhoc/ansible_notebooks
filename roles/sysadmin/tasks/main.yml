@@ -5,7 +5,6 @@
 - block:
     - import_tasks: terraform.yml
     - import_tasks: gcloud.yml
-    - import_tasks: zsh.yml
     - import_tasks: virtualbox.yml
     - import_tasks: helm.yml
     - import_tasks: kubectl_admin.yml

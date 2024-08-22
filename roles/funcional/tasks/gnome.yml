@@ -39,14 +39,30 @@
     - name: GNOME - Instalar gnome extensions con script
       become_method: sudo
       become_user: "{{ lookup('env','USER') }}"
-      script: /tmp/install-gnome-extensions.sh --overwrite --enable 744 779 1160 1485 3968
+      script: /tmp/install-gnome-extensions.sh --overwrite --enable 744 779 1485 3968
       changed_when:
         false
         # https://extensions.gnome.org/extension/517/caffeine/
         # https://extensions.gnome.org/extension/744/hide-activities-button/
-        # https://extensions.gnome.org/extension/751/audio-output-switcher/
         # https://extensions.gnome.org/extension/779/clipboard-indicator/
-        # https://extensions.gnome.org/extension/1160/dash-to-panel/
         # https://extensions.gnome.org/extension/1460/vitals/
         # https://extensions.gnome.org/extension/1485/workspace-matrix/
         # https://extensions.gnome.org/extension/3968/improved-workspace-indicator/
+
+    - name: GNOME - Instalar gnome extensions SOLO DEBIAN
+      become_method: sudo
+      when: ansible_facts['distribution'] == 'Debian'
+      become_user: "{{ lookup('env','USER') }}"
+      script: /tmp/install-gnome-extensions.sh --overwrite --enable 1160
+      changed_when:
+        false
+        # https://extensions.gnome.org/extension/1160/dash-to-panel/
+
+    - name: GNOME - Instalar gnome extensions SOLO UBUNTU
+      become_method: sudo
+      when: ansible_facts['distribution'] == 'Ubuntu'
+      become_user: "{{ lookup('env','USER') }}"
+      script: /tmp/install-gnome-extensions.sh --overwrite --enable 751
+      changed_when:
+        false
+        # https://extensions.gnome.org/extension/751/audio-output-switcher/

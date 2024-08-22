@@ -1,6 +1,7 @@
 ---
 - name: VirtualBox - Instalar app y sus dependencias en Debian 12
   become: true
+  when: ansible_facts['distribution'] == 'Debian'
   block:
     - name: VirtualBox - Instalar dependencias necesarias
       apt:

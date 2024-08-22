@@ -8,6 +8,4 @@
         state: present
       vars:
         packages:
-          - ansible-lint
-          - kubens
           - kubecolor
