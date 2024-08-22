@@ -111,3 +111,6 @@ $ vagrant destroy
 $ vagrant box list
 $ vagrant box remove generic/debian12
 ```
+## Ansible Galacy Colections
+
+https://galaxy.ansible.com/ui/repo/published/community/general/content/module/dconf/#examples

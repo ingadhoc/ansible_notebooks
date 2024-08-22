@@ -6,10 +6,14 @@
             "settings": {
                 "cSpell.language": "en,es",
                 "files.associations": {
-                    "*plays.yml": "ansible",
-                    "*init.yml": "yaml"
+                    "*.yml": "ansible"
                 },
-                "ansible.python.interpreterPath": "/bin/python3"
+                "ansible.python.interpreterPath": "/bin/python3",
+                "editor.renderFinalNewline": "on",
+                "files.trimFinalNewlines": true,
+                "editor.defaultFormatter": "redhat.ansible",
+                "notebook.defaultFormatter": "redhat.ansible",
+                "editor.indentSize": "tabSize"
             },
             "extensions": [
                 "redhat.vscode-yaml",
