@@ -5,49 +5,44 @@
   become_user: "{{ ansible_env.SUDO_USER }}"
   block:
     - name: Copiar wallpaper y lockscreenfile
-      copy:
+      ansible.builtin.copy:
         owner: "{{ ansible_env.SUDO_USER }}"
         group: "{{ ansible_env.SUDO_USER }}"
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
+        mode: "664"
       with_items:
-        - {
-            src: ./files/logo_adhoc_iso_violeta.png,
-            dest: "/home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg",
-          }
-        - {
-            src: ./files/logotipo_adhoc.png,
-            dest: "/home/{{ ansible_env.SUDO_USER }}/.logotipo_adhoc.png",
-          }
+        - { src: ./files/logo_adhoc_iso_violeta.png, dest: "/home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg" }
+        - { src: ./files/logotipo_adhoc.png, dest: "/home/{{ ansible_env.SUDO_USER }}/.logotipo_adhoc.png"}
 
     - name: Set Wallpaper
       # También se puede ejecutar manualmente, por ejemplo
       # $ gsettings set org.gnome.desktop.background picture-uri file:///home/$USER/.wallpaper.jpg
-      dconf:
+      community.general.dconf:
         key: "/org/gnome/desktop/background/picture-uri"
         value: "'file:///home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg'"
         state: present
 
     - name: Set Wallpaper - Dark mode
-      dconf:
+      community.general.dconf:
         key: "/org/gnome/desktop/background/picture-uri-dark"
         value: "'file:///home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg'"
         state: present
 
     - name: Set screensaver picture
-      dconf:
+      community.general.dconf:
         key: "/org/gnome/desktop/screensaver/picture-uri"
         value: "'file:///home/{{ ansible_env.SUDO_USER }}/.logotipo_adhoc.png'"
         state: present
 
     - name: Set back position
-      dconf:
+      community.general.dconf:
         key: "/org/gnome/desktop/background/picture-options"
         value: "'centered'"
         state: present
 
     - name: Set back colour
-      dconf:
+      community.general.dconf:
         key: "/org/gnome/desktop/background/primary-color"
         value: "'#d6d6d4'"
         state: present

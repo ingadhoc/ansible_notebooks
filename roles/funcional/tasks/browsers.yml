@@ -4,17 +4,39 @@
   become: true
   block:
     - name: Chrome - Chequear si ya existe key
-      stat:
+      ansible.builtin.stat:
         path: /usr/share/keyrings/google-archive-keyring.gpg
       register: keyring_file
 
-    - name: Chrome - Agregar key
-      shell: wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/google-archive-keyring.gpg
+    - name: Crear directorio para keyrings si no existe
       when: not keyring_file.stat.exists
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Descargar la clave
+      when: not keyring_file.stat.exists
+      ansible.builtin.get_url:
+        url: https://dl.google.com/linux/linux_signing_key.pub
+        dest: /tmp/chrome_key.pub
+        mode: '0644'
+
+    - name: Convertir la clave a formato GPG y moverla a keyrings
+      ansible.builtin.command: gpg --dearmor -o /usr/share/keyrings/google-archive-keyring.gpg /tmp/chrome_key.pub
+      changed_when: false
+
+    - name: Eliminar el archivo temporal de la clave
+      ansible.builtin.file:
+        path: /tmp/chrome_key.pub
+        state: absent
 
     - name: Chrome - Agregar repositorio
-      shell: echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list | apt update
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/google-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main"
+        state: present
+        update_cache: true
 
     - name: Chrome - Instalar
-      apt:
+      ansible.builtin.apt:
         name: google-chrome-stable

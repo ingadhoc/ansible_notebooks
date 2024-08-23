@@ -1,24 +1,25 @@
 ---
 # https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 - name: SysAdmin - Instalar gh cli
+  tags: gh
   block:
     - name: GH - Descargar key
       become: true
-      get_url:
+      ansible.builtin.get_url:
         url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
         dest: /usr/share/keyrings/githubcli-archive-keyring.gpg
         mode: go+r
 
     - name: Add Github CLI repository
       become: true
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/apt/sources.list.d/github-cli.list
-        line: "deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
-        create: yes
+        line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main'
+        mode: '644'
+        create: true
 
     - name: Install Github CLI
       become: true
-      apt:
+      ansible.builtin.apt:
         name: gh
         state: present
-  tags: gh

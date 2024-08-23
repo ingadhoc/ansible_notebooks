@@ -3,7 +3,7 @@
   tags: packages_funcional
   block:
     - name: Base - Instalar paquetes de sistema, drivers
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:
@@ -22,7 +22,7 @@
           - libxshmfence1
 
     - name: Base - Utilidades de compresión
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:
@@ -34,7 +34,7 @@
           - p7zip-full
 
     - name: Base - Instalar otras aplicaciones
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:
@@ -46,7 +46,7 @@
           - ffmpeg
 
     - name: Base - Análisis de Hardware, información del sistema
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:
@@ -62,7 +62,7 @@
 
     - name: Base - Performance y  rendimiento de batería
       when: ansible_facts['distribution'] == 'Ubuntu'
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:
@@ -82,7 +82,7 @@
           - p7zip-rar
 
     - name: Base - Paquetes varios de entorno gráfico, captura de pantalla, etc.
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:
@@ -92,7 +92,7 @@
           - flameshot
 
     - name: Base - Eliminar programas sin uso
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: absent
       vars:

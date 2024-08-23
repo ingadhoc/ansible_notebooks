@@ -3,7 +3,7 @@
   tags: docker
   block:
     - name: Docker - Instalar dependencias
-      apt:
+      ansible.builtin.apt:
         name:
           - apt-transport-https
           - ca-certificates
@@ -14,31 +14,39 @@
         state: present
 
     - name: Check Docker Installed
-      shell: which docker
+      ansible.builtin.command: which docker
       register: docker_check
       ignore_errors: true
+      changed_when: false
 
-    # will install the latest version of docker
-    - name: Install Docker
-      shell: curl https://get.docker.com/ | sh
+    - name: Download installer
+      ansible.builtin.get_url:
+        url: https://get.docker.com/
+        dest: /tmp/install-docker.sh
+        mode: '0755'
       when: docker_check.rc == 1
+      changed_when: false
 
-    - name: Setup Docker
-      shell: |
+    - name: Install and Setup Docker
+      ansible.builtin.command: |
+        /bin/sh /tmp/get-docker.sh
+        rm /tmp/get-docker.sh
         usermod -aG docker "{{ remote_regular_user }}"
         systemctl enable docker
         systemctl start docker
+      become: true
       when: docker_check.rc == 1
+      changed_when: false
 
     - name: Docker - Instalar docker compose plugin
-      apt:
+      ansible.builtin.apt:
         name:
           - docker-compose-plugin
         update_cache: "yes"
         state: present
 
     - name: Docker - Instalar docker-compose
-      get_url:
+      ansible.builtin.get_url:
         url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-x86_64"
         dest: /usr/local/bin/docker-compose
         owner: "{{ remote_regular_user }}"

@@ -3,7 +3,7 @@
   tags: python
   block:
     - name: Python3 - Instalar dependencias y paquetes
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:
@@ -17,14 +17,16 @@
           - python3-venv
 
     - name: Crear un entorno virtual de Python
-      command: python3 -m venv /home/{{ remote_regular_user }}/lint-hook
+      ansible.builtin.command: python3 -m venv /home/{{ remote_regular_user }}/lint-hook
+      changed_when: false
 
     - name: Asegurarse de que pip esté actualizado en el entorno virtual
-      command: /home/{{ remote_regular_user }}/lint-hook/bin/pip install --upgrade pip
+      ansible.builtin.command: /home/{{ remote_regular_user }}/lint-hook/bin/pip install --upgrade pip
+      changed_when: false
 
     - name: Python - Instalar pylint-odoo, flake8, pep8, pre-commit en el entorno virtual
       become: true
-      pip:
+      ansible.builtin.pip:
         executable: /home/{{ remote_regular_user }}/lint-hook/bin/pip
         name: "{{ items }}"
         extra_args: --upgrade --pre
@@ -40,31 +42,41 @@
   block:
     # Instalar lint hooks
     - name: Lint hooks - Limpiar carpeta
-      file:
+      ansible.builtin.file:
         path: /home/{{ remote_regular_user }}/lint-hook
         state: absent
         force: true
 
     - name: Lint hooks - Clonar repositorio
       become_user: "{{ remote_regular_user }}"
-      git:
+      ansible.builtin.git:
         repo: https://github.com/OCA/maintainer-quality-tools
         dest: /home/{{ remote_regular_user }}/lint-hook
         version: master
 
 #    - name: Lint hooks - Instalar requirements
-#      pip:
+#      ansible.builtin.pip:
 #        chdir: /home/{{ remote_regular_user }}/lint-hook
 #        requirements: requirements.txt
 
     # Fix pendiente: Usar módulo name y no command
     # - name: Crear link simbólico
-    #   file:
+    #   ansible.builtin.file:
     #     src: /home/{{ remote_regular_user }}/lint-hook/*
     #     dest: /usr/share/git-core/templates/hooks/
     #     state: link
     #     force: true
 
-    - name: Lint hooks - Crear link simbólico con comando
-      command: ln -sf /home/{{ remote_regular_user }}/lint-hook/git/* /usr/share/git-core/templates/hooks
-      changed_when: false
+    - name: Crear enlaces simbólicos para todos los archivos en el directorio de origen
+      ansible.builtin.find:
+        paths: "/home/{{ remote_regular_user }}/lint-hook/git"
+        file_type: file
+      register: hook_files
+
+    - name: Crear enlaces simbólicos en el destino
+      ansible.builtin.file:
+        src: "{{ item.path }}"
+        dest: "/usr/share/git-core/templates/hooks/{{ item.path | basename }}"
+        state: link
+        force: true
+      loop: "{{ hook_files.files }}"

@@ -1,59 +1,63 @@
 ---
-# tareas previas al deploy de roles
-- hosts: laptop
+- name: Tareas previas al deploy de roles
+  hosts: laptop
   tags: always
   become: true
   gather_facts: false
   pre_tasks:
     - name: Actualizar caché
       tags: always
-      apt: update_cache=yes
+      ansible.builtin.apt:
+        update_cache: true
       changed_when: false
 
-# deploy roles
-- hosts: laptop
+- name: Deploy funcional role
+  hosts: laptop
   tags: funcional
   become: true
   gather_facts: true
   roles:
     - funcional
 
-- hosts: laptop
+- name: Deploy devs role
+  hosts: laptop
   tags: devs
   gather_facts: true
   become: true
   roles:
     - devs
 
-- hosts: laptop
+- name: Deploy sysadmin role
+  hosts: laptop
   tags: sysadmin
   gather_facts: true
   become: true
   roles:
     - sysadmin
 
-- hosts: laptop
+- name: Deploy deploy role
+  hosts: laptop
   tags: deploy
   gather_facts: true
   become: true
   roles:
     - deploy
 
-# completar deploy y limpiar caché
-- hosts: laptop
+- name: Completar deploy y limpiar caché
+  hosts: laptop
   become: true
   tasks:
-    - name: cleanup package cache (debian and ubuntu)
+    - name: Cleanup package cache (debian and ubuntu)
       tags: always
-      apt:
-        autoclean: yes
+      ansible.builtin.apt:
+        autoclean: true
       changed_when: false
 
-    - name: autoremove orphan packages (debian and ubuntu)
+    - name: Autoremove orphan packages (debian and ubuntu)
       tags: always
-      apt:
-        autoremove: yes
-        purge: yes
+      ansible.builtin.apt:
+        autoremove: true
+        purge: true
 
 # agregar cron y pull para update automático
 #  - name: Agregar ansible-pull cron job

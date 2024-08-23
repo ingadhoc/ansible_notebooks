@@ -3,7 +3,7 @@
   tags: packages_dev
   block:
     - name: Editor de texto, colorizer, terminal
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:
@@ -21,8 +21,8 @@
   block:
     - name: Yakuake - Configuraciones
       become_method: sudo
-      become_user: "{{ lookup('env','USER') }}"
-      copy:
+      become_user: "{{ lookup('env', 'USER') }}"
+      ansible.builtin.copy:
         src: ./files/yakuakerc
         dest: ~/.config/
         owner: "{{ remote_regular_user }}"
@@ -30,13 +30,13 @@
         mode: "0666"
 
     - name: Yakuake - Directorio para configuración
-      file:
+      ansible.builtin.file:
         path: ~/.local/share/konsole
         state: directory
         mode: "774"
 
     - name: Yakuake - Copiar archivo configuración
-      copy:
+      ansible.builtin.copy:
         src: ./files/Profile_1.profile
         dest: ~/.local/share/konsole
         owner: "{{ remote_regular_user }}"

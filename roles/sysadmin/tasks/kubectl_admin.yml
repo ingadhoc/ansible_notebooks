@@ -3,18 +3,19 @@
   tags: kubectl_plugins
   block:
     - name: Copiar Installer
-      copy:
+      ansible.builtin.copy:
         src: files/install_gh_bin.sh
         dest: /tmp/install_gh_bin.sh
         mode: "0774"
 
     - name: Execute Installer
-      command: /tmp/install_gh_bin.sh
+      ansible.builtin.command: /tmp/install_gh_bin.sh
       become: true
+      changed_when: false
 
     - name: Instalar kubectx
       when: ansible_facts['distribution'] == 'Debian'
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:

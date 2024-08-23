@@ -3,7 +3,7 @@
   tags: rancher
   block:
     - name: Rancher2 - Descargar binario y extraer
-      unarchive:
+      ansible.builtin.unarchive:
         src: https://github.com/rancher/cli/releases/download/{{ rancher2_version }}/rancher-linux-amd64-{{ rancher2_version }}.tar.xz
         dest: /tmp
         owner: "{{ remote_regular_user }}"
@@ -12,7 +12,7 @@
         remote_src: true
 
     - name: Rancher2 - Mover binario al path
-      copy:
+      ansible.builtin.copy:
         src: /tmp/rancher-{{ rancher2_version }}/rancher
         dest: /usr/local/bin/rancher2
         owner: "{{ remote_regular_user }}"
@@ -20,6 +20,6 @@
         mode: "774"
 
     - name: Rancher2 - Eliminar directorio temporal
-      file:
+      ansible.builtin.file:
         path: /tmp/rancher-{{ rancher2_version }}
         state: absent

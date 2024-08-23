@@ -3,7 +3,7 @@
   tags: python_funcionales
   block:
     - name: Python3 - Instalar dependencias y paquetes
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:

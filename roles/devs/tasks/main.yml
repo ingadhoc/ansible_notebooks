@@ -1,17 +1,31 @@
 ---
-- include_vars: ./roles/devs/vars.yml
+- name: Include vars
+  ansible.builtin.include_vars: ./roles/devs/vars.yml
   tags: devs
 
-- block:
-    - import_tasks: packages_dev.yml
-    - import_tasks: docker.yml
-    - import_tasks: meld.yml
-    - import_tasks: code.yml
-    - import_tasks: python.yml
-    - import_tasks: git.yml
-    - import_tasks: kubectl.yml
-    - import_tasks: rancher2.yml
-    - import_tasks: fixes.yml
-    - import_tasks: prepare_dev.yml
-    - import_tasks: ssh.yml
-    - import_tasks: gh_cli.yml
+- name: Include
+  block:
+    - name: Packages
+      ansible.builtin.import_tasks: packages_dev.yml
+    - name: Docker
+      ansible.builtin.import_tasks: docker.yml
+    - name: Meld
+      ansible.builtin.import_tasks: meld.yml
+    - name: Code
+      ansible.builtin.import_tasks: code.yml
+    - name: Python
+      ansible.builtin.import_tasks: python.yml
+    - name: Git
+      ansible.builtin.import_tasks: git.yml
+    - name: Kubectl
+      ansible.builtin.import_tasks: kubectl.yml
+    - name: Rancher2
+      ansible.builtin.import_tasks: rancher2.yml
+    - name: Fixes
+      ansible.builtin.import_tasks: fixes.yml
+    - name: Prepare dev
+      ansible.builtin.import_tasks: prepare_dev.yml
+    - name: Ssh
+      ansible.builtin.import_tasks: ssh.yml
+    - name: GH
+      ansible.builtin.import_tasks: gh_cli.yml

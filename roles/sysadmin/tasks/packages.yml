@@ -3,7 +3,7 @@
   tags: packages_sysadmin
   block:
     - name: Instalar paquetes y dependencias
-      apt:
+      ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
       vars:

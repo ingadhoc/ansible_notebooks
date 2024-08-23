@@ -13,7 +13,8 @@
                 "files.trimFinalNewlines": true,
                 "editor.defaultFormatter": "redhat.ansible",
                 "notebook.defaultFormatter": "redhat.ansible",
-                "editor.indentSize": "tabSize"
+                "editor.indentSize": "tabSize",
+                "editor.formatOnSave": true
             },
             "extensions": [
                 "redhat.vscode-yaml",
@@ -22,5 +23,7 @@
             ]
         }
     },
+    "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind",
+    "workspaceFolder": "/app",
     "remoteUser": "appuser"
 }

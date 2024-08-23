@@ -1,56 +1,61 @@
 ---
+# GIT
 - name: Git - Configuraciones varias
   become: true
   tags: git
   block:
-    - name: Crear carpeta oculta .git en el home del usuario
-      file:
-        path: "/home/{{ ansible_env.SUDO_USER }}/.git/hooks"
-        state: directory
-        owner: "{{ ansible_env.SUDO_USER }}"
-        group: root
-        mode: "775"
-
     - name: Git - Definiendo code por defecto y configuraciones globales
       become_user: "{{ ansible_env.SUDO_USER }}"
-      git_config:
+      community.general.git_config:
         name: "{{ item.name }}"
         value: "{{ item.value }}"
         scope: global
       with_items:
         - { name: core.editor, value: code --wait }
         - { name: diff.tool, value: default-difftool }
-        - {
-            name: difftool.default-difftool.cmd,
-            value: code --wait --diff \$LOCAL \$REMOTE,
-          }
+        - { name: difftool.default-difftool.cmd, value: code --wait --diff \$LOCAL \$REMOTE }
         - { name: push.default, value: nothing }
         - { name: pull.default, value: nothing }
         - { name: pull.ff, value: only }
-        - { name: core.hooksPath, value: "/home/{{ ansible_env.SUDO_USER }}/.git/hooks" }
+        - { name: core.hooksPath, value: "/home/{{ ansible_env.SUDO_USER }}/.git_hooks" }
 
-    - name: Global hooks - Crear carpeta para hooks (prevent push to master)
-      file:
-        path: "/home/{{ ansible_env.SUDO_USER }}/.git/hooks"
+    - name: Global hooks - Crear directorio
+      ansible.builtin.file:
+        path: /home/{{ ansible_env.SUDO_USER }}/.git_hooks/
         state: directory
         owner: "{{ ansible_env.SUDO_USER }}"
-        group: root
-        mode: "775"
+        group: "{{ ansible_env.SUDO_USER }}"
+        mode: '0755'
 
     - name: Global hooks - Comando mágico para hooks
-      command: "echo -e '#!/bin/sh\n\nif [ -x `pwd`/.git/hooks/$(basename $0) ];\nthen\n\texec `pwd`/.git/hooks/$(basename $0)\nfi' | tee /home/{{ ansible_env.SUDO_USER }}/.git/hooks/{applypatch-msg,commit-msg,fsmonitor-watchman,post-update,pre-applypatch,pre-commit,pre-rebase,pre-receive,prepare-commit-msg,update} > /dev/null"
-      changed_when: false
+      ansible.builtin.copy:
+        src: ./files/default_hook.sh
+        dest: "{{ item }}"
+        owner: "{{ ansible_env.SUDO_USER }}"
+        group: "{{ ansible_env.SUDO_USER }}"
+        mode: "0644"
+      loop:
+        - /home/{{ ansible_env.SUDO_USER }}/.git_hooks/applypatch-msg
+        - /home/{{ ansible_env.SUDO_USER }}/.git_hooks/commit-msg
+        - /home/{{ ansible_env.SUDO_USER }}/.git_hooks/fsmonitor-watchman
+        - /home/{{ ansible_env.SUDO_USER }}/.git_hooks/post-update
+        - /home/{{ ansible_env.SUDO_USER }}/.git_hooks/pre-applypatch
+        - /home/{{ ansible_env.SUDO_USER }}/.git_hooks/pre-commit
+        - /home/{{ ansible_env.SUDO_USER }}/.git_hooks/pre-rebase
+        - /home/{{ ansible_env.SUDO_USER }}/.git_hooks/pre-receive
+        - /home/{{ ansible_env.SUDO_USER }}/.git_hooks/prepare-commit-msg
+        - /home/{{ ansible_env.SUDO_USER }}/.git_hooks/update
 
     - name: Global hooks - Copiar archivo pre-push
-      copy:
+      ansible.builtin.copy:
         src: ./files/pre-push
-        dest: /home/{{ ansible_env.SUDO_USER }}/.git/hooks/pre-push
+        dest: /home/{{ ansible_env.SUDO_USER }}/.git_hooks/pre-push
         owner: "{{ ansible_env.SUDO_USER }}"
         group: "{{ ansible_env.SUDO_USER }}"
         mode: u=rwx,g=rwx,o=rx
 
     - name: Adhoc prompt - Copiar archivo .prompt
-      copy:
+      ansible.builtin.copy:
         src: ./files/.prompt_git
         dest: /home/{{ ansible_env.SUDO_USER }}/.prompt_git
         owner: "{{ ansible_env.SUDO_USER }}"

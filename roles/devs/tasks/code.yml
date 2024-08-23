@@ -3,29 +3,30 @@
   tags: code
   block:
     - name: Visual Studio Code - Descargar e instalar
-      apt:
+      ansible.builtin.apt:
         deb: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
       when: ansible_userspace_architecture == 'x86_64'
 
     - name: Instalar muchas extensiones predefinidas
       become_method: sudo
-      become_user: "{{ lookup('env','USER') }}"
-      command: "code --install-extension {{ item }}"
+      become_user: "{{ lookup('env', 'USER') }}"
+      ansible.builtin.command: "code --install-extension {{ item }}"
       with_items: "{{ vscode_extension_list_devs }}"
-      changed_when: False
+      changed_when: false
 
     - name: Visual Studio Code - Definir como editor de texto predeterminado
       become_method: sudo
-      become_user: "{{ lookup('env','USER') }}"
-      command: "xdg-mime default code.desktop application/x-shellscript text/plain text/markdown application/x-yaml text/x-python"
+      become_user: "{{ lookup('env', 'USER') }}"
+      ansible.builtin.command: "xdg-mime default code.desktop application/x-shellscript text/plain text/markdown application/x-yaml text/x-python"
+      changed_when: false
 
     - name: Visual Studio Code - Configuraciones y personalizaciones
-      copy:
+      ansible.builtin.copy:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
-        owner: "{{ lookup('env','USER') }}"
-        group: "{{ lookup('env','USER') }}"
-        mode: 666
+        owner: "{{ lookup('env', 'USER') }}"
+        group: "{{ lookup('env', 'USER') }}"
+        mode: "0666"
       with_items:
         - { src: ./files/settings.json, dest: ~/.config/Code/User/ }
         - { src: ./files/keybindings.json, dest: ~/.config/Code/User/ }
