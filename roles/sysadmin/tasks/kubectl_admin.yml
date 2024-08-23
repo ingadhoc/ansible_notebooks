@@ -2,19 +2,119 @@
 - name: SysAdmin - Plugins para kubectl
   tags: kubectl_plugins
   block:
-    - name: Copiar Installer
-      ansible.builtin.copy:
-        src: files/install_gh_bin.sh
-        dest: /tmp/install_gh_bin.sh
-        mode: "0774"
+    - name: Install FairwindsOps/pluto
+      block:
+        - name: Get Last Version URL
+          ansible.builtin.uri:
+            url: https://api.github.com/repos/FairwindsOps/pluto/releases/latest
+            return_content: true
+          register: json_reponse
 
-    - name: Execute Installer
-      ansible.builtin.command: /tmp/install_gh_bin.sh
-      become: true
-      changed_when: false
+        - name: Download and Install
+          loop: "{{ json_reponse.json.assets }}"
+          when: item.name | endswith("linux_amd64.tar.gz")
+          become: true
+          ansible.builtin.unarchive:
+            remote_src: true
+            src: "{{ item.browser_download_url }}"
+            dest: "/usr/bin/"
+            keep_newer: true
+            extra_opts:
+              - --strip=1
+              - --no-anchored
+              - pluto
+            mode: "0755"
+
+        - name: Add bash completion
+          ansible.builtin.blockinfile:
+            path: /home/{{ remote_regular_user }}/.bashrc
+            block: |
+              if command -v pluto >/dev/null 2>&1; then
+                source <(pluto completion bash)
+              fi
+
+    - name: Install rancher/rke
+      block:
+        - name: Get Last Version URL
+          ansible.builtin.uri:
+            url: https://api.github.com/repos/rancher/rke/releases/latest
+            return_content: true
+          register: json_reponse
+
+        - name: Download and Install
+          loop: "{{ json_reponse.json.assets }}"
+          when: item.name | endswith("rke_linux-amd64")
+          become: true
+          ansible.builtin.get_url:
+            url: "{{ item.browser_download_url }}"
+            dest: /usr/bin/rke
+            mode: '0755'
+
+    - name: Install robscott/kube-capacity
+      block:
+        - name: Get Last Version URL
+          ansible.builtin.uri:
+            url: https://api.github.com/repos/robscott/kube-capacity/releases/latest
+            return_content: true
+          register: json_reponse
+
+        - name: Download and Install
+          loop: "{{ json_reponse.json.assets }}"
+          when: item.name | endswith("linux_x86_64.tar.gz")
+          become: true
+          ansible.builtin.unarchive:
+            remote_src: true
+            src: "{{ item.browser_download_url }}"
+            dest: "/usr/bin/"
+            keep_newer: true
+            extra_opts:
+              - --strip=1
+              - --no-anchored
+              - kube-capacity
+            mode: "0755"
+
+        - name: Add bash completion
+          ansible.builtin.blockinfile:
+            path: /home/{{ remote_regular_user }}/.bashrc
+            block: |
+              if command -v kube-capacity >/dev/null 2>&1; then
+                source <(kube-capacity completion bash)
+              fi
+
+    - name: Install derailed/popeye
+      block:
+        - name: Get Last Version URL
+          ansible.builtin.uri:
+            url: https://api.github.com/repos/derailed/popeye/releases/latest
+            return_content: true
+          register: json_reponse
+
+        - name: Download and Install
+          loop: "{{ json_reponse.json.assets }}"
+          when: item.name | endswith("linux_amd64.tar.gz")
+          become: true
+          ansible.builtin.unarchive:
+            remote_src: true
+            src: "{{ item.browser_download_url }}"
+            dest: "/usr/bin/"
+            keep_newer: true
+            extra_opts:
+              - --strip=1
+              - --no-anchored
+              - popeye
+            mode: "0755"
+
+        - name: Add bash completion
+          ansible.builtin.blockinfile:
+            path: /home/{{ remote_regular_user }}/.bashrc
+            block: |
+              if command -v popeye >/dev/null 2>&1; then
+                source <(popeye completion bash)
+              fi
 
     - name: Instalar kubectx
       when: ansible_facts['distribution'] == 'Debian'
+      become: true
       ansible.builtin.apt:
         name: "{{ packages }}"
         state: present
@@ -22,92 +122,3 @@
         packages:
           - kubens
           - kubectx
-
-    # # https://github.com/derailed/popeye
-    # - name: popeye - Descargar binario y extraer
-
-    #   unarchive:
-    #     src: https://github.com/derailed/popeye/releases/download/v0.21.3/popeye_linux_amd64.tar.gz
-    #     dest: /tmp/
-    #     owner: "{{ remote_regular_user }}"
-    #     group: "{{ remote_regular_user }}"
-    #     mode: "774"
-    #     remote_src: true
-
-    # - name: popeye - Mover binario al path
-    #   copy:
-    #     src: /tmp/popeye
-    #     dest: /usr/bin/
-    #     owner: "{{ remote_regular_user }}"
-    #     group: "{{ remote_regular_user }}"
-    #     mode: "774"
-
-    # # https://github.com/robscott/kube-capacity
-    # - name: kube-capacity - Descargar binario y extraer
-    #   unarchive:
-    #     src: https://github.com/robscott/kube-capacity/releases/download/v0.8.0/kube-capacity_v0.8.0_linux_x86_64.tar.gz
-    #     dest: /tmp/
-    #     owner: "{{ remote_regular_user }}"
-    #     group: "{{ remote_regular_user }}"
-    #     mode: "774"
-    #     remote_src: true
-
-    # - name: kube-capacity - Mover binario al path
-    #   copy:
-    #     src: /tmp/kube-capacity
-    #     dest: /usr/bin/
-    #     owner: "{{ remote_regular_user }}"
-    #     group: "{{ remote_regular_user }}"
-    #     mode: "774"
-
-    # - name: kubectx - Clonar projecto kubectx
-    #   unarchive:
-    #     src: https://github.com/ahmetb/kubectx/releases/download/v0.9.5/kubectx_v0.9.5_linux_x86_64.tar.gz
-    #     dest: /tmp/
-    #     owner: "{{ remote_regular_user }}"
-    #     group: "{{ remote_regular_user }}"
-    #     mode: "774"
-    #     remote_src: true
-
-    # - name: kubectx - Mover binario al path
-    #   copy:
-    #     src: /tmp/kubectx
-    #     dest: /usr/bin/
-    #     owner: "{{ remote_regular_user }}"
-    #     group: "{{ remote_regular_user }}"
-    #     mode: "774"
-
-    # # https://github.com/rancher/rke
-    # - name: rke - Descargar binario y extraer
-    #   get_url:
-    #     url: https://github.com/rancher/rke/releases/download/v1.6.1/rke_linux-amd64
-    #     dest: /tmp/
-    #     owner: "{{ remote_regular_user }}"
-    #     group: "{{ remote_regular_user }}"
-    #     mode: "774"
-
-    # - name: rke - Mover binario al path
-    #   copy:
-    #     src: /tmp/rke_linux-amd64
-    #     dest: /usr/bin/rke
-    #     owner: "{{ remote_regular_user }}"
-    #     group: "{{ remote_regular_user }}"
-    #     mode: "774"
-
-    # # https://github.com/FairwindsOps/pluto
-    # - name: pluto - Descargar binario y extraer
-    #   unarchive:
-    #     src: https://github.com/FairwindsOps/pluto/releases/download/v5.20.1/pluto_5.20.1_linux_amd64.tar.gz
-    #     dest: /tmp/
-    #     owner: "{{ remote_regular_user }}"
-    #     group: "{{ remote_regular_user }}"
-    #     mode: "774"
-    #     remote_src: true
-
-    # - name: pluto - Mover binario al path
-    #   copy:
-    #     src: /tmp/pluto
-    #     dest: /usr/bin/
-    #     owner: "{{ remote_regular_user }}"
-    #     group: "{{ remote_regular_user }}"
-    #     mode: "774"
