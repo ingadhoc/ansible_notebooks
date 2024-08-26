@@ -3,36 +3,34 @@
   tags: terraform
   become: true
   block:
-    - name: Crear directorio para keyrings si no existe
-      when: not keyring_file.stat.exists
+    - name: Terraform - Crear directorio para keyrings si no existe
       ansible.builtin.file:
         path: /etc/apt/keyrings
         state: directory
         mode: '0755'
 
-    - name: Descargar la clave
-      when: not keyring_file.stat.exists
+    - name: Terraform - Descargar la clave
       ansible.builtin.get_url:
         url: https://apt.releases.hashicorp.com/gpg
         dest: /tmp/terraform_key.pub
         mode: '0644'
 
-    - name: Convertir la clave a formato GPG y moverla a keyrings
+    - name: Terraform - onvertir la clave a formato GPG y moverla a keyrings
       ansible.builtin.command: gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg /tmp/terraform_key.pub
       changed_when: false
 
-    - name: Eliminar el archivo temporal de la clave
+    - name: Terraform - Eliminar el archivo temporal de la clave
       ansible.builtin.file:
         path: /tmp/terraform_key.pub
         state: absent
 
-    - name: Chrome - Agregar repositorio
+    - name: Terraform - Agregar repositorio
       ansible.builtin.apt_repository:
         repo: "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
         state: present
         update_cache: true
 
-    - name: Chrome - Instalar
+    - name: Terraform - Instalar
       ansible.builtin.apt:
         name: terraform
 
