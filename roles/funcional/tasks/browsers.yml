@@ -3,20 +3,28 @@
   tags: chrome
   become: true
   block:
-    - name: Chrome - Chequear si ya existe key
-      ansible.builtin.stat:
-        path: /usr/share/keyrings/google-archive-keyring.gpg
-      register: keyring_file
+    - name: Eliminar configuración anterior del repositorio de Google Chrome
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/google-chrome.list
+        state: absent
+
+    - name: Eliminar otro archivo de repositorio conflictivo si existe
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/dl_google_com_linux_chrome_deb.list
+        state: absent
+
+    - name: Eliminar clave GPG anterior de Google Chrome si existe
+      ansible.builtin.file:
+        path: /etc/apt/trusted.gpg.d/google-chrome.gpg
+        state: absent
 
     - name: Crear directorio para keyrings si no existe
-      when: not keyring_file.stat.exists
       ansible.builtin.file:
         path: /etc/apt/keyrings
         state: directory
         mode: '0755'
 
     - name: Descargar la clave
-      when: not keyring_file.stat.exists
       ansible.builtin.get_url:
         url: https://dl.google.com/linux/linux_signing_key.pub
         dest: /tmp/chrome_key.pub
@@ -25,6 +33,7 @@
     - name: Convertir la clave a formato GPG y moverla a keyrings
       ansible.builtin.command: gpg --dearmor -o /usr/share/keyrings/google-archive-keyring.gpg /tmp/chrome_key.pub
       changed_when: false
+      failed_when: "'gpg: can't open' in stderr or 'gpg: no valid OpenPGP data found' in stderr"
 
     - name: Eliminar el archivo temporal de la clave
       ansible.builtin.file:
@@ -40,3 +49,4 @@
     - name: Chrome - Instalar
       ansible.builtin.apt:
         name: google-chrome-stable
+        update_cache: true
