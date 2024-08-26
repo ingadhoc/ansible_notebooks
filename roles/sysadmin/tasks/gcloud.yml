@@ -3,39 +3,35 @@
   tags: gcloud
   become: true
   block:
-    - name: Crear el directorio /usr/share/keyrings si no existe
+    - name: gcloud - Crear el directorio /usr/share/keyrings si no existe
       ansible.builtin.file:
         path: /usr/share/keyrings
         state: directory
         mode: "0755"
 
-    - name: Descargar la clave
-      when: not keyring_file.stat.exists
+    - name: gcloud - Descargar la clave
       ansible.builtin.get_url:
         url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
         dest: /tmp/gcloud_key.pub
         mode: '0644'
 
-    - name: Convertir la clave a formato GPG y moverla a keyrings
+    - name: gcloud - Convertir la clave a formato GPG y moverla a keyrings
       ansible.builtin.command: gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg /tmp/gcloud_key.pub
       changed_when: false
 
-    - name: Eliminar el archivo temporal de la clave
+    - name: gcloud - Eliminar el archivo temporal de la clave
       ansible.builtin.file:
         path: /tmp/gcloud_key.pub
         state: absent
 
-    - name: Agregar el repositorio de Google Cloud SDK
+    - name: gcloud - Agregar el repositorio de Google Cloud SDK
       ansible.builtin.copy:
         content: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main\n"
         dest: /etc/apt/sources.list.d/google-cloud-sdk.list
         mode: "0644"
 
-    - name: Actualizar el índice de paquetes de apt
-      ansible.builtin.apt:
-        update_cache: true
-
-    - name: Instalar google-cloud-sdk
+    - name: gcloud - Instalar google-cloud-sdk
       ansible.builtin.apt:
         name: google-cloud-sdk
         state: present
+        update_cache: true
