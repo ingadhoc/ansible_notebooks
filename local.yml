@@ -25,6 +25,7 @@
   gather_facts: true
   become: true
   roles:
+    - funcional
     - devs
 
 - name: Deploy sysadmin role
@@ -33,6 +34,8 @@
   gather_facts: true
   become: true
   roles:
+    - funcional
+    - devs
     - sysadmin
 
 - name: Deploy deploy role
