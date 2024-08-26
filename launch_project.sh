@@ -59,7 +59,7 @@ if [ ! -d "$REPO_DIR" ]; then
   mkdir -p "$REPO_DIR"
 fi
 chown -R "$SCRIPT_USER:$SCRIPT_USER" "/home/$SCRIPT_USER/repositorios/"
-sudo -u "$SCRIPT_USER" git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
+sudo -u "$SCRIPT_USER" git clone git@github.com:ingadhoc/ansible_notebooks.git "$REPO_DIR"
 
 # Mostrar las instrucciones para el usuario
 echo -e "${BLUE}#IMPORTANTE:${RESET} Reiniciar luego de aplicar cada rol para que se apliquen los cambios y configuraciones (gnome extensions, docker as root por ejemplo)."

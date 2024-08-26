@@ -3,7 +3,7 @@
 - name: Infra - Clonar projecto terraform
   become: false
   ansible.builtin.git:
-    repo: https://github.com/adhoc-dev/InfraR2.git
+    repo: git@github.com:adhoc-dev/InfraR2.git
     dest: /home/{{ remote_regular_user }}/infra_nubeadhoc
     version: main
     clone: true

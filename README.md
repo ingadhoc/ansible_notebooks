@@ -33,7 +33,7 @@ $ sudo bash adhoc-ansible
 # Dependencias
 $ sudo apt install python3-setuptools ansible git
 # Clonar repositorio con playbooks, tasks, etc.
-$ git clone https://github.com/ingadhoc/ansible_notebooks && cd ansible_notebooks
+$ git clone git@github.com:ingadhoc/ansible_notebooks.git && cd ansible_notebooks
 # Deployar roles EN ESTE ORDEN ya que cada uno es dependencia del siguiente
 $ ansible-playbook --tags "funcional" local.yml -K --verbose
 $ ansible-playbook --tags "devs" local.yml -K --verbose
