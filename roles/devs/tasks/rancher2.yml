@@ -12,7 +12,9 @@
 
         - name: Download and Install
           loop: "{{ json_response.json.assets }}"
-          when: item.name | startwith("rancher-linux-amd64") | endwith("tar.xz")
+          when:
+            - item.name is search("^rancher-linux-amd64")
+            - item.name is search("tar.xz$")
           ansible.builtin.unarchive:
             remote_src: true
             src: "{{ item.browser_download_url }}"
