@@ -8,10 +8,10 @@
           ansible.builtin.uri:
             url: https://api.github.com/repos/FairwindsOps/pluto/releases/latest
             return_content: true
-          register: json_reponse
+          register: json_response
 
         - name: Download and Install
-          loop: "{{ json_reponse.json.assets }}"
+          loop: "{{ json_response.json.assets }}"
           when: item.name | endswith("linux_amd64.tar.gz")
           become: true
           ansible.builtin.unarchive:
@@ -39,10 +39,10 @@
           ansible.builtin.uri:
             url: https://api.github.com/repos/rancher/rke/releases/latest
             return_content: true
-          register: json_reponse
+          register: json_response
 
         - name: Download and Install
-          loop: "{{ json_reponse.json.assets }}"
+          loop: "{{ json_response.json.assets }}"
           when: item.name | endswith("rke_linux-amd64")
           become: true
           ansible.builtin.get_url:
@@ -56,10 +56,10 @@
           ansible.builtin.uri:
             url: https://api.github.com/repos/robscott/kube-capacity/releases/latest
             return_content: true
-          register: json_reponse
+          register: json_response
 
         - name: Download and Install
-          loop: "{{ json_reponse.json.assets }}"
+          loop: "{{ json_response.json.assets }}"
           when: item.name | endswith("linux_x86_64.tar.gz")
           become: true
           ansible.builtin.unarchive:
@@ -87,10 +87,10 @@
           ansible.builtin.uri:
             url: https://api.github.com/repos/derailed/popeye/releases/latest
             return_content: true
-          register: json_reponse
+          register: json_response
 
         - name: Download and Install
-          loop: "{{ json_reponse.json.assets }}"
+          loop: "{{ json_response.json.assets }}"
           when: item.name | endswith("linux_amd64.tar.gz")
           become: true
           ansible.builtin.unarchive:

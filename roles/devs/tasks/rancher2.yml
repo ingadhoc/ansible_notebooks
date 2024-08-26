@@ -8,10 +8,10 @@
           ansible.builtin.uri:
             url: https://api.github.com/repos/rancher/cli/releases/latest
             return_content: true
-          register: json_reponse
+          register: json_response
 
         - name: Download and Install
-          loop: "{{ json_reponse.json.assets }}"
+          loop: "{{ json_response.json.assets }}"
           when: item.name | startwith("rancher-linux-amd64") | endwith("tar.xz")
           ansible.builtin.unarchive:
             remote_src: true
@@ -21,7 +21,7 @@
         - name: Rancher2 - Mover binario al path
           become: true
           ansible.builtin.copy:
-            src: /tmp/rancher-{{ json_reponse.json.tag_name }}/rancher
+            src: /tmp/rancher-{{ json_response.json.tag_name }}/rancher
             dest: /usr/local/bin/rancher
             mode: "0755"
 
@@ -33,7 +33,7 @@
 
         - name: Rancher2 - Eliminar directorio temporal
           ansible.builtin.file:
-            path: /tmp/rancher-{{ json_reponse.json.tag_name }}
+            path: /tmp/rancher-{{ json_response.json.tag_name }}
             state: absent
 
         # - name: Add bash completion
