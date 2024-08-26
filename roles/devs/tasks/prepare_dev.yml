@@ -39,11 +39,11 @@
         - name: Local dev - Clonar repositorio de Odoo
           become_user: "{{ ansible_env.SUDO_USER }}"
           ansible.builtin.git:
-            repo: git@github.com:ingadhoc/docker-compose-odoo.git
+            repo: https://github.com/ingadhoc/docker-compose-odoo.git
             dest: /home/{{ ansible_env.SUDO_USER }}/odoo/{{ item }}
             clone: true
             update: true
-            version: main
+            version: master
           loop: "{{ versiones }}"
 
         - name: Local dev - Editar odoo_minor de .env
