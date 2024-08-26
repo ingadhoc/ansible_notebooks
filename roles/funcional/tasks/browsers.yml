@@ -33,7 +33,6 @@
     - name: Convertir la clave a formato GPG y moverla a keyrings
       ansible.builtin.command: gpg --dearmor -o /usr/share/keyrings/google-archive-keyring.gpg /tmp/chrome_key.pub
       changed_when: false
-      failed_when: "'gpg: can't open' in stderr or 'gpg: no valid OpenPGP data found' in stderr"
 
     - name: Eliminar el archivo temporal de la clave
       ansible.builtin.file:
