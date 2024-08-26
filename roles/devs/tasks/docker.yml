@@ -29,8 +29,8 @@
 
     - name: Install and Setup Docker
       ansible.builtin.command: |
-        /bin/sh /tmp/get-docker.sh
-        rm /tmp/get-docker.sh
+        /bin/sh /tmp/install-docker.sh
+        rm /tmp/install-docker.sh
         usermod -aG docker "{{ remote_regular_user }}"
         systemctl enable docker
         systemctl start docker
