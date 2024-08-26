@@ -30,7 +30,7 @@
             path: /home/{{ remote_regular_user }}/.bashrc
             block: |
               if command -v pluto >/dev/null 2>&1; then
-                source <(pluto completion bash 2>/dev/null)
+                source <(pluto completion bash --no-footer)
               fi
 
     - name: Install rancher/rke

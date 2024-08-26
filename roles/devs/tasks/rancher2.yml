@@ -3,23 +3,43 @@
   tags: rancher
   block:
     - name: Rancher2 - Descargar binario y extraer
-      ansible.builtin.unarchive:
-        src: https://github.com/rancher/cli/releases/download/{{ rancher2_version }}/rancher-linux-amd64-{{ rancher2_version }}.tar.xz
-        dest: /tmp
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-        remote_src: true
+      block:
+        - name: Get Last Version URL
+          ansible.builtin.uri:
+            url: https://api.github.com/repos/rancher/cli/releases/latest
+            return_content: true
+          register: json_reponse
 
-    - name: Rancher2 - Mover binario al path
-      ansible.builtin.copy:
-        src: /tmp/rancher-{{ rancher2_version }}/rancher
-        dest: /usr/local/bin/rancher2
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
+        - name: Download and Install
+          loop: "{{ json_reponse.json.assets }}"
+          when: item.name | startwith("rancher-linux-amd64") | endwith("tar.xz")
+          ansible.builtin.unarchive:
+            remote_src: true
+            src: "{{ item.browser_download_url }}"
+            dest: /tmp
 
-    - name: Rancher2 - Eliminar directorio temporal
-      ansible.builtin.file:
-        path: /tmp/rancher-{{ rancher2_version }}
-        state: absent
+        - name: Rancher2 - Mover binario al path
+          become: true
+          ansible.builtin.copy:
+            src: /tmp/rancher-{{ json_reponse.json.tag_name }}/rancher
+            dest: /usr/local/bin/rancher
+            mode: "0755"
+
+        - name: Create symbolic link
+          ansible.builtin.file:
+            src: /usr/local/bin/rancher
+            dest: /usr/local/bin/rancher2
+            state: link
+
+        - name: Rancher2 - Eliminar directorio temporal
+          ansible.builtin.file:
+            path: /tmp/rancher-{{ json_reponse.json.tag_name }}
+            state: absent
+
+        # - name: Add bash completion
+        #   ansible.builtin.blockinfile:
+        #     path: /home/{{ remote_regular_user }}/.bashrc
+        #     block: |
+        #       if command -v rancher >/dev/null 2>&1; then
+        #         source <(rancher completion bash)
+        #       fi

@@ -46,9 +46,18 @@
         state: present
 
     - name: Docker - Instalar docker-compose
-      ansible.builtin.get_url:
-        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-x86_64"
-        dest: /usr/local/bin/docker-compose
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "+x"
+      block:
+        - name: Get Last Version URL
+          ansible.builtin.uri:
+            url: https://api.github.com/repos/docker/compose/releases/latest
+            return_content: true
+          register: json_reponse
+
+        - name: Download and Install
+          loop: "{{ json_reponse.json.assets }}"
+          when: item.name | endswith("docker-compose-linux-x86_64")
+          become: true
+          ansible.builtin.get_url:
+            url: "{{ item.browser_download_url }}"
+            dest: /usr/local/bin/docker-compose
+            mode: "+x"
