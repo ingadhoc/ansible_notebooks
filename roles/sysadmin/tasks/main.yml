@@ -1,11 +1,19 @@
 ---
-- include_vars: ./roles/sysadmin/vars.yml
+- name: Include vars
+  ansible.builtin.include_vars: ./roles/sysadmin/vars.yml
   tags: sysadmin
 
-- block:
-    - import_tasks: terraform.yml
-    - import_tasks: gcloud.yml
-    - import_tasks: virtualbox.yml
-    - import_tasks: helm.yml
-    - import_tasks: kubectl_admin.yml
-    - import_tasks: fixes.yml
+- name: Include
+  block:
+    - name: Terraform
+      ansible.builtin.import_tasks: terraform.yml
+    - name: Gcloud
+      ansible.builtin.import_tasks: gcloud.yml
+    - name: Virtualbox
+      ansible.builtin.import_tasks: virtualbox.yml
+    - name: Helm
+      ansible.builtin.import_tasks: helm.yml
+    - name: Kubectl_admin
+      ansible.builtin.import_tasks: kubectl_admin.yml
+    - name: Fixes
+      ansible.builtin.import_tasks: fixes.yml

@@ -2,8 +2,9 @@
 # Requiere login previo con github
 - name: Infra - Clonar projecto terraform
   become: false
-  git:
-    repo: https://github.com/adhoc-dev/InfraR2.git
+  ansible.builtin.git:
+    repo: git@github.com:adhoc-dev/InfraR2.git
     dest: /home/{{ remote_regular_user }}/infra_nubeadhoc
-    clone: yes
-    update: yes
+    version: main
+    clone: true
+    update: true

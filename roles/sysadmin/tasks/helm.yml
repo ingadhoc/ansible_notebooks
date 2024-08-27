@@ -1,9 +1,10 @@
 ---
 # https://helm.sh/docs/intro/install/#from-script
 - name: SysAdmin - Instalar helm cli
+  tags: helm_cli
   block:
     - name: Helm cli - Descargar script
-      get_url:
+      ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
         dest: /tmp/get_helm.sh
         owner: "{{ remote_regular_user }}"
@@ -12,5 +13,4 @@
 
     - name: Helm cli - Instalar
       become: true
-      script: /tmp/get_helm.sh
-  tags: helm_cli
+      ansible.builtin.script: /tmp/get_helm.sh

@@ -33,9 +33,12 @@ WORKDIR /app
 RUN adduser -u $USER_UID --disabled-password --gecos "" $USERNAME  \
     && chown -R $USERNAME /app \
     && echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
+    && chmod 0440 /etc/sudoers.d/$USERNAME \
+    && echo "[[ -f ~/.prompt_git ]] && source ~/.prompt_git" >> /home/$USERNAME/.bashrc
 
 USER appuser
+
+COPY .prompt_git /home/$USERNAME
 
 RUN activate-global-python-argcomplete --user
 

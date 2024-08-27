@@ -5,7 +5,7 @@
 
     - name: Idiomas - Completar instalación de en language
       when: ansible_facts['distribution'] == 'Ubuntu'
-      apt:
+      ansible.builtin.apt:
         pkg:
           - language-pack-en
           - language-pack-gnome-en
@@ -14,7 +14,7 @@
 
     - name: Idiomas - Finish installing es language
       when: ansible_facts['distribution'] == 'Ubuntu'
-      apt:
+      ansible.builtin.apt:
         pkg:
           - language-pack-es
           - language-pack-gnome-es
@@ -22,14 +22,14 @@
           - language-pack-gnome-es-base
 
     - name: Idiomas - Validar que locale existe
-      locale_gen:
+      community.general.locale_gen:
         name: es_ES.UTF-8
         state: present
 
     - name: Idiomas - Configurar layouts de teclado
       become_method: sudo
-      become_user: "{{ lookup('env','USER') }}"
-      dconf:
+      become_user: "{{ lookup('env', 'USER') }}"
+      community.general.dconf:
         key: "/org/gnome/desktop/input-sources/sources"
         value: "[('xkb', 'es'), ('xkb', 'us+intl')]"
         state: present

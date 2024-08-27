@@ -2,10 +2,6 @@
 # Usuario genérico para ejecutar algunas tareas
 remote_regular_user: "{{ ansible_env.SUDO_USER }}"
 
-# Versiones para devs y sysadmin
-docker_compose_version: "v2.7.0"
-rancher2_version: "v2.7.0"
-
 # Extensiones predefinidas para devs
 vscode_extension_list_devs:
   # Install Visual Studio Code extensions.

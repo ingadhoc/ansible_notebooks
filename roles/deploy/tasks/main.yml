@@ -1,10 +1,17 @@
 ---
-- include_vars: ./roles/deploy/vars.yml
+- name: Include vars
+  ansible.builtin.include_vars: ./roles/deploy/vars.yml
   tags: deploy
 
-- block:
-    - import_tasks: ../roles/devs/tasks/kubectl.yml
-    - import_tasks: ../roles/devs/tasks/rancher2.yml
-    - import_tasks: ../roles/sysadmin/tasks/gcloud.yml
-    - import_tasks: ../roles/sysadmin/tasks/terraform.yml
-    - import_tasks: project.yml
+- name: Include
+  block:
+    - name: Kubectl
+      ansible.builtin.import_tasks: ../roles/devs/tasks/kubectl.yml
+    - name: Rancher2
+      ansible.builtin.import_tasks: ../roles/devs/tasks/rancher2.yml
+    - name: GCloud
+      ansible.builtin.import_tasks: ../roles/sysadmin/tasks/gcloud.yml
+    - name: Terraform
+      ansible.builtin.import_tasks: ../roles/sysadmin/tasks/terraform.yml
+    - name: Project
+      ansible.builtin.import_tasks: project.yml

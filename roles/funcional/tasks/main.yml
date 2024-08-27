@@ -1,16 +1,29 @@
 ---
-- include_vars: ./roles/funcional/vars.yml
+- name: Include vars
+  ansible.builtin.include_vars: ./roles/funcional/vars.yml
   tags: funcional
 
-- block:
-    - import_tasks: packages.yml
-    - import_tasks: browsers.yml
-    - import_tasks: ext.yml
-    - import_tasks: gnome.yml
-    - import_tasks: language.yml
-    - import_tasks: shortcuts.yml
-    - import_tasks: branding.yml
-    - import_tasks: ui_performance.yml
-    - import_tasks: python_funcionales.yml
-    - import_tasks: security.yml
-    - import_tasks: fixes.yml
+- name: Include
+  block:
+    - name: Packages
+      ansible.builtin.import_tasks: packages.yml
+    - name: Browsers
+      ansible.builtin.import_tasks: browsers.yml
+    - name: Ext
+      ansible.builtin.import_tasks: ext.yml
+    - name: Gnome
+      ansible.builtin.import_tasks: gnome.yml
+    - name: Language
+      ansible.builtin.import_tasks: language.yml
+    - name: Shortcuts
+      ansible.builtin.import_tasks: shortcuts.yml
+    - name: Branding
+      ansible.builtin.import_tasks: branding.yml
+    - name: UI
+      ansible.builtin.import_tasks: ui_performance.yml
+    - name: Python
+      ansible.builtin.import_tasks: python_funcionales.yml
+    - name: Security
+      ansible.builtin.import_tasks: security.yml
+    - name: Fixes
+      ansible.builtin.import_tasks: fixes.yml

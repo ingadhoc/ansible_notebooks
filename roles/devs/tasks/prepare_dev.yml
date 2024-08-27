@@ -4,14 +4,14 @@
   block:
     # Workarounds y parches para preparar el ambiente local de desarrollo
     - name: Local dev - Corregir permisos de volúmenes
-      file:
+      ansible.builtin.file:
         path: /var/lib/docker/volumes/
         recurse: true
         state: directory
         mode: "g+rwx"
 
     - name: Local dev - Agregar user al grupo root
-      user:
+      ansible.builtin.user:
         name: "{{ ansible_env.SUDO_USER }}"
         groups: ["root"]
         append: "yes"
@@ -19,137 +19,61 @@
     # Descargar, instalar, levantar odoo 13, 15, 16 y 17
     - name: Local dev - Crear carpeta local para Odoo
       become_user: "{{ ansible_env.SUDO_USER }}"
-      file:
+      ansible.builtin.file:
         path: /home/{{ ansible_env.SUDO_USER }}/odoo
         state: directory
+        owner: "{{ ansible_env.SUDO_USER }}"
+        group: "{{ ansible_env.SUDO_USER }}"
+        mode: '0755'
 
-    - name: Ambiente local - Preparar odoo 13
+    - name: Ambiente local - Preparar odoo
       block:
-        - name: Local dev - Clonar repositorio de Odoo v13
+        - name: Definir las versiones de odoo que van a ser instaladas
+          ansible.builtin.set_fact:
+            versiones:
+              - 13
+              - 15
+              - 16
+              - 17
+
+        - name: Local dev - Clonar repositorio de Odoo
           become_user: "{{ ansible_env.SUDO_USER }}"
-          git:
+          ansible.builtin.git:
             repo: https://github.com/ingadhoc/docker-compose-odoo.git
-            dest: /home/{{ ansible_env.SUDO_USER }}/odoo/13
-            clone: yes
-            update: yes
+            dest: /home/{{ ansible_env.SUDO_USER }}/odoo/{{ item }}
+            clone: true
+            update: true
+            version: master
+          loop: "{{ versiones }}"
 
         - name: Local dev - Editar odoo_minor de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/13/.env
+          ansible.builtin.lineinfile:
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/{{ item }}/.env
             regexp: "^ODOO_MINOR="
-            line: "ODOO_MINOR=13.0"
+            line: "ODOO_MINOR={{ item }}.0"
             state: present
+          loop: "{{ versiones }}"
 
         - name: Local dev - Editar domain de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/13/.env
+          ansible.builtin.lineinfile:
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/{{ item }}/.env
             regexp: "^DOMAIN="
-            line: "DOMAIN=13.odoo.localhost"
+            line: "DOMAIN={{ item }}.odoo.localhost"
             state: present
+          loop: "{{ versiones }}"
 
         - name: Local dev - Editar odoo_version de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/13/.env
+          ansible.builtin.lineinfile:
+            path: /home/{{ ansible_env.SUDO_USER }}/odoo/{{ item }}/.env
             regexp: "^ODOO_VERSION="
-            line: "ODOO_VERSION=13"
+            line: "ODOO_VERSION={{ item }}"
             state: present
+          loop: "{{ versiones }}"
 
-    - name: Ambiente local - Preparar odoo 15
-      block:
-        - name: Local dev - Clonar repositorio de Odoo v15
-          become_user: "{{ ansible_env.SUDO_USER }}"
-          git:
-            repo: https://github.com/ingadhoc/docker-compose-odoo.git
-            dest: /home/{{ ansible_env.SUDO_USER }}/odoo/15
-            clone: yes
-            update: yes
-
-        - name: Local dev - Editar odoo_minor de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/15/.env
-            regexp: "^ODOO_MINOR="
-            line: "ODOO_MINOR=15.0"
-            state: present
-
-        - name: Local dev - Editar domain de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/15/.env
-            regexp: "^DOMAIN="
-            line: "DOMAIN=15.odoo.localhost"
-            state: present
-
-        - name: Local dev - Editar odoo_version de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/15/.env
-            regexp: "^ODOO_VERSION="
-            line: "ODOO_VERSION=15"
-            state: present
-
-    - name: Ambiente local - Preparar odoo 16
-      block:
-        - name: Local dev - Clonar repositorio de Odoo v16
-          become_user: "{{ ansible_env.SUDO_USER }}"
-          git:
-            repo: https://github.com/ingadhoc/docker-compose-odoo.git
-            dest: /home/{{ ansible_env.SUDO_USER }}/odoo/16
-            clone: yes
-            update: yes
-
-        - name: Local dev - Editar odoo_minor de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/16/.env
-            regexp: "^ODOO_MINOR="
-            line: "ODOO_MINOR=16.0"
-            state: present
-
-        - name: Local dev - Editar domain de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/16/.env
-            regexp: "^DOMAIN="
-            line: "DOMAIN=16.odoo.localhost"
-            state: present
-
-        - name: Local dev - Editar odoo_version de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/16/.env
-            regexp: "^ODOO_VERSION="
-            line: "ODOO_VERSION=16"
-            state: present
-
-        - name: Local dev - Editar PG version en docker-compose
-          lineinfile:
+        - name: Local dev - ESPACIAL Editar PG version en docker-compose
+          when: "16 in versiones"
+          ansible.builtin.lineinfile:
             path: /home/{{ ansible_env.SUDO_USER }}/odoo/16/docker-compose.yml
             regexp: "    image: postgres:15"
             line: "    image: postgres:14"
-            state: present
-
-    - name: Ambiente local - Preparar odoo 17
-      block:
-        - name: Local dev - Clonar repositorio de Odoo v17
-          become_user: "{{ ansible_env.SUDO_USER }}"
-          git:
-            repo: https://github.com/ingadhoc/docker-compose-odoo.git
-            dest: /home/{{ ansible_env.SUDO_USER }}/odoo/17
-            clone: yes
-            update: yes
-
-        - name: Local dev - Editar odoo_minor de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/17/.env
-            regexp: "^ODOO_MINOR="
-            line: "ODOO_MINOR=17.0"
-            state: present
-
-        - name: Local dev - Editar domain de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/17/.env
-            regexp: "^DOMAIN="
-            line: "DOMAIN=17.odoo.localhost"
-            state: present
-
-        - name: Local dev - Editar odoo_version de .env
-          lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/17/.env
-            regexp: "^ODOO_VERSION="
-            line: "ODOO_VERSION=17"
             state: present

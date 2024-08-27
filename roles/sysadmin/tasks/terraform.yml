@@ -1,28 +1,40 @@
 ---
 - name: SysAdmin - Instalar terraform cli
+  tags: terraform
+  become: true
   block:
-    - name: Terraform - Borrar binario existente si existe
-      file:
-        path: /usr/local/bin/terraform
+    - name: Terraform - Crear directorio para keyrings si no existe
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Terraform - Descargar la clave
+      ansible.builtin.get_url:
+        url: https://apt.releases.hashicorp.com/gpg
+        dest: /tmp/terraform_key.pub
+        mode: '0644'
+
+    - name: Terraform - onvertir la clave a formato GPG y moverla a keyrings
+      ansible.builtin.command: gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg /tmp/terraform_key.pub
+      changed_when: false
+
+    - name: Terraform - Eliminar el archivo temporal de la clave
+      ansible.builtin.file:
+        path: /tmp/terraform_key.pub
         state: absent
-      ignore_errors: true
 
-    - name: Terraform - Descargar y agregar la clave GPG de HashiCorp
-      shell: |
-        wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-      become: true
+    - name: Terraform - Agregar repositorio
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+        state: present
+        update_cache: true
 
-    - name: Terraform - Añadir repositorio de HashiCorp
-      shell: |
-        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-      become: true
-
-    - name: Terraform - Actualizar lista de paquetes e instalar terraform
-      shell: sudo apt update && sudo apt install -y terraform
-      become: true
+    - name: Terraform - Instalar
+      ansible.builtin.apt:
+        name: terraform
 
     - name: Terraform - Autocomplete package
       become_user: "{{ remote_regular_user }}"
-      command: "terraform -install-autocomplete"
-      changed_when: False
-  tags: terraform
+      ansible.builtin.command: "terraform -install-autocomplete"
+      changed_when: false
