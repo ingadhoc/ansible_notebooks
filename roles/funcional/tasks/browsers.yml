@@ -1,4 +1,3 @@
----
 - name: Browsers - Chrome
   tags: chrome
   become: true
@@ -16,6 +15,12 @@
     - name: Eliminar clave GPG anterior de Google Chrome si existe
       ansible.builtin.file:
         path: /etc/apt/trusted.gpg.d/google-chrome.gpg
+        state: absent
+
+    - name: Eliminar cualquier configuración de Google en sources.list
+      ansible.builtin.lineinfile:
+        path: /etc/apt/sources.list
+        regexp: '^.*google.*$'
         state: absent
 
     - name: Crear directorio para keyrings si no existe
