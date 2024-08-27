@@ -2,12 +2,18 @@
   tags: chrome
   become: true
   block:
-    - name: Eliminar configuración anterior del repositorio de Google Chrome
-      ansible.builtin.file:
+    - name: Verificar si el archivo google-chrome.list existe
+      ansible.builtin.stat:
         path: /etc/apt/sources.list.d/google-chrome.list
-        state: absent
+      register: chrome_list_file
 
-    - name: Eliminar otro archivo de repositorio conflictivo si existe
+    - name: Forzar la eliminación del archivo google-chrome.list si existe
+      ansible.builtin.command: rm -f /etc/apt/sources.list.d/google-chrome.list
+      become: true
+      when: chrome_list_file.stat.exists
+      ignore_errors: true
+
+    - name: Eliminar cualquier archivo de repositorio conflictivo si existe
       ansible.builtin.file:
         path: /etc/apt/sources.list.d/dl_google_com_linux_chrome_deb.list
         state: absent
