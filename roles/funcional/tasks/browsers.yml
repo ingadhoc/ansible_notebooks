@@ -2,26 +2,31 @@
   tags: chrome
   become: true
   block:
-    - name: Verificar si el archivo google-chrome.list existe
-      ansible.builtin.stat:
-        path: /etc/apt/sources.list.d/google-chrome.list
-      register: chrome_list_file
+    - name: Verificar si existe algún archivo de configuración relacionado con Google Chrome
+      ansible.builtin.find:
+        paths: /etc/apt/sources.list.d/
+        patterns: '*google-chrome*'
+      register: chrome_config_files
 
-    - name: Forzar la eliminación del archivo google-chrome.list si existe
-      ansible.builtin.command: rm -f /etc/apt/sources.list.d/google-chrome.list
-      become: true
-      when: chrome_list_file.stat.exists
-      ignore_errors: true
-
-    - name: Eliminar cualquier archivo de repositorio conflictivo si existe
+    - name: Eliminar archivos de configuración conflictivos relacionados con Google Chrome
       ansible.builtin.file:
-        path: /etc/apt/sources.list.d/dl_google_com_linux_chrome_deb.list
+        path: "{{ item.path }}"
         state: absent
+      loop: "{{ chrome_config_files.files }}"
+      when: chrome_config_files.matched > 0
 
-    - name: Eliminar clave GPG anterior de Google Chrome si existe
+    - name: Verificar si existe algún archivo de claves relacionado con Google
+      ansible.builtin.find:
+        paths: /etc/apt/trusted.gpg.d/
+        patterns: '*google*'
+      register: google_gpg_files
+
+    - name: Eliminar archivos de claves conflictivos relacionados con Google
       ansible.builtin.file:
-        path: /etc/apt/trusted.gpg.d/google-chrome.gpg
+        path: "{{ item.path }}"
         state: absent
+      loop: "{{ google_gpg_files.files }}"
+      when: google_gpg_files.matched > 0
 
     - name: Eliminar cualquier configuración de Google en sources.list
       ansible.builtin.lineinfile:
@@ -35,7 +40,7 @@
         state: directory
         mode: '0755'
 
-    - name: Descargar la clave
+    - name: Descargar la clave de Google
       ansible.builtin.get_url:
         url: https://dl.google.com/linux/linux_signing_key.pub
         dest: /tmp/chrome_key.pub
