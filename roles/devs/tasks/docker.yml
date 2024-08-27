@@ -55,7 +55,7 @@
 
         - name: Download and Install
           loop: "{{ json_response.json.assets }}"
-          when: item.name | endswith("docker-compose-linux-x86_64")
+          when: item.name is search("docker-compose-linux-x86_64$")
           become: true
           ansible.builtin.get_url:
             url: "{{ item.browser_download_url }}"
