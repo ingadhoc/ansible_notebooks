@@ -48,7 +48,7 @@
       ansible.builtin.user:
         name: "{{ remote_regular_user }}"
         groups: docker
-        append: yes
+        append: true
 
     - name: Docker - Instalar docker compose plugin
       ansible.builtin.apt:
