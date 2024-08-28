@@ -28,15 +28,27 @@
       changed_when: false
 
     - name: Install and Setup Docker
+      become: true
       ansible.builtin.command: |
         /bin/sh /tmp/install-docker.sh
         rm /tmp/install-docker.sh
-        usermod -aG docker "{{ remote_regular_user }}"
         systemctl enable docker
         systemctl start docker
-      become: true
       when: docker_check.rc == 1
       changed_when: false
+
+    - name: Ensure Docker group exists
+      become: true
+      ansible.builtin.group:
+        name: docker
+        state: present
+
+    - name: Add user to Docker group
+      become: true
+      ansible.builtin.user:
+        name: "{{ remote_regular_user }}"
+        groups: docker
+        append: yes
 
     - name: Docker - Instalar docker compose plugin
       ansible.builtin.apt:
