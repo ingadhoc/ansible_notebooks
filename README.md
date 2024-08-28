@@ -1,23 +1,21 @@
-# Laboratorio Ansible
+# Proyecto Ansible
 
-Laboratorio usando Ansible, con el objetivo de automatizar la preparación de laptops para usos funcionales (Mesa de Ayuda, Consultoría, Comercial) y técnicos (Sistemas, Producto, Infraestructura) en Adhoc.  
-Para información interna más detallada, procedimiento, pendientes, etc., revisar [este documento](https://docs.google.com/document/d/1TY5cQnNCOAxVRk4fFKHlBfWAa5qECUpH1jIjoCY0M4s/).
+Roles de Ansible para automatizar la preparación de laptops para usos funcionales (Mesa de Ayuda, Consultoría, Comercial) y técnicos (Consultoría Técnica, Sistemas, Producto, Infraestructura) en Adhoc. Para información interna más detallada, procedimiento, pendientes, etc., revisar [este documento](https://docs.google.com/document/d/1TY5cQnNCOAxVRk4fFKHlBfWAa5qECUpH1jIjoCY0M4s/).
 
-## IMPORTANTE: DEBIAN
+## Sobre DEBIAN
 
-- Intentando evitar quedar atados a Ubuntu / Canonical, comenzamos a experimentar con el uso de Debian12.
-  - adicionalmente, notamos que cada imagen de Ubuntu es más pesada y tiene más aplicaciones que la anterior, además de forzar el uso de snap y otras decisiones técnicamente discutibles.
+Intentando evitar quedar atados a Ubuntu / Canonical, comenzamos a experimentar con el uso de Debian12. Adicionalmente notamos que cada imagen de Ubuntu es más pesada y tiene más aplicaciones que la anterior, además de forzar el uso de snap y otras decisiones técnicamente discutibles. Hasta 2024 lo usamos como distribución principal quienes tenemos roles Sysadmin.
 
-### Roles para ejecutar
+## Roles para ejecutar
 
-- funcional > Mesa de Ayuda, Consultoría, Comercial.
-- devs > I + D.
+- funcional > Mesa de Ayuda, Consultoría, Comercial, RRHH
+- devs > I + D, Consultoría y Mesa de Ayuda Técnica.
 - sysadmin > DevOps, Infraestructura.
 - deploy > Implementación express de herramientas para deploy de Infraestructura (k8s).
 
 ## Preparación equipo
 
-Se puede lanzar el proyecto con un script, que instala dependencias, clona el repositorio, etc.. Al finalizar ofrece los comandos para implementar cada uno de los roles:
+Se puede lanzar el proyecto con el script [launch_project.sh](https://raw.githubusercontent.com/ingadhoc/ansible_notebooks/main/launch_project.sh) que instala dependencias, clona el repositorio, etc.. Al finalizar ofrece los comandos para implementar cada uno de los roles:
 
 ```bash
 # Descargar script
@@ -34,16 +32,18 @@ $ sudo bash adhoc-ansible
 $ sudo apt install python3-setuptools ansible git
 # Clonar repositorio con playbooks, tasks, etc.
 $ git clone git@github.com:ingadhoc/ansible_notebooks.git && cd ansible_notebooks
-# Deployar roles EN ESTE ORDEN ya que cada uno es dependencia del siguiente
+# Rol Base
 $ ansible-playbook --tags "funcional" local.yml -K --verbose
+# Rol Base + Devs
 $ ansible-playbook --tags "devs" local.yml -K --verbose
-# Reiniciar la notebook luego de aplicar el rol dev para que apliquen los cambios y configuraciones (docker as root por ejemplo)
+# Rol Base + Devs + Sysadmin
 $ ansible-playbook --tags "sysadmin" local.yml -K --verbose
+# Reiniciar la notebook luego de instalar roles para que apliquen los cambios y configuraciones (docker as root por ejemplo)
 ```
 
 ## TROUBLESHOOTING
 
-### sudoers (adhoc is not in the sudoers file)
+### debian > sudoers (adhoc is not in the sudoers file)
 
 ```bash
 $ su
@@ -111,6 +111,7 @@ $ vagrant destroy
 $ vagrant box list
 $ vagrant box remove generic/debian12
 ```
-## Ansible Galacy Colections
+
+### Ansible Galaxy Collections
 
 https://galaxy.ansible.com/ui/repo/published/community/general/content/module/dconf/#examples

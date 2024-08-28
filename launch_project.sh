@@ -62,16 +62,16 @@ chown -R "$SCRIPT_USER:$SCRIPT_USER" "/home/$SCRIPT_USER/repositorios/"
 sudo -u "$SCRIPT_USER" git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
 
 # Mostrar las instrucciones para el usuario
-echo -e "${BLUE}#IMPORTANTE:${RESET} Reiniciar luego de aplicar cada rol para que se apliquen los cambios y configuraciones (gnome extensions, docker as root por ejemplo)."
-echo -e "${RED}Deployar EN ESTE ORDEN${RESET} ya que cada uno es dependencia del siguiente:"
+echo -e "${RED}#IMPORTANTE:${RESET} Reiniciar luego de instalar el rol correspondiente para que se apliquen ciertos cambios y configuraciones (gnome extensions, docker as root, etc.)."
+echo -e "Para instalar el rol deseado, ejecutar"
 echo -e "${BOLD}${YELLOW_BG}$ cd ~/repositorios/ansible_notebooks${NORMAL}"
 echo -e "==========================================================="
 
-echo -e "${GREEN}Rol funcional para Operaciones, Comercial, RRHH:${RESET}"
+echo -e "${GREEN}Rol funcional para Consultoría, Mesa de Ayuda, Comercial, RRHH:${RESET}"
 echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"funcional\" local.yml -K --verbose${NORMAL}"
 echo -e "==========================================================="
 
-echo -e "${GREEN}Rol dev para I+D:${RESET}"
+echo -e "${GREEN}Rol dev para I+D, Consultoría Técnica:${RESET}"
 echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"devs\" local.yml -K --verbose${NORMAL}"
 
 echo -e "==========================================================="
