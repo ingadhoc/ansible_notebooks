@@ -1,56 +1,26 @@
-- name: Browsers - Chrome
+---
+- name: Install Google Chrome
   tags: chrome
   become: true
   block:
-    - name: Eliminar configuración anterior del repositorio de Google Chrome
-      ansible.builtin.file:
-        path: /etc/apt/sources.list.d/google-chrome.list
-        state: absent
-
-    - name: Eliminar otro archivo de repositorio conflictivo si existe
-      ansible.builtin.file:
-        path: /etc/apt/sources.list.d/dl_google_com_linux_chrome_deb.list
-        state: absent
-
-    - name: Eliminar clave GPG anterior de Google Chrome si existe
-      ansible.builtin.file:
-        path: /etc/apt/trusted.gpg.d/google-chrome.gpg
-        state: absent
-
-    - name: Eliminar cualquier configuración de Google en sources.list
-      ansible.builtin.lineinfile:
-        path: /etc/apt/sources.list
-        regexp: '^.*google.*$'
-        state: absent
-
-    - name: Crear directorio para keyrings si no existe
-      ansible.builtin.file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
-
-    - name: Descargar la clave
-      ansible.builtin.get_url:
-        url: https://dl.google.com/linux/linux_signing_key.pub
-        dest: /tmp/chrome_key.pub
-        mode: '0644'
-
-    - name: Convertir la clave a formato GPG y moverla a keyrings
-      ansible.builtin.command: gpg --dearmor -o /usr/share/keyrings/google-archive-keyring.gpg /tmp/chrome_key.pub
-      changed_when: false
-
-    - name: Eliminar el archivo temporal de la clave
-      ansible.builtin.file:
-        path: /tmp/chrome_key.pub
-        state: absent
-
-    - name: Chrome - Agregar repositorio
-      ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/google-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main"
+    - name: Install apt-transport-https
+      ansible.builtin.apt:
         state: present
         update_cache: true
 
-    - name: Chrome - Instalar
+    - name: Add Apt signing key
+      ansible.builtin.apt_key:
+        url: "https://dl.google.com/linux/linux_signing_key.pub"
+        state: present
+
+    - name: Add repository into sources list
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main
+        state: present
+        filename: google-chrome
+
+    - name: Install google-chrome-stable
       ansible.builtin.apt:
-        name: google-chrome-stable
+        name: "google-chrome-stable"
+        state: present
         update_cache: true
