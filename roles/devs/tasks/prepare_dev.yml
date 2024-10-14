@@ -16,7 +16,7 @@
         groups: ["root"]
         append: "yes"
 
-    # Descargar, instalar, levantar odoo 13, 15, 16 y 17
+    # Descargar, instalar, levantar odoo 15, 16, 17 y 18
     - name: Local dev - Crear carpeta local para Odoo
       become_user: "{{ ansible_env.SUDO_USER }}"
       ansible.builtin.file:
@@ -31,16 +31,17 @@
         - name: Definir las versiones de odoo que van a ser instaladas
           ansible.builtin.set_fact:
             versiones:
-              - 13
               - 15
               - 16
               - 17
+              - 18
 
+        # Luego clonar solo si la carpeta no existe
         - name: Local dev - Clonar repositorio de Odoo
           become_user: "{{ ansible_env.SUDO_USER }}"
           ansible.builtin.git:
             repo: https://github.com/ingadhoc/docker-compose-odoo.git
-            dest: /home/{{ ansible_env.SUDO_USER }}/odoo/{{ item }}
+            dest: "/home/{{ ansible_env.SUDO_USER }}/odoo/{{ item }}"
             clone: true
             update: true
             version: master
@@ -69,11 +70,3 @@
             line: "ODOO_VERSION={{ item }}"
             state: present
           loop: "{{ versiones }}"
-
-        - name: Local dev - ESPACIAL Editar PG version en docker-compose
-          when: "16 in versiones"
-          ansible.builtin.lineinfile:
-            path: /home/{{ ansible_env.SUDO_USER }}/odoo/16/docker-compose.yml
-            regexp: "    image: postgres:15"
-            line: "    image: postgres:14"
-            state: present
