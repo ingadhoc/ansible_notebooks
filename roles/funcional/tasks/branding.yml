@@ -12,27 +12,27 @@
         dest: "{{ item.dest }}"
         mode: "664"
       with_items:
-        - { src: ./files/logo_adhoc_iso_violeta.png, dest: "/home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg" }
-        - { src: ./files/logotipo_adhoc.png, dest: "/home/{{ ansible_env.SUDO_USER }}/.logotipo_adhoc.png"}
+        - { src: ./files/wallpaper_2024.png, dest: "/home/{{ ansible_env.SUDO_USER }}/.wallpaper.png" }
+        - { src: ./files/wallpaper_dark_2024.jpg, dest: "/home/{{ ansible_env.SUDO_USER }}/.wallpaper_dark.jpg"}
 
     - name: Set Wallpaper
       # También se puede ejecutar manualmente, por ejemplo
       # $ gsettings set org.gnome.desktop.background picture-uri file:///home/$USER/.wallpaper.jpg
       community.general.dconf:
         key: "/org/gnome/desktop/background/picture-uri"
-        value: "'file:///home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg'"
+        value: "'file:///home/{{ ansible_env.SUDO_USER }}/.wallpaper.png'"
         state: present
 
     - name: Set Wallpaper - Dark mode
       community.general.dconf:
         key: "/org/gnome/desktop/background/picture-uri-dark"
-        value: "'file:///home/{{ ansible_env.SUDO_USER }}/.wallpaper.jpg'"
+        value: "'file:///home/{{ ansible_env.SUDO_USER }}/.wallpaper_dark.jpg'"
         state: present
 
     - name: Set screensaver picture
       community.general.dconf:
         key: "/org/gnome/desktop/screensaver/picture-uri"
-        value: "'file:///home/{{ ansible_env.SUDO_USER }}/.logotipo_adhoc.png'"
+        value: "'file:///home/{{ ansible_env.SUDO_USER }}/.wallpaper.png'"
         state: present
 
     - name: Set back position
