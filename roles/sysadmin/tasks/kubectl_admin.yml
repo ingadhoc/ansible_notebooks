@@ -120,5 +120,4 @@
         state: present
       vars:
         packages:
-          - kubens
           - kubectx
