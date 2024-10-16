@@ -2,7 +2,7 @@
 - name: SysAdmin - Plugins para kubectl
   tags: kubectl_plugins
   block:
-    - name: kubectl_plugins - Install FairwindsOps/pluto
+    - name: Kubectl_plugins - Install FairwindsOps/pluto
       block:
         - name: Get Last Version URL
           ansible.builtin.uri:
@@ -10,7 +10,7 @@
             return_content: true
           register: json_response
 
-        - name: kubectl_plugins - Download and Install
+        - name: Kubectl_plugins - Download and Install
           loop: "{{ json_response.json.assets }}"
           when: item.name is search("linux_amd64.tar.gz$")
           become: true
@@ -25,7 +25,7 @@
               - pluto
             mode: "0755"
 
-        - name: kubectl_plugins - Add bash completion
+        - name: Kubectl_plugins - Add bash completion
           ansible.builtin.blockinfile:
             path: /home/{{ remote_regular_user }}/.bashrc
             block: |
@@ -33,7 +33,7 @@
                 source <(pluto completion bash --no-footer)
               fi
 
-    - name: kubectl_plugins - Install rancher/rke
+    - name: Kubectl_plugins - Install rancher/rke
       block:
         - name: Get Last Version URL
           ansible.builtin.uri:
@@ -41,7 +41,7 @@
             return_content: true
           register: json_response
 
-        - name: kubectl_plugins - Download and Install
+        - name: Kubectl_plugins - Download and Install
           loop: "{{ json_response.json.assets }}"
           when: item.name is search("rke_linux-amd64$")
           become: true
@@ -50,7 +50,7 @@
             dest: /usr/bin/rke
             mode: '0755'
 
-    - name: kubectl_plugins - Install robscott/kube-capacity
+    - name: Kubectl_plugins - Install robscott/kube-capacity
       block:
         - name: Get Last Version URL
           ansible.builtin.uri:
@@ -58,7 +58,7 @@
             return_content: true
           register: json_response
 
-        - name: kubectl_plugins - Download and Install
+        - name: Kubectl_plugins - Download and Install
           loop: "{{ json_response.json.assets }}"
           when: item.name is search("linux_x86_64.tar.gz$")
           become: true
@@ -73,7 +73,7 @@
               - kube-capacity
             mode: "0755"
 
-        - name: kubectl_plugins - Add bash completion
+        - name: Kubectl_plugins - Add bash completion
           ansible.builtin.blockinfile:
             path: /home/{{ remote_regular_user }}/.bashrc
             block: |
@@ -81,7 +81,7 @@
                 source <(kube-capacity completion bash)
               fi
 
-    - name: kubectl_plugins - Install derailed/popeye
+    - name: Kubectl_plugins - Install derailed/popeye
       block:
         - name: Get Last Version URL
           ansible.builtin.uri:
@@ -89,7 +89,7 @@
             return_content: true
           register: json_response
 
-        - name: kubectl_plugins - Download and Install
+        - name: Kubectl_plugins - Download and Install
           loop: "{{ json_response.json.assets }}"
           when: item.name is search("linux_amd64.tar.gz$")
           become: true
@@ -104,7 +104,7 @@
               - popeye
             mode: "0755"
 
-        - name: kubectl_plugins - Add bash completion
+        - name: Kubectl_plugins - Add bash completion
           ansible.builtin.blockinfile:
             path: /home/{{ remote_regular_user }}/.bashrc
             block: |
@@ -112,7 +112,7 @@
                 source <(popeye completion bash)
               fi
 
-    - name: kubectl_plugins - Instalar kubectx
+    - name: Kubectl_plugins - Instalar kubectx
       when: ansible_facts['distribution'] == 'Debian'
       become: true
       ansible.builtin.apt:
