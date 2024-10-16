@@ -32,6 +32,8 @@
           - tar
           - unzip
           - p7zip-full
+          - unrar
+          - p7zip-rar
 
     - name: Base - Instalar otras aplicaciones
       ansible.builtin.apt:
@@ -68,8 +70,8 @@
       vars:
         packages:
           # Base - Performance y  rendimiento de batería
-          - tlp
-          - tlp-rdw
+          # - tlp
+          # - tlp-rdw
           - acpi-call-dkms
           - powertop
           - preload
@@ -77,9 +79,6 @@
           # Base - Instalar paquetes de sistema, drivers
           - ubuntu-restricted-extras
           - ppa-purge
-          # Base - Utilidades de compresión
-          - unrar
-          - p7zip-rar
 
     - name: Base - Paquetes varios de entorno gráfico, captura de pantalla, etc.
       ansible.builtin.apt:
