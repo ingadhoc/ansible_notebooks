@@ -27,5 +27,3 @@
       ansible.builtin.import_tasks: prepare_dev.yml
     - name: Ssh
       ansible.builtin.import_tasks: ssh.yml
-    - name: GH
-      ansible.builtin.import_tasks: gh_cli.yml
