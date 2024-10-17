@@ -54,12 +54,3 @@
       changed_when:
         false
       # https://extensions.gnome.org/extension/1160/dash-to-panel/
-
-    - name: GNOME - Instalar gnome extensions SOLO UBUNTU
-      become_method: sudo
-      when: ansible_facts['distribution'] == 'Ubuntu'
-      become_user: "{{ lookup('env', 'USER') }}"
-      ansible.builtin.script: /tmp/install-gnome-extensions.sh --overwrite --enable 751
-      changed_when:
-        false
-      # https://extensions.gnome.org/extension/751/audio-output-switcher/
