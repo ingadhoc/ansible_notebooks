@@ -1,34 +1,58 @@
 ---
-- name: Visual Studio - Instalar y configurar
+- name: Visual Studio Code - Instalar y configurar
   tags: code
   block:
-    - name: Visual Studio Code - Descargar e instalar
+    - name: Agregar clave GPG de Microsoft
+      ansible.builtin.apt_key:
+        url: https://packages.microsoft.com/keys/microsoft.asc
+        state: present
+
+    - name: Agregar repositorio de Visual Studio Code
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+        state: present
+      when: ansible_userspace_architecture == 'x86_64'
+
+    - name: Actualizar la caché de paquetes
       ansible.builtin.apt:
-        deb: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
+        update_cache: yes
+
+    - name: Instalar Visual Studio Code
+      ansible.builtin.apt:
+        name: code
+        state: present
       when: ansible_userspace_architecture == 'x86_64'
 
     - name: Instalar muchas extensiones predefinidas
-      become_method: sudo
-      become_user: "{{ lookup('env', 'USER') }}"
-      ansible.builtin.command: "code --install-extension {{ item }}"
+      become: true
+      ansible.builtin.shell: "su - {{ lookup('env', 'USER') }} -c 'code --install-extension {{ item }}'"
       with_items: "{{ vscode_extension_list_devs }}"
       changed_when: false
 
     - name: Visual Studio Code - Definir como editor de texto predeterminado
-      become_method: sudo
-      become_user: "{{ lookup('env', 'USER') }}"
-      ansible.builtin.command: "xdg-mime default code.desktop application/x-shellscript text/plain text/markdown application/x-yaml text/x-python"
+      become: true
+      ansible.builtin.shell: "su - {{ lookup('env', 'USER') }} -c 'xdg-mime default code.desktop application/x-shellscript text/plain text/markdown application/x-yaml text/x-python'"
       changed_when: false
+
+    - name: Crear directorios necesarios para configuraciones
+      file:
+        path: "{{ ansible_env.HOME }}/{{ item }}"
+        state: directory
+        mode: "0755"
+      with_items:
+        - ".config"
+        - ".config/Code"
+        - ".config/Code/User"
 
     - name: Visual Studio Code - Configuraciones y personalizaciones
       ansible.builtin.copy:
         src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
+        dest: "{{ ansible_env.HOME }}/{{ item.dest }}"
         owner: "{{ lookup('env', 'USER') }}"
         group: "{{ lookup('env', 'USER') }}"
-        mode: "0666"
+        mode: "0644"
       with_items:
-        - { src: ./files/settings.json, dest: ~/.config/Code/User/ }
-        - { src: ./files/keybindings.json, dest: ~/.config/Code/User/ }
-        - { src: ./files/pycodestyle, dest: ~/.config/ }
-        - { src: ./files/flake8, dest: ~/.config/ }
+        - { src: ./files/settings.json, dest: .config/Code/User/settings.json }
+        - { src: ./files/keybindings.json, dest: .config/Code/User/keybindings.json }
+        - { src: ./files/pycodestyle, dest: .config/pycodestyle }
+        - { src: ./files/flake8, dest: .config/flake8 }
