@@ -38,7 +38,7 @@
     - name: Set back position
       community.general.dconf:
         key: "/org/gnome/desktop/background/picture-options"
-        value: "'centered'"
+        value: "'scaled'"
         state: present
 
     - name: Set back colour
