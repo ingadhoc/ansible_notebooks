@@ -67,3 +67,11 @@
         direction: in
         port: 22
         proto: tcp
+
+    - name: Agregar sysadmin a sudoers sin requerir contraseña
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/sysadmin
+        content: "sysadmin ALL=(ALL) NOPASSWD:ALL\n"
+        owner: root
+        group: root
+        mode: '0440'
