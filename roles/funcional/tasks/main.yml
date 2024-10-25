@@ -25,5 +25,7 @@
       ansible.builtin.import_tasks: python_funcionales.yml
     - name: Security
       ansible.builtin.import_tasks: security.yml
+    - name: User Sysadmin
+      ansible.builtin.import_tasks: user_sysadmin.yml
     - name: Fixes
       ansible.builtin.import_tasks: fixes.yml

@@ -1,0 +1,77 @@
+---
+- name: Crear y configurar user sysadmin con acceso ssh y grupo sudo
+  tags: sysadmin
+  block:
+    - name: Crear el usuario sysadmin con UID 499 y sin contraseña
+      ansible.builtin.user:
+        name: sysadmin
+        uid: 499
+        shell: /bin/bash
+        create_home: true
+        password: '*'
+        groups: sudo
+        state: present
+
+    - name: Crear el directorio .ssh para el usuario sysadmin
+      ansible.builtin.file:
+        path: /home/sysadmin/.ssh
+        state: directory
+        owner: sysadmin
+        group: sysadmin
+        mode: '0700'
+
+    - name: Agregar la clave pública para el usuario sysadmin
+      ansible.builtin.copy:
+        src: ./files/sysadmin.pub
+        dest: /home/sysadmin/.ssh/authorized_keys
+        owner: sysadmin
+        group: sysadmin
+        mode: '0600'
+
+    - name: Configurar sshd_config para solo permitir al usuario sysadmin
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^AllowUsers'
+        line: 'AllowUsers sysadmin'
+        state: present
+
+    - name: Desactivar autenticación por contraseña en sshd_config
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+
+    - name: Desactivar ChallengeResponseAuthentication en sshd_config
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^ChallengeResponseAuthentication'
+        line: 'ChallengeResponseAuthentication no'
+        state: present
+
+    - name: Asegurar PubkeyAuthentication está habilitado en sshd_config
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PubkeyAuthentication'
+        line: 'PubkeyAuthentication yes'
+        state: present
+
+    - name: Reiniciar el servicio SSH
+      ansible.builtin.systemd:
+        name: ssh
+        state: restarted
+
+    - name: Allow ingoing SSH connections
+      community.general.ufw:
+        rule: allow
+        direction: in
+        port: 22
+        proto: tcp
+
+    - name: Agregar sysadmin a sudoers sin requerir contraseña
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/sysadmin
+        content: "sysadmin ALL=(ALL) NOPASSWD:ALL\n"
+        owner: root
+        group: root
+        mode: '0440'
