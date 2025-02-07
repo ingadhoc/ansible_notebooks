@@ -99,8 +99,8 @@
         force: true
       loop: "{{ hook_files.files }}"
 
-    - name: Debug - Clone odoo_log_analyser repository
+    - name: Debug - Clonar el repositorio odoo_log_analyser
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.git:
         repo: https://github.com/adhoc-dev/odoo_log_analyser.git
-        dest: /home/{{ remote_regular_user }}/repositorios
+        dest: /home/{{ remote_regular_user }}/repositorios/odoo_log_analyser
