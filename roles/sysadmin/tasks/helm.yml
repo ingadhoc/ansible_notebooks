@@ -1,6 +1,6 @@
 ---
 # https://helm.sh/docs/intro/install/#from-script
-- name: SysAdmin - Instalar helm cli
+- name: SysAdmin - Install helm cli
   tags: helm_cli
   block:
     - name: Helm cli - Descargar script
@@ -11,6 +11,14 @@
         group: "{{ remote_regular_user }}"
         mode: u+rwx
 
-    - name: Helm cli - Instalar
+    - name: Helm cli - Install
       become: true
       ansible.builtin.script: /tmp/get_helm.sh
+
+    - name: Helm cli - bash completion
+      ansible.builtin.blockinfile:
+        path: /home/{{ remote_regular_user }}/.bashrc
+        block: |
+          if command -v helm >/dev/null 2>&1; then
+            source <(helm completion bash)
+          fi
