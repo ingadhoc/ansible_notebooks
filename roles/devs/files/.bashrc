@@ -134,3 +134,9 @@ fi
 
 # AdHoc Prompt
 [[ -f ~/.adhoc_bash_ps.sh ]] && source ~/.adhoc_bash_ps.sh
+
+#HISTIGNORE='sudo *':'echo w*'
+PROMPT_COMMAND='history -a'
+HISTTIMEFORMAT="%F %T "
+HISTSIZE=11000
+HISTFILESIZE=11000
