@@ -100,7 +100,7 @@ adhoc_promp_rancher(){
     fi
     local current_cluster=$(jq '.CurrentServer' $config_path)
     local current_cluster_id=\"$(jq -c ".Servers.${current_cluster}.project" $config_path | tr -d \" | cut -d':' -f1)\"
-    local current_context=$(jq ".Servers.${current_cluster}.kubeConfigs | to_entries[] | select(.key | contains("$current_cluster_id")) | .value.\"current-context\"" $config_path 2>/dev/null | tr -d \")
+    local current_context=$(jq ".Servers.${current_cluster}.kubeConfigs // {} | to_entries[] | select(.key | contains("$current_cluster_id")) | .value.\"current-context\"" $config_path 2>/dev/null | tr -d \")
     if [ ! -n "$current_context" ]; then
         return
     fi
