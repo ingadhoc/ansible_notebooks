@@ -32,3 +32,11 @@
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
         mode: "644"
+
+    - name: Fixes - Copiar archivo .tmux
+      ansible.builtin.copy:
+        src: files/.tmux
+        dest: /home/{{ remote_regular_user }}/.tmux
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "644"
