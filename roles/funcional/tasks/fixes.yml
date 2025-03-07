@@ -29,3 +29,21 @@
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
         mode: "774"
+
+- name: Fixes - xorg
+  tags: xorg_fixes
+  block:
+    - name: Fixes - Reinstalar xorg
+      become: yes
+      ansible.builtin.command: apt-get install --reinstall -y xorg
+
+    - name: Fixes - Configurar GDM3 para forzar uso de Xorg
+      become: yes
+      ansible.builtin.blockinfile:
+        path: /etc/gdm3/custom.conf
+        marker: "# {mark} ANSIBLE XORG FIX"
+        block: |
+          WaylandEnable=false
+          DefaultSession=gnome-xorg.desktop
+        insertafter: '^\[daemon\]'
+        state: present
