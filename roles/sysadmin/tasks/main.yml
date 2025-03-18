@@ -15,5 +15,5 @@
       ansible.builtin.import_tasks: helm.yml
     - name: Kubectl_admin
       ansible.builtin.import_tasks: kubectl_admin.yml
-    - name: Fixes
-      ansible.builtin.import_tasks: fixes.yml
+    # - name: Fixes
+    #   ansible.builtin.import_tasks: fixes.yml

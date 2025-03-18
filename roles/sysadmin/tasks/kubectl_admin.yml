@@ -120,5 +120,5 @@
         state: present
       vars:
         packages:
-          - kubens
+          # - kubens (it's installed by kubectx)
           - kubectx
