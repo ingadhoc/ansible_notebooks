@@ -34,11 +34,11 @@
   tags: xorg_fixes
   block:
     - name: Fixes - Reinstalar xorg
-      become: yes
+      become: true
       ansible.builtin.command: apt-get install --reinstall -y xorg
 
     - name: Fixes - Configurar GDM3 para forzar uso de Xorg
-      become: yes
+      become: true
       ansible.builtin.blockinfile:
         path: /etc/gdm3/custom.conf
         marker: "# {mark} ANSIBLE XORG FIX"
