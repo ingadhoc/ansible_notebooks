@@ -18,6 +18,22 @@
         - { name: pull.default, value: nothing }
         - { name: pull.ff, value: only }
         - { name: core.hooksPath, value: "/home/{{ ansible_env.SUDO_USER }}/.git_hooks" }
+        - { name: alias.lol, value: log --oneline --graph --decorate }
+        - { name: alias.lg, value: log --oneline --graph --decorate }
+        - { name: alias.co, value: checkout }
+        - { name: alias.ci, value: commit }
+        - { name: alias.st, value: status }
+        - { name: alias.amend, value: commit --amend --no-edit }
+        - { name: alias.unstage, value: reset HEAD -- }
+        - { name: alias.undo, value: reset --soft HEAD^ }
+        - { name: alias.undo-all, value: reset --soft HEAD~2 }
+        - { name: alias.undo-all-2, value: reset --soft HEAD~3 }
+        - { name: alias.undo-all-3, value: reset --soft HEAD~4 }
+        - { name: alias.undo-all-4, value: reset --soft HEAD~5 }
+        - { name: alias.lol, value: log --oneline --decorate }
+        - { name: alias.graph, value: log --oneline --graph --decorate }
+        - { name: alias.reflog, value: reflog --oneline --date=iso --decorate }
+        - { name: alias.diffw, value: diff --word-diff --ignore-all-space }
 
     - name: Global hooks - Crear directorio
       ansible.builtin.file:
