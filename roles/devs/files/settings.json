@@ -30,6 +30,7 @@
     "suppressShowKeyBindingsNotice": true
   },
   "gitlens.historyExplorer.enabled": false,
+  "gitlens.telemetry.enabled": false,
   "editor.minimap.enabled": false,
   "explorer.confirmDelete": false,
   "editor.fontFamily": "'Fira Code', 'Droid Sans Mono', 'monospace', monospace, 'Droid Sans Fallback'",
@@ -117,5 +118,7 @@
   "vim.handleKeys": {
     "<C-a>": false,
     "<C-f>": false
-  }
+  },
+  "telemetry.telemetryLevel": "off",
+  "telemetry.feedback.enabled": false
 }
