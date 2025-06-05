@@ -1,10 +1,8 @@
 ---
 - name: Configurar ambiente Odoo local
-  hosts: localhost
-  connection: local # Asegura que se ejecute en la máquina que lanza ansible-playbook
+  tags: remote_dev
   become: false     # Ejecuta las tareas como el usuario actual, no root
-
-  tasks:
+  block:
     - name: Crear carpeta ~/odoo si no existe
       ansible.builtin.file:
         path: "{{ ansible_env.HOME }}/odoo" # Utiliza la variable de entorno HOME del usuario
