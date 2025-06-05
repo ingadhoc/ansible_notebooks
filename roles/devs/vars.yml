@@ -6,8 +6,6 @@ remote_regular_user: "{{ ansible_env.SUDO_USER }}"
 vscode_extension_list_devs:
   # Install Visual Studio Code extensions.
   - ms-python.python
-  # Markdown linting and style checking for Visual Studio Code
-  - DavidAnson.vscode-markdownlint
   # Supercharge the Git capabilities built into Visual Studio Code
   - eamodio.gitlens
   # Odoo snippets
@@ -19,7 +17,5 @@ vscode_extension_list_devs:
   - trinhanhngoc.vscode-odoo
   # Kubernetes extension
   - ms-kubernetes-tools.vscode-kubernetes-tools
-  # Remote containers
-  - ms-vscode-remote.remote-containers
   # Remote development
   - ms-vscode-remote.vscode-remote-extensionpack
