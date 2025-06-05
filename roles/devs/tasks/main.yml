@@ -23,8 +23,10 @@
       ansible.builtin.import_tasks: rancher2.yml
     - name: Fixes
       ansible.builtin.import_tasks: fixes.yml
-    - name: Prepare dev
-      ansible.builtin.import_tasks: prepare_dev.yml
+    # - name: Prepare dev
+    #   ansible.builtin.import_tasks: prepare_dev.yml
+    - name: Prepare RemoteDev
+      ansible.builtin.import_tasks: prepare_remote_dev.yml
     - name: Ssh
       ansible.builtin.import_tasks: ssh.yml
     - name: GH
