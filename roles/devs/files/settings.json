@@ -1,4 +1,5 @@
 {
+  "extensions.ignoreRecommendations": true,
   "editor.multiCursorModifier": "ctrlCmd",
   "window.zoomLevel": 0,
   "editor.wordWrap": "on",

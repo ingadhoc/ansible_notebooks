@@ -90,6 +90,11 @@
           - alacarte
           - fonts-firacode
           - flameshot
+          # Finger print
+          - fprintd
+          - libpam-fprintd
+          # FIDO
+          - fido2-tools
 
     - name: Base - Eliminar programas sin uso
       ansible.builtin.apt:
