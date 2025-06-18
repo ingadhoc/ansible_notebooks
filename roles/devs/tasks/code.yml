@@ -8,10 +8,10 @@
         dest: /usr/share/keyrings/microsoft-vscode-archive-keyring.gpg
         mode: '0644'
         force: true # Asegura que el archivo se descargue incluso si ya existe
-      register: vscode_key_download # Registra el resultado para usarlo en el siguiente paso
 
     - name: Agregar repositorio de Visual Studio Code
       ansible.builtin.apt_repository:
+        # ¡IMPORTANTE! Aquí está el cambio clave: la opción 'signed-by'
         repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-vscode-archive-keyring.gpg] https://packages.microsoft.com/repos/vscode stable main"
         state: present
         filename: vscode # Opcional: Nombre del archivo .list en sources.list.d/
