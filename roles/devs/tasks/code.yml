@@ -2,15 +2,19 @@
 - name: Visual Studio Code - Instalar y configurar
   tags: code
   block:
-    - name: Agregar clave GPG de Microsoft
-      ansible.builtin.apt_key:
+    - name: Descargar y agregar clave GPG de Microsoft al keyring de APT
+      ansible.builtin.get_url:
         url: https://packages.microsoft.com/keys/microsoft.asc
-        state: present
+        dest: /usr/share/keyrings/microsoft-vscode-archive-keyring.gpg
+        mode: '0644'
+        force: true # Asegura que el archivo se descargue incluso si ya existe
+      register: vscode_key_download # Registra el resultado para usarlo en el siguiente paso
 
     - name: Agregar repositorio de Visual Studio Code
       ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-vscode-archive-keyring.gpg] https://packages.microsoft.com/repos/vscode stable main"
         state: present
+        filename: vscode # Opcional: Nombre del archivo .list en sources.list.d/
       when: ansible_userspace_architecture == 'x86_64'
 
     - name: Actualizar la caché de paquetes
