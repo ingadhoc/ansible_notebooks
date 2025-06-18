@@ -1,44 +1,58 @@
 ---
-- name: Visual Studio Code - Instalar y configurar
+- name: Visual Studio Code - Install and Configure
   tags: code
   block:
-    - name: Descargar y agregar clave GPG de Microsoft al keyring de APT
+    - name: Code - Ensure old or corrupt GPG key is removed
+      become: true
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/packages.microsoft.gpg
+        state: absent
+
+    - name: Code - Download Microsoft GPG key (ASCII) to a temporary file
+      become: true
       ansible.builtin.get_url:
         url: https://packages.microsoft.com/keys/microsoft.asc
-        dest: /usr/share/keyrings/microsoft-vscode-archive-keyring.gpg
+        dest: /tmp/microsoft.asc
         mode: '0644'
-        force: true # Asegura que el archivo se descargue incluso si ya existe
 
-    - name: Agregar repositorio de Visual Studio Code
+    - name: Code - Dearmor GPG key to binary format
+      become: true
+      ansible.builtin.shell:
+        cmd: gpg --dearmor -o /etc/apt/keyrings/packages.microsoft.gpg /tmp/microsoft.asc
+
+    - name: Code - Add VS Code APT repository
+      become: true
       ansible.builtin.apt_repository:
-        # ¡IMPORTANTE! Aquí está el cambio clave: la opción 'signed-by'
-        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-vscode-archive-keyring.gpg] https://packages.microsoft.com/repos/vscode stable main"
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main"
         state: present
-        filename: vscode # Opcional: Nombre del archivo .list en sources.list.d/
-      when: ansible_userspace_architecture == 'x86_64'
+        filename: vscode
+        update_cache: true
 
-    - name: Actualizar la caché de paquetes
-      ansible.builtin.apt:
-        update_cache: yes
+    - name: Code - Remove temporary GPG key file
+      become: true
+      ansible.builtin.file:
+        path: /tmp/microsoft.asc
+        state: absent
 
-    - name: Instalar Visual Studio Code
+    - name: Code - Install Visual Studio Code
+      become: true
       ansible.builtin.apt:
         name: code
         state: present
       when: ansible_userspace_architecture == 'x86_64'
 
-    - name: Instalar muchas extensiones predefinidas
+    - name: Code - Install predefined extensions
       become: true
       ansible.builtin.shell: "su - {{ lookup('env', 'USER') }} -c 'code --install-extension {{ item }}'"
       with_items: "{{ vscode_extension_list_devs }}"
       changed_when: false
 
-    - name: Visual Studio Code - Definir como editor de texto predeterminado
+    - name: Code - Set as default text editor
       become: true
       ansible.builtin.shell: "su - {{ lookup('env', 'USER') }} -c 'xdg-mime default code.desktop application/x-shellscript text/plain text/markdown application/x-yaml text/x-python'"
       changed_when: false
 
-    - name: Crear directorios necesarios para configuraciones
+    - name: Code - Create configuration directories
       file:
         path: "{{ ansible_env.HOME }}/{{ item }}"
         state: directory
@@ -48,7 +62,7 @@
         - ".config/Code"
         - ".config/Code/User"
 
-    - name: Visual Studio Code - Configuraciones y personalizaciones
+    - name: Code - Copy configuration files
       ansible.builtin.copy:
         src: "{{ item.src }}"
         dest: "{{ ansible_env.HOME }}/{{ item.dest }}"
