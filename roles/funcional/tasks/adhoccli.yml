@@ -1,0 +1,43 @@
+---
+- name: adhoccli - Configurar repositorio Adhoc y instalar adhoccli
+  tags: adhoccli
+  block:
+    - name: adhoccli - Descargar la clave GPG de Adhoc
+      ansible.builtin.get_url:
+        url: https://apt.dev-adhoc.com/adhoc-devops.asc
+        dest: /tmp/adhoc-devops.asc
+        mode: '0644'
+
+    - name: adhoccli - Desarmar la clave GPG y colocarla en keyrings
+      ansible.builtin.command:
+        cmd: "gpg --dearmor -o /usr/share/keyrings/adhoc-devops.gpg /tmp/adhoc-devops.asc"
+      args:
+        creates: "/usr/share/keyrings/adhoc-devops.gpg"
+      register: gpg_dearmor_result
+      changed_when: gpg_dearmor_result.rc == 0 and 'skipped' not in gpg_dearmor_result.stdout
+
+    - name: adhoccli - Mostrar resultado del desarmado GPG (para depuración)
+      ansible.builtin.debug:
+        var: gpg_dearmor_result
+      when: gpg_dearmor_result is defined and gpg_dearmor_result.changed
+
+    - name: adhoccli - Añadir el repositorio Adhoc a las fuentes de APT
+      ansible.builtin.apt_repository:
+        repo: 'deb [signed-by=/usr/share/keyrings/adhoc-devops.gpg] https://apt.dev-adhoc.com/ stable main'
+        state: present
+        filename: adhoc
+
+    - name: adhoccli - Actualizar el índice de paquetes APT (explícita para depuración)
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: adhoccli - Instalar adhoccli
+      ansible.builtin.apt:
+        name: adhoccli
+        state: present
+
+    - name: adhoccli - Limpiar archivo de clave GPG temporal
+      ansible.builtin.file:
+        path: /tmp/adhoc-devops.asc
+        state: absent
+      when: ansible_check_mode is not defined or not ansible_check_mode

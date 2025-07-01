@@ -7,6 +7,8 @@
   block:
     - name: Packages
       ansible.builtin.import_tasks: packages.yml
+    - name: AdhocCli
+      ansible.builtin.import_tasks: adhoccli.yml
     - name: Browsers
       ansible.builtin.import_tasks: browsers.yml
     - name: Ext
