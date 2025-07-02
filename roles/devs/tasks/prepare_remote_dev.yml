@@ -3,39 +3,32 @@
   tags: remote_dev
   become: false
   block:
-    - name: Crear carpeta ~/odoo si no existe
+    - name: Crear carpeta odoo en el home del usuario original
       ansible.builtin.file:
-        path: "{{ ansible_env.SUDO_USER }}/odoo"
+        path: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo"
         state: directory
         mode: '0755'
 
     - name: Clonar repositorio docker-compose-context
       ansible.builtin.git:
         repo: https://github.com/ingadhoc/docker-compose-context.git
-        dest: "{{ ansible_env.SUDO_USER }}/odoo/ctx"
+        dest: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo/ctx"
         version: main
         accept_hostkey: yes
 
     - name: Ejecutar init.sh para el contexto
       ansible.builtin.shell:
         cmd: ./init.sh
-        chdir: "{{ ansible_env.SUDO_USER }}/odoo/ctx"
-      args:
-
-        chdir: "{{ ansible_env.SUDO_USER }}/odoo/ctx"
-
+        chdir: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo/ctx"
 
     - name: Clonar repositorio docker-compose-odoo para la versión (directorio '18')
       ansible.builtin.git:
         repo: https://github.com/ingadhoc/docker-compose-odoo.git
-        dest: "{{ ansible_env.SUDO_USER }}/odoo/18"
+        dest: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo/18"
         version: main
         accept_hostkey: yes
 
     - name: Ejecutar init.sh para Odoo (directorio '18')
       ansible.builtin.shell:
         cmd: ./init.sh
-        chdir: "{{ ansible_env.SUDO_USER }}/odoo/18"
-      args:
-        chdir: "{{ ansible_env.SUDO_USER }}/odoo/18"
-
+        chdir: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo/18"
