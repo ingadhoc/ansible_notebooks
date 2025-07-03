@@ -2,34 +2,42 @@
 - name: adhoccli - Configurar repositorio Adhoc y instalar adhoccli
   tags: adhoccli
   block:
+    - name: adhoccli - Asegurar que 'gnupg' y 'apt-transport-https' estén instalados (prerrequisitos)
+      ansible.builtin.apt:
+        name:
+          - gnupg
+          - apt-transport-https
+        state: present
+        update_cache: yes
+
     - name: adhoccli - Descargar la clave GPG de Adhoc
       ansible.builtin.get_url:
         url: https://apt.dev-adhoc.com/adhoc-devops.asc
         dest: /tmp/adhoc-devops.asc
         mode: '0644'
 
-    - name: adhoccli - Desarmar la clave GPG y colocarla en keyrings
-      ansible.builtin.command:
-        cmd: "gpg --dearmor -o /usr/share/keyrings/adhoc-devops.gpg /tmp/adhoc-devops.asc"
+    - name: adhoccli - Desarmar la clave GPG y colocarla en keyrings (Usando shell con pipe explícito)
+      ansible.builtin.shell: |
+        gpg --dearmor -o /usr/share/keyrings/adhoc-devops.gpg /tmp/adhoc-devops.asc
       args:
         creates: "/usr/share/keyrings/adhoc-devops.gpg"
-      register: gpg_dearmor_result
-      changed_when: gpg_dearmor_result.rc == 0 and 'skipped' not in gpg_dearmor_result.stdout
-
-    - name: adhoccli - Mostrar resultado del desarmado GPG (para depuración)
-      ansible.builtin.debug:
-        var: gpg_dearmor_result
-      when: gpg_dearmor_result is defined and gpg_dearmor_result.changed
+      changed_when: true
 
     - name: adhoccli - Añadir el repositorio Adhoc a las fuentes de APT
-      ansible.builtin.apt_repository:
-        repo: 'deb [signed-by=/usr/share/keyrings/adhoc-devops.gpg] https://apt.dev-adhoc.com/ stable main'
-        state: present
-        filename: adhoc
+      ansible.builtin.shell: |
+        echo "deb [signed-by=/usr/share/keyrings/adhoc-devops.gpg] https://apt.dev-adhoc.com/ stable main" | sudo tee /etc/apt/sources.list.d/adhoc.list
+      args:
+        creates: "/etc/apt/sources.list.d/adhoc.list"
+      changed_when: true
 
-    - name: adhoccli - Actualizar el índice de paquetes APT (explícita para depuración)
-      ansible.builtin.apt:
-        update_cache: yes
+    - name: adhoccli - Limpiar caché de APT y forzar actualización con entorno de locale explícito
+      ansible.builtin.shell: |
+        sudo rm -rf /var/lib/apt/lists/*
+        sudo apt clean
+        sudo env LANG=C.UTF-8 LC_ALL=C.UTF-8 apt update
+      register: apt_update_force_result
+      changed_when: apt_update_force_result.rc == 0
+      failed_when: apt_update_force_result.rc != 0
 
     - name: adhoccli - Instalar adhoccli
       ansible.builtin.apt:
