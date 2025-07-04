@@ -3,6 +3,9 @@
   tags: remote_dev
   become: false
   block:
+    - name: Reset ansible connection to apply group changes
+      ansible.builtin.meta: reset_connection
+
     - name: Crear carpeta odoo en el home del usuario original
       ansible.builtin.file:
         path: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo"
