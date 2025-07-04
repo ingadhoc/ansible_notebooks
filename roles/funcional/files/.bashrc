@@ -118,6 +118,3 @@ fi
 
 # Verifica si está instalado Anydesk, sino instala, y muestra el ID
 alias adhoc-anydesk='sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/adhoc-dev/sysadmin-tools/main/check_anydesk.sh)"'
-
-# Para ejecutar fácilmente el mantenimiento preventivo de Adhoc en las notebooks
-alias mantenimiento='sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/adhoc-dev/sysadmin-tools/main/mantenimiento_notebooks.sh)"'
