@@ -19,19 +19,9 @@
         version: main
         accept_hostkey: yes
 
-    - name: Ejecutar init.sh para el contexto
-      ansible.builtin.shell:
-        cmd: ./init.sh
-        chdir: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo/ctx"
-
     - name: Clonar repositorio docker-compose-odoo para la versión (directorio '18')
       ansible.builtin.git:
         repo: https://github.com/ingadhoc/docker-compose-odoo.git
         dest: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo/18"
         version: main
         accept_hostkey: yes
-
-    - name: Ejecutar init.sh para Odoo (directorio '18')
-      ansible.builtin.shell:
-        cmd: ./init.sh
-        chdir: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo/18"
