@@ -155,3 +155,9 @@ branding_dconf_settings:
   - { key: "/org/gnome/desktop/screensaver/picture-uri", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}'" }
   - { key: "/org/gnome/desktop/background/picture-options", value: "'scaled'" }
   - { key: "/org/gnome/desktop/background/primary-color", value: "'#d6d6d4'" }
+
+# Ajustes de dconf para mejorar el rendimiento y comportamiento de la UI
+ui_performance_dconf_settings:
+  - { key: "/org/gnome/desktop/interface/clock-show-seconds", value: "false" }
+  - { key: "/org/gnome/desktop/interface/enable-animations", value: "false" }
+  - { key: "/org/gnome/mutter/workspaces-only-on-primary", value: "true" }

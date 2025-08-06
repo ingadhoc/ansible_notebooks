@@ -1,13 +1,10 @@
-- name: Mejorar performance de UI - Show seconds
-  tags: performance
-  become_method: sudo
-  become_user: "{{ lookup('env', 'USER') }}"
+---
+- name: UI | Aplicar ajustes de rendimiento y comportamiento
+  tags: performance, ui, gnome
+  become: true
+  become_user: "{{ remote_regular_user }}"  # Usamos la variable estándar
   community.general.dconf:
     key: "{{ item.key }}"
     value: "{{ item.value }}"
     state: present
-  with_items:
-    - { key: "/org/gnome/desktop/interface/clock-show-seconds", value: "'false'"}
-    - { key: "/org/gnome/desktop/interface/enable-animations", value: "'false'"}
-    # Determina si el cambio entre áreas de trabajo debería suceder para las ventanas en todos los monitores o sólo para ventanas en el monitor primario.
-    - { key: "/org/gnome/mutter/workspaces-only-on-primary", value: "'true'" }
+  loop: "{{ ui_performance_dconf_settings }}" # Loop sobre la nueva variable
