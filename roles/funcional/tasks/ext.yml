@@ -1,27 +1,10 @@
 ---
-# Configuring Ext
-- name: Configurando ext 01
-  tags: ext
-  become_method: sudo
-  become_user: "{{ lookup('env', 'USER') }}"
+- name: GNOME | Aplicar configuraciones de dconf para el usuario
+  tags: ext, gnome, dconf
+  become: true
+  become_user: "{{ remote_regular_user }}" # Usamos la variable consistente
   community.general.dconf:
     key: "{{ item.key }}"
     value: "{{ item.value }}"
     state: present
-  with_items:
-    - { key: "/org/gnome/shell/extensions/wsmatrix/num-columns", value: "2" }
-    - { key: "/org/gnome/shell/extensions/wsmatrix/num-rows", value: "2" }
-    - { key: "/org/gnome/shell/extensions/wsmatrix/show-overview-grid", value: "true" }
-    - { key: "/org/gnome/shell/extensions/openweather/city", value: "'-32.9575, -60.639444>Rosario, Santa Fe>-1'" }
-    - { key: "/org/gnome/shell/extensions/openweather/unit", value: "'celsius'" }
-    - { key: "/org/gnome/shell/extensions/openweather/wind-speed-unit", value: "'m/s'" }
-    - { key: "/org/gnome/shell/extensions/openweather/pressure-unit", value: "'hPa'" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/scroll-action", value: "'cycle-windows'" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/isolate-workspaces", value: "true" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/multi-monitor", value: "true" }
-    - { key: "/org/gnome/shell/window-switcher/current-workspace-only", value: "true" }
-    - { key: "/org/gnome/shell/app-switcher/current-workspace-only", value: "true" }
-    - { key: "/org/gnome/desktop/interface/clock-show-date", value: "true" }
-    - { key: "/org/gnome/desktop/interface/show-battery-percentage", value: "true" }
-    - { key: "/org/gnome/mutter/dynamic-workspaces", value: "false" }
-    - { key: "/org/gnome/desktop/wm/preferences/num-workspaces", value: "4" }
+  loop: "{{ dconf_settings }}" # Usamos la sintaxis moderna 'loop'
