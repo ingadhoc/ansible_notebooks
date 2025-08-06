@@ -1,82 +1,92 @@
 #!/usr/bin/env bash
-## Script para preparar notebooks en Adhoc. Instala dependencias,
-## clona el proyecto de ansible y ofrece instrucciones.
 
-# Colores ANSI
-RED="\033[1;31m"
-GREEN="\033[1;32m"
-YELLOW="\033[1;33m"
-BLUE="\033[1;34m"
-MAGENTA="\033[1;35m"
-CYAN="\033[1;36m"
-RESET="\033[0m"
-BOLD="\033[1m"
-NORMAL="\033[0m"
-YELLOW_BG="\033[43m"
+# Salir inmediatamente si un comando falla.
+set -euo pipefail
 
-# Guardar el nombre de usuario que está ejecutando el script
-SCRIPT_USER=$SUDO_USER
+## --- CONFIGURACIÓN ---
+# Define las variables en un solo lugar para facilitar el mantenimiento.
+readonly REPO_URL="https://github.com/ingadhoc/ansible_notebooks.git"
+readonly ANSIBLE_LOG_FILE="/var/log/ansible.log"
 
-# Verificar ejecución con sudo
-if [[ $EUID -ne 0 ]]; then
-  echo "Este script requiere privilegios root. Ejecutar con sudo"
-  exit 1
-fi
+# Colores para la salida
+readonly RED="\033[1;31m"
+readonly GREEN="\033[1;32m"
+readonly YELLOW="\033[1;33m"
+readonly BLUE="\033[1;34m"
+readonly RESET="\033[0m"
+readonly BOLD="\033[1m"
 
-# Función para instalar paquetes (si no están instalados)
-function install_package_if_not_installed {
-  dpkg -s "$1" &>/dev/null || apt install -y "$1"
+## --- FUNCIONES ---
+log() {
+  echo -e "${BLUE}${BOLD}[BOOTSTRAP]${RESET} $1"
 }
 
-# Actualización completa del sistema
-printf "[PREPARAR NOTEBOOK] ACTUALIZAR AMBIENTE DE TRABAJO\n"
-apt update -y && apt upgrade -y
+## --- EJECUCIÓN ---
 
-# Instalar herramientas
-printf "[PREPARAR NOTEBOOK] INSTALAR GIT\n"
-install_package_if_not_installed git
+# 1. Verificar privilegios y obtener el usuario original
+if [[ $EUID -ne 0 ]]; then
+  echo -e "${RED}Este script requiere privilegios de superusuario. Por favor, ejecútalo con 'sudo'.${RESET}"
+  exit 1
+fi
+# Si el script se ejecuta como root directamente (no sudo), SCRIPT_USER estaría vacío.
+readonly SCRIPT_USER="${SUDO_USER:-$(logname)}"
+readonly REPO_DIR="/home/$SCRIPT_USER/repositorios/ansible_notebooks"
 
-# Instalar dependencias de ansible
-printf "[PREPARAR NOTEBOOK] INSTALAR DEPENDENCIAS DE ANSIBLE\n"
-install_package_if_not_installed python3-setuptools
+# 2. Actualizar sistema e instalar dependencias
+log "Actualizando el sistema (esto puede tardar unos minutos)..."
+apt-get update -y > /dev/null
+# apt-get upgrade -y # Comentado por si se quiere una ejecución más rápida
 
-# Instalar ansible
-printf "[PREPARAR NOTEBOOK] INSTALAR ANSIBLE\n"
-install_package_if_not_installed ansible
+log "Instalando dependencias base: git, python3 y ansible..."
+# Instalamos todo en una sola línea. 'apt' no reinstalará si ya existen.
+apt-get install -y git ansible python3-setuptools > /dev/null
 
-printf "[PREPARAR NOTEBOOK] NOTEBOOK LISTA!\n"
-
-# Crear el archivo ansible.log en /var/log con los permisos adecuados
-ANSIBLE_LOG_FILE="/var/log/ansible.log"
+# 3. Preparar entorno para Ansible
+log "Creando archivo de log en $ANSIBLE_LOG_FILE..."
 touch "$ANSIBLE_LOG_FILE"
 chown "$SCRIPT_USER:$SCRIPT_USER" "$ANSIBLE_LOG_FILE"
 
-# Clonar proyecto y ejecutar rol Funcional
-REPO_DIR="/home/$SCRIPT_USER/repositorios/ansible_notebooks"
+log "Clonando el repositorio de Ansible en $REPO_DIR..."
+# Creamos el directorio y asignamos permisos como el usuario final
+mkdir -p "$(dirname "$REPO_DIR")"
+chown -R "$SCRIPT_USER:$SCRIPT_USER" "$(dirname "$REPO_DIR")"
+# Clonamos el repo como el usuario final para evitar problemas de permisos
+sudo -u "$SCRIPT_USER" git clone "$REPO_URL" "$REPO_DIR" || true # || true para no fallar si ya existe
 
-printf "[PROYECTO ANSIBLE] CLONAR REPOSITORIO\n"
-if [ ! -d "$REPO_DIR" ]; then
-  mkdir -p "$REPO_DIR"
-fi
-chown -R "$SCRIPT_USER:$SCRIPT_USER" "/home/$SCRIPT_USER/repositorios/"
-sudo -u "$SCRIPT_USER" git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
+# 4. Menú interactivo para seleccionar el perfil 🤖
+log "Por favor, selecciona el perfil para provisionar esta notebook:"
+PS3="Ingresa el número de tu opción: "
+options=("Funcional" "Devs" "SysAdmin" "Salir")
+select opt in "${options[@]}"; do
+  case $opt in
+    "Funcional")
+      PROFILE_TO_RUN="funcional"
+      break
+      ;;
+    "Devs")
+      PROFILE_TO_RUN="devs"
+      break
+      ;;
+    "SysAdmin")
+      PROFILE_TO_RUN="sysadmin"
+      break
+      ;;
+    "Salir")
+      log "Instalación cancelada. Puedes ejecutar Ansible manualmente más tarde."
+      exit 0
+      ;;
+    *) echo "Opción inválida $REPLY" ;;
+  esac
+done
 
-# Mostrar las instrucciones para el usuario
-echo -e "${RED}#IMPORTANTE:${RESET} Reiniciar luego de instalar el rol correspondiente para que se apliquen ciertos cambios y configuraciones (gnome extensions, docker as root, etc.)."
-echo -e "Para instalar el rol deseado, ejecutar"
-echo -e "${BOLD}${YELLOW_BG}$ cd ~/repositorios/ansible_notebooks${NORMAL}"
-echo -e "==========================================================="
+# 5. Ejecutar Ansible
+log "Ejecutando Ansible con el perfil '${PROFILE_TO_RUN}'. Se te pedirá la contraseña de sudo..."
+COMMAND_TO_RUN="ansible-playbook local.yml -e 'profile_override=${PROFILE_TO_RUN}' -K"
 
-echo -e "${GREEN}Rol funcional para Consultoría, Mesa de Ayuda, Comercial, RRHH:${RESET}"
-echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"funcional\" local.yml -K --verbose${NORMAL}"
-echo -e "==========================================================="
+# Ejecutamos el playbook como el usuario original, dentro del directorio correcto.
+# El 'bash -c' es para asegurar que el 'cd' y el 'ansible-playbook' se ejecuten en la misma subshell.
+sudo -u "$SCRIPT_USER" bash -c "cd '$REPO_DIR' && $COMMAND_TO_RUN"
 
-echo -e "${GREEN}Rol dev para I+D, Consultoría Técnica:${RESET}"
-echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"devs\" local.yml -K --verbose${NORMAL}"
-
-echo -e "==========================================================="
-echo -e "${GREEN}Rol sysadmin para Infraestructura & DevOps:${RESET}"
-echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"sysadmin\" local.yml -K --verbose${NORMAL}"
-
-# Nota adicional para el usuario
-echo -e "${MAGENTA}Gracias por lanzar el proyecto, ver README.md para más información.${RESET}"
+# 6. Mensaje final
+log "${GREEN}¡PROCESO COMPLETADO!${RESET}"
+echo -e "${RED}${BOLD}# IMPORTANTE:${RESET} Por favor, REINICIA la notebook para que se apliquen todos los cambios."
