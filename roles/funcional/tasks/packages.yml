@@ -3,7 +3,7 @@
   tags: packages_funcional
   ansible.builtin.apt:
     # Concatenamos todas las listas de paquetes en una sola.
-    name: "{{ packages_system + packages_compression + packages_apps + packages_hardware_analysis + packages_gui_utils }}"
+    name: "{{ packages_system + packages_compression + packages_apps + packages_hardware_analysis + packages_gui_utils + python_for_functionals}}"
     state: present
 
 - name: Paquetes | Instalar paquetes específicos de Ubuntu

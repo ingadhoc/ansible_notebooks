@@ -23,8 +23,6 @@
       ansible.builtin.import_tasks: branding.yml
     - name: UI
       ansible.builtin.import_tasks: ui_performance.yml
-    - name: Python
-      ansible.builtin.import_tasks: python_funcionales.yml
     - name: Security
       ansible.builtin.import_tasks: security.yml
     - name: User Sysadmin

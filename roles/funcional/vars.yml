@@ -74,6 +74,14 @@ packages_to_remove:
   - gnome-weather
   - gnome-calendar
 
+python_for_functionals:
+  - ipython3
+  - python3-setuptools
+  - python3-pip-whl
+  - python3-pip
+  - pylint
+  - python3
+
 # Extensiones de GNOME
 gnome_extensions_common:
   - { id: 744, uuid: "Hide_Activities@shay.shayel.org" }
