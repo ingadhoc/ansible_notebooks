@@ -3,38 +3,35 @@
   tags: terraform
   become: true
   block:
-    - name: Terraform - Crear directorio para keyrings si no existe
+
+    - name: Asegurar que el directorio para keyrings de APT existe
       ansible.builtin.file:
-        path: /etc/apt/keyrings
+        path: /usr/share/keyrings
         state: directory
         mode: '0755'
 
-    - name: Terraform - Descargar la clave
-      ansible.builtin.get_url:
-        url: https://apt.releases.hashicorp.com/gpg
-        dest: /tmp/terraform_key.pub
-        mode: '0644'
-
-    - name: Terraform - onvertir la clave a formato GPG y moverla a keyrings
-      ansible.builtin.command: gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg /tmp/terraform_key.pub
+    - name: Descargar y guardar la llave GPG de HashiCorp
+      ansible.builtin.shell: >
+        curl -fsSL https://apt.releases.hashicorp.com/gpg |
+        gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/hashicorp-archive-keyring.gpg
       changed_when: false
 
-    - name: Terraform - Eliminar el archivo temporal de la clave
-      ansible.builtin.file:
-        path: /tmp/terraform_key.pub
-        state: absent
-
-    - name: Terraform - Agregar repositorio
+    - name: Agregar el repositorio de HashiCorp
       ansible.builtin.apt_repository:
         repo: "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
         state: present
+        filename: hashicorp
         update_cache: true
 
-    - name: Terraform - Instalar
+    - name: Instalar terraform
       ansible.builtin.apt:
         name: terraform
+        state: present
 
-    - name: Terraform - Autocomplete package
+    - name: Instalar autocompletado para el usuario regular
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.command: "terraform -install-autocomplete"
-      changed_when: false
+      register: autocomplete_result
+      changed_when: "'Configuration file written' in autocomplete_result.stdout"
