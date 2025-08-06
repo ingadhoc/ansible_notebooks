@@ -1,7 +1,12 @@
 ---
-# Usuario genérico para ejecutar algunas tareas
-remote_regular_user: "{{ ansible_env.SUDO_USER }}"
+# Usuario genérico para ejecutar algunas tareas (con valor por defecto)
+remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
 
+# INTERRUPTOR PRINCIPAL PARA EL ESTILO DE ESCRITORIOS VIRTUALES
+# Opciones válidas: 'dynamic' o 'fixed'
+gnome_workspace_style: 'dynamic'
+
+# Listas de paquetes
 packages_system:
   - htop
   - mc
@@ -47,7 +52,6 @@ packages_gui_utils:
   - libpam-fprintd
   - fido2-tools
 
-# Paquetes específicos para Ubuntu
 packages_ubuntu_only:
   - tlp
   - tlp-rdw
@@ -60,7 +64,6 @@ packages_ubuntu_only:
   - unrar
   - p7zip-rar
 
-# Lista de paquetes a ser eliminados
 packages_to_remove:
   - indicator-multiload
   - thunderbird
@@ -71,38 +74,12 @@ packages_to_remove:
   - gnome-weather
   - gnome-calendar
 
-# Lista de configuraciones de dconf para el entorno de escritorio
-dconf_settings:
-  # Workspace Matrix
-  - { key: "/org/gnome/shell/extensions/wsmatrix/num-columns", value: "2" }
-  - { key: "/org/gnome/shell/extensions/wsmatrix/num-rows", value: "2" }
-  - { key: "/org/gnome/shell/extensions/wsmatrix/show-overview-grid", value: "true" }
-  # OpenWeather
-  - { key: "/org/gnome/shell/extensions/openweather/city", value: "'-32.9575, -60.639444>Rosario, Santa Fe>-1'" }
-  - { key: "/org/gnome/shell/extensions/openweather/unit", value: "'celsius'" }
-  - { key: "/org/gnome/shell/extensions/openweather/wind-speed-unit", value: "'m/s'" }
-  - { key: "/org/gnome/shell/extensions/openweather/pressure-unit", value: "'hPa'" }
-  # Dash to Dock
-  - { key: "/org/gnome/shell/extensions/dash-to-dock/scroll-action", value: "'cycle-windows'" }
-  - { key: "/org/gnome/shell/extensions/dash-to-dock/isolate-workspaces", value: "true" }
-  - { key: "/org/gnome/shell/extensions/dash-to-dock/multi-monitor", value: "true" }
-  # Preferencias de GNOME
-  - { key: "/org/gnome/shell/window-switcher/current-workspace-only", value: "true" }
-  - { key: "/org/gnome/shell/app-switcher/current-workspace-only", value: "true" }
-  - { key: "/org/gnome/desktop/interface/clock-show-date", value: "true" }
-  - { key: "/org/gnome/desktop/interface/show-battery-percentage", value: "true" }
-  # Configuración de espacios de trabajo fijos (el punto a discutir)
-  - { key: "/org/gnome/mutter/dynamic-workspaces", value: "false" }
-  - { key: "/org/gnome/desktop/wm/preferences/num-workspaces", value: "4" }
-
-# Lista de IDs de extensiones de GNOME
+# Extensiones de GNOME
 gnome_extensions_common:
   - 744 # Hide Activities Button
   - 779 # Clipboard Indicator
   - 1485 # Workspace Matrix
   - 3968 # Improved Workspace Indicator
-  # - 517 # Caffeine (Ejemplo si quieres añadirla)
-  # - 1460 # Vitals (Ejemplo si quieres añadirla)
 
 gnome_extensions_debian:
   - 1160 # Dash to Panel
@@ -110,7 +87,7 @@ gnome_extensions_debian:
 gnome_extensions_ubuntu_2204:
   - 751 # Audio Output Switcher
 
-# Paquetes de idioma para Ubuntu
+# Paquetes de idioma
 language_packs_ubuntu:
   - language-pack-en
   - language-pack-gnome-en
@@ -121,11 +98,43 @@ language_packs_ubuntu:
   - language-pack-es-base
   - language-pack-gnome-es-base
 
-# Paquetes de idioma para Debian
 language_packs_debian:
-  - task-spanish
   - task-spanish-desktop
   - task-english
 
-# Distribuciones de teclado a configurar en GNOME
+# Distribuciones de teclado
 keyboard_layouts: "[('xkb', 'es'), ('xkb', 'us+intl')]"
+
+dconf_settings: >-
+  {{
+    [
+      { 'key': "/org/gnome/shell/extensions/wsmatrix/num-columns", 'value': "2" },
+      { 'key': "/org/gnome/shell/extensions/wsmatrix/num-rows", 'value': "2" },
+      { 'key': "/org/gnome/shell/extensions/openweather/city", 'value': "'-32.9575, -60.639444>Rosario, Santa Fe>-1'" },
+      { 'key': "/org/gnome/shell/extensions/dash-to-dock/scroll-action", 'value': "'cycle-windows'" },
+      { 'key': "/org/gnome/shell/window-switcher/current-workspace-only", 'value': "true" },
+      { 'key': "/org/gnome/shell/app-switcher/current-workspace-only", 'value': "true" },
+      { 'key': "/org/gnome/desktop/interface/clock-show-date", 'value': "true" },
+      { 'key': "/org/gnome/desktop/interface/show-battery-percentage", 'value': "true" },
+      { 'key': "/org/gnome/mutter/dynamic-workspaces", 'value': ('true' if gnome_workspace_style == 'dynamic' else 'false') }
+    ]
+    +
+    ([{ 'key': "/org/gnome/desktop/wm/preferences/num-workspaces", 'value': "4" }] if gnome_workspace_style == 'fixed' else [])
+  }}
+
+# Atajos de teclado que se definen solo si el estilo es 'fixed'
+gnome_keybindings: >-
+  {% if gnome_workspace_style == 'fixed' %}
+  [
+    { "key": "/org/gnome/desktop/wm/keybindings/move-to-workspace-1", "value": "['<Shift><Super>F1']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/move-to-workspace-2", "value": "['<Shift><Super>F2']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/move-to-workspace-3", "value": "['<Shift><Super>F3']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/move-to-workspace-4", "value": "['<Shift><Super>F4']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/switch-to-workspace-1", "value": "['<Super>F1']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/switch-to-workspace-2", "value": "['<Super>F2']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/switch-to-workspace-3", "value": "['<Super>F3']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/switch-to-workspace-4", "value": "['<Super>F4']" }
+  ]
+  {% else %}
+  []
+  {% endif %}
