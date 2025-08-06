@@ -3,51 +3,45 @@
   become: true
   when: ansible_facts['distribution'] == 'Debian'
   block:
-    - name: VirtualBox - Instalar dependencias necesarias
+
+    - name: Asegurar que el directorio para keyrings de APT existe
+      ansible.builtin.file:
+        path: /usr/share/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Descargar y guardar la llave GPG de Oracle VirtualBox
+      ansible.builtin.shell: >
+        curl -fsSL https://www.virtualbox.org/download/oracle_vbox_2016.asc |
+        gpg --dearmor -o /usr/share/keyrings/oracle-virtualbox-2016.gpg
+      args:
+        # Esto asegura que la llave solo se descargue una vez
+        creates: /usr/share/keyrings/oracle-virtualbox-2016.gpg
+      changed_when: false
+
+    - name: Añadir el repositorio de VirtualBox
+      ansible.builtin.apt_repository:
+        # El cambio clave: apuntamos explícitamente a la llave que acabamos de guardar
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib"
+        state: present
+        filename: virtualbox
+        update_cache: true
+
+    # Consolidamos la instalación de todos los paquetes en una sola tarea.
+    - name: Instalar dependencias, kernel headers y VirtualBox
       ansible.builtin.apt:
         name:
           - curl
           - wget
           - gnupg2
           - lsb-release
-        state: present
-
-    - name: VirtualBox - Descargar la clave GPG
-      ansible.builtin.get_url:
-        url: "https://www.virtualbox.org/download/oracle_vbox_2016.asc"
-        dest: "/tmp/oracle_vbox_2016.asc"
-        mode: "0664"
-
-    - name: VirtualBox - Añadir la clave GPG
-      ansible.builtin.command: >
-        gpg --dearmor -o /etc/apt/trusted.gpg.d/vbox.gpg /tmp/oracle_vbox_2016.asc
-      args:
-        creates: /etc/apt/trusted.gpg.d/vbox.gpg
-
-    - name: VirtualBox - Añadir el repositorio
-      ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib"
-        state: present
-        filename: "virtualbox"
-
-    - name: VirtualBox - Actualizar lista de paquetes
-      ansible.builtin.apt:
-        update_cache: true
-
-    - name: VirtualBox - Instalar headers del kernel y dkms
-      ansible.builtin.apt:
-        name:
-          - "linux-headers-{{ ansible_kernel }}"
+          - "linux-headers-{{ ansible_kernel }}" # Usa el fact del kernel actual
           - dkms
+          - virtualbox-7.0
         state: present
 
-    - name: VirtualBox - Instalar
-      ansible.builtin.apt:
-        name: virtualbox-7.0
-        state: present
-
-    - name: VirtualBox - Añadir usuario al grupo vboxusers
+    - name: Añadir usuario regular al grupo 'vboxusers'
       ansible.builtin.user:
         name: "{{ remote_regular_user }}"
         groups: vboxusers
-        append: true
+        append: yes

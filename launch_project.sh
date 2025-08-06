@@ -1,82 +1,100 @@
 #!/usr/bin/env bash
-## Script para preparar notebooks en Adhoc. Instala dependencias,
-## clona el proyecto de ansible y ofrece instrucciones.
 
-# Colores ANSI
-RED="\033[1;31m"
-GREEN="\033[1;32m"
-YELLOW="\033[1;33m"
-BLUE="\033[1;34m"
-MAGENTA="\033[1;35m"
-CYAN="\033[1;36m"
-RESET="\033[0m"
-BOLD="\033[1m"
-NORMAL="\033[0m"
-YELLOW_BG="\033[43m"
+# Salir inmediatamente si un comando falla.
+set -euo pipefail
 
-# Guardar el nombre de usuario que está ejecutando el script
-SCRIPT_USER=$SUDO_USER
+## --- CONFIGURACIÓN ---
+readonly REPO_URL="https://github.com/ingadhoc/ansible_notebooks.git"
+readonly ANSIBLE_LOG_FILE="/var/log/ansible.log"
 
-# Verificar ejecución con sudo
-if [[ $EUID -ne 0 ]]; then
-  echo "Este script requiere privilegios root. Ejecutar con sudo"
-  exit 1
-fi
+# Colores para la salida
+readonly RED="\033[1;31m"
+readonly GREEN="\033[1;32m"
+readonly BLUE="\033[1;34m"
+readonly RESET="\033[0m"
+readonly BOLD="\033[1m"
 
-# Función para instalar paquetes (si no están instalados)
-function install_package_if_not_installed {
-  dpkg -s "$1" &>/dev/null || apt install -y "$1"
+## --- FUNCIONES ---
+log() {
+  echo -e "${BLUE}${BOLD}[BOOTSTRAP]${RESET} $1"
 }
 
-# Actualización completa del sistema
-printf "[PREPARAR NOTEBOOK] ACTUALIZAR AMBIENTE DE TRABAJO\n"
-apt update -y && apt upgrade -y
+## --- EJECUCIÓN ---
 
-# Instalar herramientas
-printf "[PREPARAR NOTEBOOK] INSTALAR GIT\n"
-install_package_if_not_installed git
-
-# Instalar dependencias de ansible
-printf "[PREPARAR NOTEBOOK] INSTALAR DEPENDENCIAS DE ANSIBLE\n"
-install_package_if_not_installed python3-setuptools
-
-# Instalar ansible
-printf "[PREPARAR NOTEBOOK] INSTALAR ANSIBLE\n"
-install_package_if_not_installed ansible
-
-printf "[PREPARAR NOTEBOOK] NOTEBOOK LISTA!\n"
-
-# Crear el archivo ansible.log en /var/log con los permisos adecuados
-ANSIBLE_LOG_FILE="/var/log/ansible.log"
-touch "$ANSIBLE_LOG_FILE"
-chown "$SCRIPT_USER:$SCRIPT_USER" "$ANSIBLE_LOG_FILE"
-
-# Clonar proyecto y ejecutar rol Funcional
-REPO_DIR="/home/$SCRIPT_USER/repositorios/ansible_notebooks"
-
-printf "[PROYECTO ANSIBLE] CLONAR REPOSITORIO\n"
-if [ ! -d "$REPO_DIR" ]; then
-  mkdir -p "$REPO_DIR"
+# 1. Verificar privilegios y obtener el usuario original
+if [[ $EUID -ne 0 ]]; then
+  echo -e "${RED}Este script requiere privilegios de superusuario. Por favor, ejecútalo con 'sudo'.${RESET}"
+  exit 1
 fi
-chown -R "$SCRIPT_USER:$SCRIPT_USER" "/home/$SCRIPT_USER/repositorios/"
-sudo -u "$SCRIPT_USER" git clone https://github.com/ingadhoc/ansible_notebooks.git "$REPO_DIR"
+readonly SCRIPT_USER="${SUDO_USER:-$(logname)}"
+readonly REPO_DIR="/home/$SCRIPT_USER/repositorios/ansible_notebooks"
 
-# Mostrar las instrucciones para el usuario
-echo -e "${RED}#IMPORTANTE:${RESET} Reiniciar luego de instalar el rol correspondiente para que se apliquen ciertos cambios y configuraciones (gnome extensions, docker as root, etc.)."
-echo -e "Para instalar el rol deseado, ejecutar"
-echo -e "${BOLD}${YELLOW_BG}$ cd ~/repositorios/ansible_notebooks${NORMAL}"
-echo -e "==========================================================="
+# 2. Instalar dependencias iniciales y actualizar caché
+log "Actualizando caché de paquetes e instalando dependencias base..."
+apt-get update -y > /dev/null
+apt-get install -y curl gpg lsb-release ca-certificates software-properties-common > /dev/null
 
-echo -e "${GREEN}Rol funcional para Consultoría, Mesa de Ayuda, Comercial, RRHH:${RESET}"
-echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"funcional\" local.yml -K --verbose${NORMAL}"
-echo -e "==========================================================="
+# 3. Limpiar y configurar el repositorio de Ansible según la distribución
+log "Limpiando configuraciones de repositorios de Ansible anteriores..."
+rm -f /etc/apt/sources.list.d/ansible.list /etc/apt/sources.list.d/ansible.sources
 
-echo -e "${GREEN}Rol dev para I+D, Consultoría Técnica:${RESET}"
-echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"devs\" local.yml -K --verbose${NORMAL}"
+OS_ID=$(lsb_release -is | tr '[:upper:]' '[:lower:]')
+OS_CODENAME=$(lsb_release -cs)
 
-echo -e "==========================================================="
-echo -e "${GREEN}Rol sysadmin para Infraestructura & DevOps:${RESET}"
-echo -e "${BOLD}${YELLOW_BG}$ ansible-playbook --tags \"sysadmin\" local.yml -K --verbose${NORMAL}"
+if [[ "$OS_ID" == "ubuntu" ]]; then
+  log "Configurando el PPA oficial de Ansible para Ubuntu..."
+  add-apt-repository --yes --update ppa:ansible/ansible
+elif [[ "$OS_ID" == "debian" ]]; then
+  log "Configurando el repositorio 'backports' de Debian para Ansible..."
+  echo "deb http://deb.debian.org/debian ${OS_CODENAME}-backports main" | tee /etc/apt/sources.list.d/backports.list > /dev/null
+  apt-get update -y > /dev/null
+fi
 
-# Nota adicional para el usuario
-echo -e "${MAGENTA}Gracias por lanzar el proyecto, ver README.md para más información.${RESET}"
+# 4. Instalar Ansible y Git
+log "Instalando Ansible y Git..."
+if [[ "$OS_ID" == "debian" ]]; then
+  apt-get install -y -t "${OS_CODENAME}-backports" ansible git > /dev/null
+else
+  apt-get install -y ansible git > /dev/null
+fi
+
+# 5. Clonar el repositorio del proyecto
+log "Clonando el repositorio de Ansible en $REPO_DIR..."
+mkdir -p "$(dirname "$REPO_DIR")"
+chown -R "$SCRIPT_USER:$SCRIPT_USER" "$(dirname "$REPO_DIR")"
+if [ -d "$REPO_DIR/.git" ]; then
+    sudo -u "$SCRIPT_USER" git -C "$REPO_DIR" pull
+else
+    sudo -u "$SCRIPT_USER" git clone "$REPO_URL" "$REPO_DIR"
+fi
+
+# 6. Instalar colecciones de Ansible
+log "Instalando colecciones de Ansible desde 'collections/requirements.yml'..."
+sudo -u "$SCRIPT_USER" ansible-galaxy install -r "$REPO_DIR/collections/requirements.yml"
+
+# 7. Menú interactivo
+log "Por favor, selecciona el perfil para provisionar esta notebook:"
+PS3="Ingresa el número de tu opción: "
+options=("Funcional" "Devs" "SysAdmin" "Salir")
+select opt in "${options[@]}"; do
+  case $opt in
+    "Funcional") PROFILE_TO_RUN="funcional"; break;;
+    "Devs") PROFILE_TO_RUN="devs"; break;;
+    "SysAdmin") PROFILE_TO_RUN="sysadmin"; break;;
+    "Salir")
+      log "Instalación automática cancelada."
+      echo -e "Puedes ejecutar el playbook manualmente. Consulta el ${GREEN}README.md${RESET}."
+      exit 0
+      ;;
+    *) echo "Opción inválida $REPLY" ;;
+  esac
+done
+
+# 8. Ejecutar Ansible
+log "Ejecutando Ansible con el perfil '${PROFILE_TO_RUN}'. Se te pedirá la contraseña de sudo..."
+COMMAND_TO_RUN="ansible-playbook local.yml -e 'profile_override=${PROFILE_TO_RUN}' -K"
+sudo -u "$SCRIPT_USER" bash -c "cd '$REPO_DIR' && $COMMAND_TO_RUN"
+
+# 9. Mensaje final
+log "${GREEN}¡PROCESO COMPLETADO!${RESET}"
+echo -e "${RED}${BOLD}# IMPORTANTE:${RESET} Por favor, REINICIA la notebook para que se apliquen todos los cambios."

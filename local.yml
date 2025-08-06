@@ -1,71 +1,48 @@
 ---
 - name: Tareas previas al deploy de roles
   hosts: laptop
-  tags: always
   become: true
-  gather_facts: false
+
+  vars:
+    target_profile: "{{ profile_override | default('funcional') }}"
+
+  # --- TAREAS PREVIAS ---
   pre_tasks:
-    - name: Actualizar caché
+    - name: "Asegurar que /tmp tenga los permisos correctos (1777)"
+      tags: always
+      ansible.builtin.file:
+        path: /tmp
+        state: directory
+        mode: '1777'
+
+    - name: Actualizar caché de paquetes
       tags: always
       ansible.builtin.apt:
         update_cache: true
       changed_when: false
 
-- name: Deploy funcional role
-  hosts: laptop
-  tags: funcional
-  become: true
-  gather_facts: true
+  # --- SECCIÓN DE ROLES ---
   roles:
-    - funcional
+    # Este rol se ejecuta por defecto o según la variable. NO está etiquetado.
+    - role: "{{ target_profile }}"
 
-- name: Deploy devs role
-  hosts: laptop
-  tags: devs
-  gather_facts: true
-  become: true
-  roles:
-    - funcional
-    - devs
+    # Este rol SOLO se ejecuta si se pide explícitamente la etiqueta 'deploy'.
+    - role: deploy
+      tags:
+        - deploy
+        - never
 
-- name: Deploy sysadmin role
-  hosts: laptop
-  tags: sysadmin
-  gather_facts: true
-  become: true
-  roles:
-    - funcional
-    - devs
-    - sysadmin
-
-- name: Deploy deploy role
-  hosts: laptop
-  tags: deploy
-  gather_facts: true
-  become: true
-  roles:
-    - deploy
-
-- name: Completar deploy y limpiar caché
-  hosts: laptop
-  become: true
-  tasks:
-    - name: Cleanup package cache (debian and ubuntu)
-      tags: always
-      ansible.builtin.apt:
-        autoclean: true
-      changed_when: false
-
-    - name: Autoremove orphan packages (debian and ubuntu)
+  # --- TAREAS POSTERIORES ---
+  post_tasks:
+    - name: Limpiar paquetes huérfanos (con purge)
       tags: always
       ansible.builtin.apt:
         autoremove: true
         purge: true
+      changed_when: false
 
-# agregar cron y pull para update automático
-#  - name: Agregar ansible-pull cron job
-#    cron:
-#      name: ansible auto-provision
-#      user: "{{ remote_regular_user }}"
-#      minute: "*/10"
-#      job: ansible-pull -o -U https://github.com/adhoc-dev/ansible.git
+    - name: Limpiar el caché de paquetes descargados
+      tags: always
+      ansible.builtin.apt:
+        autoclean: true
+      changed_when: false

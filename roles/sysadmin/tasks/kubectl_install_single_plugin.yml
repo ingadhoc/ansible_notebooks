@@ -1,0 +1,61 @@
+---
+# Este archivo no se ejecuta solo, es llamado por el playbook principal.
+
+- name: "{{ plugin.name }} | Verificar si ya está instalado"
+  ansible.builtin.stat:
+    path: "/usr/local/bin/{{ plugin.name }}"
+  register: plugin_binary
+
+# ----- Bloque de Instalación desde GitHub (unarchive/binary) -----
+- name: "{{ plugin.name }} | Instalar desde GitHub"
+  when:
+    - not plugin_binary.stat.exists
+    - plugin.install_type in ['github_release', 'github_binary']
+  block:
+    - name: "{{ plugin.name }} | Obtener URL de la última versión"
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/{{ plugin.repo }}/releases/latest"
+        return_content: true
+      register: json_response
+
+    - name: "{{ plugin.name }} | Descargar (unarchive)"
+      ansible.builtin.unarchive:
+        remote_src: true
+        src: "{{ (json_response.json.assets | selectattr('name', 'search', plugin.asset_search) | list | first).browser_download_url }}"
+        dest: "/usr/local/bin/"
+        extra_opts: ["--strip-components=1"]
+        mode: "0755"
+      when: plugin.install_type == 'github_release'
+
+    - name: "{{ plugin.name }} | Descargar (binary)"
+      ansible.builtin.get_url:
+        url: "{{ (json_response.json.assets | selectattr('name', 'search', plugin.asset_search) | list | first).browser_download_url }}"
+        dest: "/usr/local/bin/{{ plugin.name }}"
+        mode: '0755'
+      when: plugin.install_type == 'github_binary'
+
+# ----- Bloque de Instalación desde APT -----
+- name: "{{ plugin.name }} | Instalar desde APT"
+  when:
+    - not plugin_binary.stat.exists
+    - plugin.install_type == 'apt'
+  ansible.builtin.apt:
+    name: "{{ plugin.packages }}"
+    state: present
+    update_cache: true
+
+# ----- Bloque de Instalación desde .deb de GitHub -----
+- name: "{{ plugin.name }} | Instalar desde paquete .deb"
+  when:
+    - not plugin_binary.stat.exists
+    - plugin.install_type == 'github_deb'
+  block:
+    - name: "{{ plugin.name }} | Obtener URL del .deb"
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/{{ plugin.repo }}/releases/latest"
+        return_content: true
+      register: json_response_deb
+
+    - name: "{{ plugin.name }} | Descargar e instalar .deb"
+      ansible.builtin.apt:
+        deb: "{{ (json_response_deb.json.assets | selectattr('name', 'search', plugin.asset_search) | list | first).browser_download_url }}"

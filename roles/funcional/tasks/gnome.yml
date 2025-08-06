@@ -1,65 +1,70 @@
 ---
 - name: Gnome - Configurar e instalar extensiones
   tags: gnome
+
+  ansible.builtin.apt:
+    name:
+      - gnome-tweaks
+      - gnome-shell-extension-manager
+      - chrome-gnome-shell
+      - gnome-shell-extensions
+      - dbus-x11
+      - python3-psutil
+    state: present
+
+- name: GNOME | Aplicar configuraciones de dconf (diálogos y reloj)
+  tags: gnome, dconf
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  community.general.dconf:
+    key: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+  loop:
+    - { key: "/org/gnome/shell/overrides/attach-modal-dialogs", value: "false" }
+    - { key: "/org/gnome/desktop/interface/clock-format", value: "'24h'" }
+
+# Instala las extensiones usando https://github.com/ToasterUwU/install-gnome-extensions
+- name: GNOME | Gestionar la instalación de extensiones
+  tags: gnome, gnome-extensions
+  become: true
+  become_user: "{{ remote_regular_user }}"
   block:
-    - name: GNOME - Instalar gnome tweaks y dependencias
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - gnome-tweaks
-          - gnome-shell-extension-manager
-          - chrome-gnome-shell
-          - gnome-shell-extensions
-          - dbus-x11
-          - python3-psutil
+    - name: GNOME | Construir lista final de extensiones requeridas
+      ansible.builtin.set_fact:
+        extensions_required: >
+          {{ gnome_extensions_common +
+             (gnome_extensions_debian if ansible_facts['distribution'] == 'Debian' else []) +
+             (gnome_extensions_ubuntu_2204 if ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] == '22.04' else []) }}
 
-    - name: GNOME Preferences - Shell - Attach Modal Dialogues
-      become_method: sudo
-      become_user: "{{ lookup('env', 'USER') }}"
-      community.general.dconf:
-        key: "{{ item.key }}"
-        value: "{{ item.value }}"
-        state: present
-      with_items:
-        - { key: "/org/gnome/shell/overrides/attach-modal-dialogs", value: "false" }
-        - { key: "/org/gnome/desktop/interface/clock-format", value: "'24h'" }
+    - name: GNOME | Verificar qué extensiones ya están instaladas
+      ansible.builtin.stat:
+        path: "/home/{{ remote_regular_user }}/.local/share/gnome-shell/extensions/{{ item.uuid }}"
+      loop: "{{ extensions_required }}"
+      register: installed_extensions_stat
 
-    # Install the Extensions using https://github.com/ToasterUwU/install-gnome-extensions
-    - name: GNOME - Descargar script para instalar gnome extensions
-      ansible.builtin.get_url:
-        url: https://raw.githubusercontent.com/ToasterUwU/install-gnome-extensions/master/install-gnome-extensions.sh
-        dest: /tmp/install-gnome-extensions.sh
-        mode: "+x"
+    - name: GNOME | Determinar si es necesario instalar alguna extensión
+      ansible.builtin.set_fact:
+        # La variable será 'true' si la lista de extensiones no encontradas ('stat.exists == false') tiene un largo mayor a 0
+        extensions_are_missing: "{{ installed_extensions_stat.results | selectattr('stat.exists', 'false') | list | length > 0 }}"
 
-    - name: GNOME - Instalar gnome extensions con script
-      become_method: sudo
-      become_user: "{{ lookup('env', 'USER') }}"
-      ansible.builtin.script: /tmp/install-gnome-extensions.sh --overwrite --enable 744 779 1485 3968
-      changed_when:
-        false
-      # https://extensions.gnome.org/extension/517/caffeine/
-      # https://extensions.gnome.org/extension/744/hide-activities-button/
-      # https://extensions.gnome.org/extension/779/clipboard-indicator/
-      # https://extensions.gnome.org/extension/1460/vitals/
-      # https://extensions.gnome.org/extension/1485/workspace-matrix/
-      # https://extensions.gnome.org/extension/3968/improved-workspace-indicator/
+    - name: GNOME | Instalar extensiones faltantes (si es necesario)
+      when: extensions_are_missing
+      block:
+        - name: GNOME | Descargar script de instalación de extensiones
+          ansible.builtin.get_url:
+            url: https://raw.githubusercontent.com/ToasterUwU/install-gnome-extensions/master/install-gnome-extensions.sh
+            dest: /tmp/install-gnome-extensions.sh
+            mode: "0755"
 
-    - name: GNOME - Instalar gnome extensions SOLO DEBIAN
-      become_method: sudo
-      when: ansible_facts['distribution'] == 'Debian'
-      become_user: "{{ lookup('env', 'USER') }}"
-      ansible.builtin.script: /tmp/install-gnome-extensions.sh --overwrite --enable 1160
-      changed_when:
-        false
-      # https://extensions.gnome.org/extension/1160/dash-to-panel/
+        - name: GNOME | Instalar todas las extensiones requeridas en una sola pasada
+          # El filtro map('attribute', 'id') extrae solo los IDs de nuestra lista de diccionarios
+          # El filtro join(' ') convierte la lista [744, 779] en el string "744 779"
+          ansible.builtin.command: "/tmp/install-gnome-extensions.sh --enable {{ extensions_required | map(attribute='id') | join(' ') }}"
+          changed_when: true # Si esta tarea se ejecuta, es porque algo cambió.
 
-    - name: GNOME - Instalar gnome extensions SOLO UBUNTU
-      become_method: sudo
-      when: ansible_facts['distribution'] == 'Ubuntu'
-      become_user: "{{ lookup('env', 'USER') }}"
-      ansible.builtin.script: /tmp/install-gnome-extensions.sh --overwrite --enable 751
-      changed_when:
-        false
-      # https://extensions.gnome.org/extension/751/audio-output-switcher/
+  always:
+    - name: GNOME | Limpiar script de instalación de extensiones
+      ansible.builtin.file:
+        path: /tmp/install-gnome-extensions.sh
+        state: absent

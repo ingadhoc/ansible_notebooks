@@ -1,115 +1,20 @@
 ---
 - name: Paquetes - Instalación varios
   tags: packages_funcional
-  block:
-    - name: Base - Instalar paquetes de sistema, drivers
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - htop
-          - mc
-          - tmux
-          - apt-transport-https
-          - curl
-          - wget
-          - openssh-client
-          - openssh-server
-          - jq
-          - tldr
-          - locate
-          - libxshmfence1
+  ansible.builtin.apt:
+    # Concatenamos todas las listas de paquetes en una sola.
+    name: "{{ packages_system + packages_compression + packages_apps + packages_hardware_analysis + packages_gui_utils + python_for_functionals}}"
+    state: present
 
-    - name: Base - Utilidades de compresión
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - zip
-          - gzip
-          - tar
-          - unzip
-          - p7zip-full
+- name: Paquetes | Instalar paquetes específicos de Ubuntu
+  tags: packages_funcional
+  ansible.builtin.apt:
+    name: "{{ packages_ubuntu_only }}"
+    state: present
+  when: ansible_facts['distribution'] == 'Ubuntu'
 
-    - name: Base - Instalar otras aplicaciones
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - poedit
-          - fail2ban
-          - ufw
-          - vlc
-          - ffmpeg
-
-    - name: Base - Análisis de Hardware, información del sistema
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - htop
-          - inxi
-          - hwinfo
-          - glances
-          - mtr
-          - hardinfo
-          - stacer
-          - screenfetch
-
-    - name: Base - Performance y  rendimiento de batería
-      when: ansible_facts['distribution'] == 'Ubuntu'
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          # Base - Performance y  rendimiento de batería
-          - tlp
-          - tlp-rdw
-          - acpi-call-dkms
-          - powertop
-          - preload
-          - bleachbit
-          # Base - Instalar paquetes de sistema, drivers
-          - ubuntu-restricted-extras
-          - ppa-purge
-          # Base - Utilidades de compresión
-          - unrar
-          - p7zip-rar
-
-    - name: Base - Paquetes varios de entorno gráfico, captura de pantalla, etc.
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - alacarte
-          - fonts-firacode
-          - flameshot
-          # Finger print
-          - fprintd
-          - libpam-fprintd
-          # FIDO
-          - fido2-tools
-
-    - name: Base - Eliminar programas sin uso
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: absent
-      vars:
-        packages:
-          # Ubuntu Only
-          - indicator-multiload
-          # Common
-          - thunderbird
-          - rhythmbox
-          - remmina
-          # Debian Only
-          - gnome-games
-          - gnome-maps
-          - gnome-weather
-          - gnome-calendar
+- name: Paquetes | Eliminar programas no deseados
+  tags: packages_funcional
+  ansible.builtin.apt:
+    name: "{{ packages_to_remove }}"
+    state: absent

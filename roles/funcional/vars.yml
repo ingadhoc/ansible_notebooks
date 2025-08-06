@@ -1,3 +1,178 @@
 ---
-# Usuario genérico para ejecutar algunas tareas
-remote_regular_user: "{{ ansible_env.SUDO_USER }}"
+# Usuario genérico para ejecutar algunas tareas (con valor por defecto)
+remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
+
+# INTERRUPTOR PRINCIPAL PARA EL ESTILO DE ESCRITORIOS VIRTUALES
+# Opciones válidas: 'dynamic' o 'fixed'
+gnome_workspace_style: 'dynamic'
+
+# Listas de paquetes
+packages_system:
+  - htop
+  - mc
+  - tmux
+  - apt-transport-https
+  - curl
+  - wget
+  - openssh-client
+  - openssh-server
+  - jq
+  - tldr
+  - locate
+  - libxshmfence1
+
+packages_compression:
+  - zip
+  - gzip
+  - tar
+  - unzip
+  - p7zip-full
+
+packages_apps:
+  - poedit
+  - fail2ban
+  - ufw
+  - gufw
+  - vlc
+  - ffmpeg
+
+packages_hardware_analysis:
+  - inxi
+  - hwinfo
+  - glances
+  - mtr
+  - hardinfo
+  - stacer
+  - screenfetch
+
+packages_gui_utils:
+  - alacarte
+  - fonts-firacode
+  - flameshot
+  - fprintd
+  - libpam-fprintd
+  - fido2-tools
+
+packages_ubuntu_only:
+  - tlp
+  - tlp-rdw
+  - acpi-call-dkms
+  - powertop
+  - preload
+  - bleachbit
+  - ubuntu-restricted-extras
+  - ppa-purge
+  - unrar
+  - p7zip-rar
+
+packages_to_remove:
+  - indicator-multiload
+  - thunderbird
+  - rhythmbox
+  - remmina
+  - gnome-games
+  - gnome-maps
+  - gnome-weather
+  - gnome-calendar
+
+python_for_functionals:
+  - ipython3
+  - python3-setuptools
+  - python3-pip-whl
+  - python3-pip
+  - pylint
+  - python3
+
+# Extensiones de GNOME
+gnome_extensions_common:
+  - { id: 744, uuid: "Hide_Activities@shay.shayel.org" }
+  - { id: 779, uuid: "clipboard-indicator@tudmotu.com" }
+  - { id: 1485, uuid: "wsmatrix@martin.zurowietz.de" }
+  - { id: 3968, uuid: "improved-workspace-indicator@michaelaquilina.github.io" }
+
+gnome_extensions_debian:
+  - { id: 1160, uuid: "dash-to-panel@jderose9.github.com" }
+
+gnome_extensions_ubuntu_2204:
+  - { id: 751, uuid: "audio-output-switcher@anduchs.github.com" }
+
+# Paquetes de idioma
+language_packs_ubuntu:
+  - language-pack-en
+  - language-pack-gnome-en
+  - language-pack-en-base
+  - language-pack-gnome-en-base
+  - language-pack-es
+  - language-pack-gnome-es
+  - language-pack-es-base
+  - language-pack-gnome-es-base
+
+language_packs_debian:
+  - task-spanish-desktop
+  - task-english
+
+# Distribuciones de teclado
+keyboard_layouts: "[('xkb', 'es'), ('xkb', 'us+intl')]"
+
+dconf_settings: >-
+  {{
+    [
+      { 'key': "/org/gnome/shell/extensions/wsmatrix/num-columns", 'value': "2" },
+      { 'key': "/org/gnome/shell/extensions/wsmatrix/num-rows", 'value': "2" },
+      { 'key': "/org/gnome/shell/extensions/openweather/city", 'value': "'-32.9575, -60.639444>Rosario, Santa Fe>-1'" },
+      { 'key': "/org/gnome/shell/extensions/dash-to-dock/scroll-action", 'value': "'cycle-windows'" },
+      { 'key': "/org/gnome/shell/window-switcher/current-workspace-only", 'value': "true" },
+      { 'key': "/org/gnome/shell/app-switcher/current-workspace-only", 'value': "true" },
+      { 'key': "/org/gnome/desktop/interface/clock-show-date", 'value': "true" },
+      { 'key': "/org/gnome/desktop/interface/show-battery-percentage", 'value': "true" },
+      { 'key': "/org/gnome/mutter/dynamic-workspaces", 'value': ('true' if gnome_workspace_style == 'dynamic' else 'false') }
+    ]
+    +
+    ([{ 'key': "/org/gnome/desktop/wm/preferences/num-workspaces", 'value': "4" }] if gnome_workspace_style == 'fixed' else [])
+  }}
+
+# Atajos de teclado que se definen solo si el estilo es 'fixed'
+gnome_keybindings: >-
+  {% if gnome_workspace_style == 'fixed' %}
+  [
+    { "key": "/org/gnome/desktop/wm/keybindings/move-to-workspace-1", "value": "['<Shift><Super>F1']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/move-to-workspace-2", "value": "['<Shift><Super>F2']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/move-to-workspace-3", "value": "['<Shift><Super>F3']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/move-to-workspace-4", "value": "['<Shift><Super>F4']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/switch-to-workspace-1", "value": "['<Super>F1']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/switch-to-workspace-2", "value": "['<Super>F2']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/switch-to-workspace-3", "value": "['<Super>F3']" },
+    { "key": "/org/gnome/desktop/wm/keybindings/switch-to-workspace-4", "value": "['<Super>F4']" }
+  ]
+  {% else %}
+  []
+  {% endif %}
+
+# --- Configuración de Branding ---
+branding_wallpaper_light: ".wallpaper.png"
+branding_wallpaper_dark: ".wallpaper_dark.jpg"
+
+# Lista de archivos de branding para copiar al home del usuario
+branding_files_to_copy:
+  - { src: "wallpaper_2024.png", dest: "/home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}" }
+  - { src: "wallpaper_dark_2024.jpg", dest: "/home/{{ remote_regular_user }}/{{ branding_wallpaper_dark }}" }
+
+# Lista de configuraciones de dconf para el fondo de pantalla y protector
+branding_dconf_settings:
+  - { key: "/org/gnome/desktop/background/picture-uri", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}'" }
+  - { key: "/org/gnome/desktop/background/picture-uri-dark", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_dark }}'" }
+  - { key: "/org/gnome/desktop/screensaver/picture-uri", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}'" }
+  - { key: "/org/gnome/desktop/background/picture-options", value: "'scaled'" }
+  - { key: "/org/gnome/desktop/background/primary-color", value: "'#d6d6d4'" }
+
+# Ajustes de dconf para mejorar el rendimiento y comportamiento de la UI
+ui_performance_dconf_settings:
+  - { key: "/org/gnome/desktop/interface/clock-show-seconds", value: "false" }
+  - { key: "/org/gnome/desktop/interface/enable-animations", value: "false" }
+  - { key: "/org/gnome/mutter/workspaces-only-on-primary", value: "true" }
+
+# Lista de aplicaciones favoritas para el dock de GNOME
+gnome_functional_favorite_apps: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Terminal.desktop', 'flameshot.desktop']"
+
+# Variable para controlar la reinstalación de Xorg
+force_xorg_reinstall: true # Cambiar a 'true' solo si es necesario depurar

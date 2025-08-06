@@ -3,22 +3,31 @@
 - name: SysAdmin - Install helm cli
   tags: helm_cli
   block:
-    - name: Helm cli - Descargar script
+
+    - name: Helm | Descargar script de instalación
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
         dest: /tmp/get_helm.sh
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: u+rwx
+        mode: '0755'
 
-    - name: Helm cli - Install
+    - name: Helm | Ejecutar script de instalación si no existe el binario
       become: true
       ansible.builtin.script: /tmp/get_helm.sh
+      args:
+        creates: /usr/local/bin/helm
 
-    - name: Helm cli - bash completion
+    - name: Helm | Limpiar el script de instalación
+      ansible.builtin.file:
+        path: /tmp/get_helm.sh
+        state: absent
+
+    - name: Helm | Configurar autocompletado de bash para el usuario
       ansible.builtin.blockinfile:
-        path: /home/{{ remote_regular_user }}/.bashrc
+        path: "/home/{{ remote_regular_user }}/.bashrc"
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        create: true
         block: |
-          if command -v helm >/dev/null 2>&1; then
+          if command -v helm > /dev/null; then
             source <(helm completion bash)
           fi
