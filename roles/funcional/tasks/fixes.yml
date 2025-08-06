@@ -1,49 +1,35 @@
 ---
-# Add Fav Apps
-- name: Fixes - varios
-  tags: funcional_fixes
-  block:
-    - name: Fixes - Agregar apps al panel lateral
-      when: ansible_facts['distribution'] == 'Ubuntu'
-      become_method: sudo
-      become_user: "{{ lookup('env', 'USER') }}"
-      community.general.dconf:
-        key: "/org/gnome/shell/favorite-apps"
-        value: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop','org.gnome.Terminal.desktop','org.gnome.Flameshot.desktop']"
+- name: Arreglos | Aplicar personalizaciones de GNOME y del dock
+  tags: funcional_fixes, gnome
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  community.general.dconf:
+    key: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+  loop:
+    - { key: "/org/gnome/shell/favorite-apps", value: "{{ gnome_favorite_apps }}" }
+    - { key: "/org/gnome/shell/extensions/dash-to-dock/click-action", value: "'minimize'" }
+  when: ansible_facts['distribution'] == 'Ubuntu'
 
-    # Para desactivar el minimize to click:
-    # gsettings reset org.gnome.shell.extensions.dash-to-dock click-action
-    - name: Fixes - Minimize to click
-      when: ansible_facts['distribution'] == 'Ubuntu'
-      become_method: sudo
-      become_user: "{{ lookup('env', 'USER') }}"
-      community.general.dconf:
-        key: "/org/gnome/shell/extensions/dash-to-dock/click-action"
-        value: "'minimize'"
-        state: present
-
-    - name: Fixes - Copiar archivo .bashrc
-      ansible.builtin.copy:
-        src: files/.bashrc
-        dest: /home/{{ remote_regular_user }}/.bashrc
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "774"
-
-- name: Fixes - xorg
+- name: Arreglos | Reinstalar Xorg (solo si se solicita explícitamente)
   tags: xorg_fixes
-  block:
-    - name: Fixes - Reinstalar xorg
-      become: true
-      ansible.builtin.command: apt-get install --reinstall -y xorg
+  become: true
+  ansible.builtin.apt:
+    name: xorg
+    state: present
+    reinstall: yes
+  when: force_xorg_reinstall | bool
 
-    - name: Fixes - Configurar GDM3 para forzar uso de Xorg
-      become: true
-      ansible.builtin.blockinfile:
-        path: /etc/gdm3/custom.conf
-        marker: "# {mark} ANSIBLE XORG FIX"
-        block: |
-          WaylandEnable=false
-          DefaultSession=gnome-xorg.desktop
-        insertafter: '^\[daemon\]'
-        state: present
+- name: Arreglos | Configurar GDM3 para forzar el uso de Xorg
+  tags: xorg_fixes
+  become: true
+  ansible.builtin.blockinfile:
+    path: /etc/gdm3/custom.conf
+    marker: "# {mark} ANSIBLE XORG FIX"
+    block: |
+      WaylandEnable=false
+      DefaultSession=gnome-xorg.desktop
+    insertafter: '^\[daemon\]'
+    state: present
+  notify: Restart GDM

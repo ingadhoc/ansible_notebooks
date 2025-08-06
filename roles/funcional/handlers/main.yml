@@ -3,3 +3,8 @@
   ansible.builtin.systemd:
     name: sshd
     state: restarted
+
+- name: Restart GDM
+  ansible.builtin.systemd:
+    name: gdm3
+    state: restarted
