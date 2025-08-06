@@ -94,3 +94,18 @@ dconf_settings:
   # Configuración de espacios de trabajo fijos (el punto a discutir)
   - { key: "/org/gnome/mutter/dynamic-workspaces", value: "false" }
   - { key: "/org/gnome/desktop/wm/preferences/num-workspaces", value: "4" }
+
+# Lista de IDs de extensiones de GNOME
+gnome_extensions_common:
+  - 744 # Hide Activities Button
+  - 779 # Clipboard Indicator
+  - 1485 # Workspace Matrix
+  - 3968 # Improved Workspace Indicator
+  # - 517 # Caffeine (Ejemplo si quieres añadirla)
+  # - 1460 # Vitals (Ejemplo si quieres añadirla)
+
+gnome_extensions_debian:
+  - 1160 # Dash to Panel
+
+gnome_extensions_ubuntu_2204:
+  - 751 # Audio Output Switcher
