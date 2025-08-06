@@ -8,6 +8,13 @@
 
   # --- TAREAS PREVIAS ---
   pre_tasks:
+    - name: "Asegurar que /tmp tenga los permisos correctos (1777)"
+      tags: always
+      ansible.builtin.file:
+        path: /tmp
+        state: directory
+        mode: '1777'
+
     - name: Actualizar caché de paquetes
       tags: always # Se ejecuta siempre, incluso si filtras por otras etiquetas.
       ansible.builtin.apt:
