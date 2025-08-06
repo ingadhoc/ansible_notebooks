@@ -3,69 +3,31 @@
   hosts: laptop
   tags: always
   become: true
-  gather_facts: false
+
+  vars:
+    target_profile: "{{ profile_override | default('funcional') }}"
+
   pre_tasks:
     - name: Actualizar caché
       tags: always
       ansible.builtin.apt:
         update_cache: true
       changed_when: false
+    - name: Definir el perfil de provisionamiento
+      ansible.builtin.set_fact:
+        target_profile: "{{ target_profile | default('funcional') }}"
 
-- name: Deploy funcional role
-  hosts: laptop
-  tags: funcional
-  become: true
-  gather_facts: true
   roles:
-    - funcional
+    - role: "{{ target_profile }}"
 
-- name: Deploy devs role
-  hosts: laptop
-  tags: devs
-  gather_facts: true
-  become: true
-  roles:
-    - funcional
-    - devs
+    - role: deploy
+      tags: deploy
 
-- name: Deploy sysadmin role
-  hosts: laptop
-  tags: sysadmin
-  gather_facts: true
-  become: true
-  roles:
-    - funcional
-    - devs
-    - sysadmin
-
-- name: Deploy deploy role
-  hosts: laptop
-  tags: deploy
-  gather_facts: true
-  become: true
-  roles:
-    - deploy
-
-- name: Completar deploy y limpiar caché
-  hosts: laptop
-  become: true
-  tasks:
-    - name: Cleanup package cache (debian and ubuntu)
-      tags: always
-      ansible.builtin.apt:
-        autoclean: true
-      changed_when: false
-
-    - name: Autoremove orphan packages (debian and ubuntu)
+  post_tasks:
+    - name: Limpiar paquetes huérfanos y caché
       tags: always
       ansible.builtin.apt:
         autoremove: true
         purge: true
-
-# agregar cron y pull para update automático
-#  - name: Agregar ansible-pull cron job
-#    cron:
-#      name: ansible auto-provision
-#      user: "{{ remote_regular_user }}"
-#      minute: "*/10"
-#      job: ansible-pull -o -U https://github.com/adhoc-dev/ansible.git
+        autoclean: true
+      changed_when: false

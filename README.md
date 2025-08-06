@@ -32,12 +32,14 @@ $ sudo bash adhoc-ansible
 $ sudo apt install python3-setuptools ansible git
 # Clonar repositorio con playbooks, tasks, etc.
 $ git clone git@github.com:ingadhoc/ansible_notebooks.git && cd ansible_notebooks
-# Rol Base
-$ ansible-playbook --tags "funcional" local.yml -K --verbose
-# Rol Base + Devs
-$ ansible-playbook --tags "devs" local.yml -K --verbose
-# Rol Base + Devs + Sysadmin
-$ ansible-playbook --tags "sysadmin" local.yml -K --verbose
+# Para chequear la sintaxis (ahora funcionará)
+$ ansible-playbook local.yml --syntax-check
+# Para el rol Funcional (ejecución por defecto)
+$ ansible-playbook local.yml -K
+# Para el rol Devs (ejecutará funcional -> devs)
+$ ansible-playbook local.yml -e "profile_override=devs" -K
+# Para el rol SysAdmin (ejecutará funcional -> devs -> sysadmin)
+$ ansible-playbook local.yml -e "profile_override=sysadmin" -K
 # Reiniciar la notebook luego de instalar roles para que apliquen los cambios y configuraciones (docker as root por ejemplo)
 ```
 
