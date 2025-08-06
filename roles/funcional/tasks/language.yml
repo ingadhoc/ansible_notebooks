@@ -1,35 +1,28 @@
----
-- name: Idiomas - Completar instalación
+- name: Idiomas | Instalar paquetes de idioma para Ubuntu
   tags: language
-  block:
+  ansible.builtin.apt:
+    name: "{{ language_packs_ubuntu }}"
+    state: present
+  when: ansible_facts['distribution'] == 'Ubuntu'
 
-    - name: Idiomas - Completar instalación de en language
-      when: ansible_facts['distribution'] == 'Ubuntu'
-      ansible.builtin.apt:
-        pkg:
-          - language-pack-en
-          - language-pack-gnome-en
-          - language-pack-en-base
-          - language-pack-gnome-en-base
+- name: Idiomas | Instalar paquetes de idioma para Debian
+  tags: language
+  ansible.builtin.apt:
+    name: "{{ language_packs_debian }}"
+    state: present
+  when: ansible_facts['distribution'] == 'Debian'
 
-    - name: Idiomas - Finish installing es language
-      when: ansible_facts['distribution'] == 'Ubuntu'
-      ansible.builtin.apt:
-        pkg:
-          - language-pack-es
-          - language-pack-gnome-es
-          - language-pack-es-base
-          - language-pack-gnome-es-base
+- name: Idiomas | Asegurar que el locale 'es_ES.UTF-8' esté generado
+  tags: language
+  community.general.locale_gen:
+    name: es_ES.UTF-8
+    state: present
 
-    - name: Idiomas - Validar que locale existe
-      community.general.locale_gen:
-        name: es_ES.UTF-8
-        state: present
-
-    - name: Idiomas - Configurar layouts de teclado
-      become_method: sudo
-      become_user: "{{ lookup('env', 'USER') }}"
-      community.general.dconf:
-        key: "/org/gnome/desktop/input-sources/sources"
-        value: "[('xkb', 'es'), ('xkb', 'us+intl')]"
-        state: present
+- name: Idiomas | Configurar distribuciones de teclado para el usuario
+  tags: language, gnome
+  become: true
+  become_user: "{{ remote_regular_user }}" # Usamos la variable estándar
+  community.general.dconf:
+    key: "/org/gnome/desktop/input-sources/sources"
+    value: "{{ keyboard_layouts }}" # Usamos la variable
+    state: present

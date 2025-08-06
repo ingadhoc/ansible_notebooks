@@ -109,3 +109,24 @@ gnome_extensions_debian:
 
 gnome_extensions_ubuntu_2204:
   - 751 # Audio Output Switcher
+
+# Paquetes de idioma para Ubuntu
+language_packs_ubuntu:
+  - language-pack-en
+  - language-pack-gnome-en
+  - language-pack-en-base
+  - language-pack-gnome-en-base
+  - language-pack-es
+  - language-pack-gnome-es
+  - language-pack-es-base
+  - language-pack-gnome-es-base
+
+# Paquetes de idioma para Debian
+language_packs_debian:
+  - task-spanish
+  - task-spanish-desktop
+  - task-english
+  - task-english-desktop
+
+# Distribuciones de teclado a configurar en GNOME
+keyboard_layouts: "[('xkb', 'es'), ('xkb', 'us+intl')]"
