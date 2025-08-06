@@ -7,4 +7,4 @@
     key: "{{ item.key }}"
     value: "{{ item.value }}"
     state: present
-  loop: "{{ gnome_keybindings }}"
+  loop: "{{ gnome_keybindings | from_yaml }}"
