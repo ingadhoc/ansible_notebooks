@@ -35,11 +35,11 @@ $ git clone git@github.com:ingadhoc/ansible_notebooks.git && cd ansible_notebook
 # Para chequear la sintaxis (ahora funcionará)
 $ ansible-playbook local.yml --syntax-check
 # Para el rol Funcional (ejecución por defecto)
-$ ansible-playbook local.yml -K
+$ ansible-playbook local.yml -K --verbose
 # Para el rol Devs (ejecutará funcional -> devs)
-$ ansible-playbook local.yml -e "profile_override=devs" -K
+$ ansible-playbook local.yml -e "profile_override=devs" -K --verbose
 # Para el rol SysAdmin (ejecutará funcional -> devs -> sysadmin)
-$ ansible-playbook local.yml -e "profile_override=sysadmin" -K
+$ ansible-playbook local.yml -e "profile_override=sysadmin" -K --verbose
 # Reiniciar la notebook luego de instalar roles para que apliquen los cambios y configuraciones (docker as root por ejemplo)
 ```
 
