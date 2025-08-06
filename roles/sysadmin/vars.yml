@@ -2,21 +2,72 @@
 # Usuario genérico para ejecutar algunas tareas
 remote_regular_user: "{{ ansible_env.SUDO_USER }}"
 
+# Lista de plugins de kubectl para instalar
+# Cada elemento es un diccionario que describe cómo instalar el plugin.
+kubectl_plugins_list:
+  # Método 1: Binarios/Tarballs desde GitHub
+  - name: pluto
+    install_type: github_release
+    repo: FairwindsOps/pluto
+    asset_search: "linux_amd64.tar.gz$"
+    completion: "source <(pluto completion bash --no-footer)"
+
+  - name: kube-capacity
+    install_type: github_release
+    repo: robscott/kube-capacity
+    asset_search: "linux_x86_64.tar.gz$"
+    completion: "source <(kube-capacity completion bash)"
+
+  - name: popeye
+    install_type: github_release
+    repo: derailed/popeye
+    asset_search: "linux_amd64.tar.gz$"
+    completion: "source <(popeye completion bash)"
+
+  - name: rke
+    install_type: github_binary # Un tipo especial para binarios directos
+    repo: rancher/rke
+    asset_search: "rke_linux-amd64$"
+
+  # Método 2: Paquetes del sistema (APT)
+  - name: kubectx
+    install_type: apt
+    packages:
+      - kubectx # kubens se instala como dependencia
+
+  # Método 3: Paquetes .deb desde GitHub
+  - name: cnpg
+    install_type: github_deb
+    repo: cloudnative-pg/cloudnative-pg
+    asset_search: "linux_x86_64.deb$"
+
 # Extensiones predefinidas para sysadmin
 vscode_extension_list_sysadmin:
-  # Ansible language support
-  - redhat.ansible
-  # Syntax highlighting and autocompletion for Terraform
-  - hashicorp.terraform
-  # Develop, deploy and debug Kubernetes applications
+  # Container Tools
+  - ms-azuretools.vscode-containers
+  # Dev Containers
+  - ms-vscode-remote.remote-containers
+  # Docker
+  - ms-azuretools.vscode-docker
+  # Docker DX
+  - docker.docker
+  # GitHub Copilot
+  - github.copilot
+  # GitHub Copilot Chat
+  - github.copilot-chat
+  # GitLens
+  - eamodio.gitlens
+  # Kubernetes
   - ms-kubernetes-tools.vscode-kubernetes-tools
-  # Code snippets of kubernetes for Visual Studio Code.
-  - ipedrazas.kubernetes-snippets
-  # Provides path completion for visual studio code.
-  - ionutvmi.path-autocomplete
-  # Open any folder or repository inside a Docker container and take advantage of Visual Studio Code's full feature set.
-  - ms-vscode-remote.vscode-remote-extensionpack
-  # YAML Language Support by Red Hat, with built-in Kubernetes syntax support
+  # Pylance
+  - ms-python.vscode-pylance
+  # Python
+  - ms-python.python
+  # Python Debugger
+  - ms-python.debugpy
+  # Python Environments
+  - ms-python.vscode-python-envs
+  # YAML
   - redhat.vscode-yaml
   # knative
   - redhat.vscode-knative

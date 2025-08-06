@@ -5,15 +5,17 @@
 
 - name: Include
   block:
-    - name: Terraform
+    - name: SysAdmin - Instalación de paquetes y dependencias varias
+      ansible.builtin.import_tasks: packages.yml
+    - name: SysAdmin - Terraform
       ansible.builtin.import_tasks: terraform.yml
-    - name: Gcloud
+    - name: SysAdmin - Gcloud
       ansible.builtin.import_tasks: gcloud.yml
-    - name: Virtualbox
+    - name: SysAdmin - Virtualbox
       ansible.builtin.import_tasks: virtualbox.yml
-    - name: Helm
+    - name: SysAdmin - Helm
       ansible.builtin.import_tasks: helm.yml
-    - name: Kubectl_admin
-      ansible.builtin.import_tasks: kubectl_admin.yml
-    # - name: Fixes
-    #   ansible.builtin.import_tasks: fixes.yml
+    - name: SysAdmin - Plugins para kubectl
+      ansible.builtin.import_tasks: kubectl_install_plugins.yml
+    - name: SysAdmin - Fixes
+      ansible.builtin.import_tasks: fixes.yml
