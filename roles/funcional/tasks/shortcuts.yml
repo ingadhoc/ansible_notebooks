@@ -1,21 +1,10 @@
 ---
-- name: Combinaciones de teclas
-  tags: shortcuts
-  block:
-    # Shortcuts
-    - name: Shortcuts Move 01
-      become_method: sudo
-      become_user: "{{ lookup('env', 'USER') }}"
-      community.general.dconf:
-        key: "{{ item.key }}"
-        value: "{{ item.value }}"
-        state: present
-      with_items:
-        - { key: "/org/gnome/desktop/wm/keybindings/move-to-workspace-1", value: "['<Shift><Super>F1']" }
-        - { key: "/org/gnome/desktop/wm/keybindings/move-to-workspace-2", value: "['<Shift><Super>F2']" }
-        - { key: "/org/gnome/desktop/wm/keybindings/move-to-workspace-3", value: "['<Shift><Super>F3']" }
-        - { key: "/org/gnome/desktop/wm/keybindings/move-to-workspace-4", value: "['<Shift><Super>F4']" }
-        - { key: "/org/gnome/desktop/wm/keybindings/switch-to-workspace-1", value: "['<Super>F1']" }
-        - { key: "/org/gnome/desktop/wm/keybindings/switch-to-workspace-2", value: "['<Super>F2']" }
-        - { key: "/org/gnome/desktop/wm/keybindings/switch-to-workspace-3", value: "['<Super>F3']" }
-        - { key: "/org/gnome/desktop/wm/keybindings/switch-to-workspace-4", value: "['<Super>F4']" }
+- name: GNOME | Aplicar atajos de teclado para espacios de trabajo
+  tags: shortcuts, gnome
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  community.general.dconf:
+    key: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+  loop: "{{ gnome_keybindings }}"
