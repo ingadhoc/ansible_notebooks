@@ -1,3 +1,72 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
 remote_regular_user: "{{ ansible_env.SUDO_USER }}"
+
+packages_system:
+  - htop
+  - mc
+  - tmux
+  - apt-transport-https
+  - curl
+  - wget
+  - openssh-client
+  - openssh-server
+  - jq
+  - tldr
+  - locate
+  - libxshmfence1
+
+packages_compression:
+  - zip
+  - gzip
+  - tar
+  - unzip
+  - p7zip-full
+
+packages_apps:
+  - poedit
+  - fail2ban
+  - ufw
+  - vlc
+  - ffmpeg
+
+packages_hardware_analysis:
+  - inxi
+  - hwinfo
+  - glances
+  - mtr
+  - hardinfo
+  - stacer
+  - screenfetch
+
+packages_gui_utils:
+  - alacarte
+  - fonts-firacode
+  - flameshot
+  - fprintd
+  - libpam-fprintd
+  - fido2-tools
+
+# Paquetes específicos para Ubuntu
+packages_ubuntu_only:
+  - tlp
+  - tlp-rdw
+  - acpi-call-dkms
+  - powertop
+  - preload
+  - bleachbit
+  - ubuntu-restricted-extras
+  - ppa-purge
+  - unrar
+  - p7zip-rar
+
+# Lista de paquetes a ser eliminados
+packages_to_remove:
+  - indicator-multiload
+  - thunderbird
+  - rhythmbox
+  - remmina
+  - gnome-games
+  - gnome-maps
+  - gnome-weather
+  - gnome-calendar
