@@ -138,3 +138,20 @@ gnome_keybindings: >-
   {% else %}
   []
   {% endif %}
+
+# --- Configuración de Branding ---
+branding_wallpaper_light: ".wallpaper.png"
+branding_wallpaper_dark: ".wallpaper_dark.jpg"
+
+# Lista de archivos de branding para copiar al home del usuario
+branding_files_to_copy:
+  - { src: "wallpaper_2024.png", dest: "/home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}" }
+  - { src: "wallpaper_dark_2024.jpg", dest: "/home/{{ remote_regular_user }}/{{ branding_wallpaper_dark }}" }
+
+# Lista de configuraciones de dconf para el fondo de pantalla y protector
+branding_dconf_settings:
+  - { key: "/org/gnome/desktop/background/picture-uri", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}'" }
+  - { key: "/org/gnome/desktop/background/picture-uri-dark", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_dark }}'" }
+  - { key: "/org/gnome/desktop/screensaver/picture-uri", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}'" }
+  - { key: "/org/gnome/desktop/background/picture-options", value: "'scaled'" }
+  - { key: "/org/gnome/desktop/background/primary-color", value: "'#d6d6d4'" }
