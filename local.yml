@@ -1,7 +1,6 @@
 ---
 - name: Tareas previas al deploy de roles
   hosts: laptop
-  tags: always
   become: true
 
   vars:
