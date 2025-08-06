@@ -1,77 +1,51 @@
 ---
-- name: Crear y configurar user sysadmin con acceso ssh y grupo sudo
+- name: SysAdmin | Crear y configurar el usuario 'sysadmin'
   tags: sysadmin
+  become: true
   block:
-    - name: Crear el usuario sysadmin con UID 499 y sin contraseña
+    - name: SysAdmin | Crear el usuario con UID 499 y grupo sudo
       ansible.builtin.user:
         name: sysadmin
         uid: 499
         shell: /bin/bash
         create_home: true
-        password: '*'
+        password_lock: true
         groups: sudo
         state: present
 
-    - name: Crear el directorio .ssh para el usuario sysadmin
-      ansible.builtin.file:
-        path: /home/sysadmin/.ssh
-        state: directory
-        owner: sysadmin
-        group: sysadmin
-        mode: '0700'
-
-    - name: Agregar la clave pública para el usuario sysadmin
-      ansible.builtin.copy:
-        src: ./files/sysadmin.pub
-        dest: /home/sysadmin/.ssh/authorized_keys
-        owner: sysadmin
-        group: sysadmin
-        mode: '0600'
-
-    - name: Configurar sshd_config para solo permitir al usuario sysadmin
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^AllowUsers'
-        line: 'AllowUsers sysadmin'
+    - name: SysAdmin | Asegurar que la clave pública SSH esté autorizada
+      ansible.posix.authorized_key:
+        user: sysadmin
         state: present
+        key: "{{ lookup('file', 'sysadmin.pub') }}"
 
-    - name: Desactivar autenticación por contraseña en sshd_config
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^PasswordAuthentication'
-        line: 'PasswordAuthentication no'
+    - name: SysAdmin | Securizar la configuración del servidor SSH
+      community.general.sshd_config:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
         state: present
+      loop:
+        - { key: 'AllowUsers', value: 'sysadmin' }
+        - { key: 'PasswordAuthentication', value: 'no' }
+        - { key: 'ChallengeResponseAuthentication', value: 'no' }
+        - { key: 'PubkeyAuthentication', value: 'yes' }
+      notify: Restart sshd
 
-    - name: Desactivar ChallengeResponseAuthentication en sshd_config
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^ChallengeResponseAuthentication'
-        line: 'ChallengeResponseAuthentication no'
-        state: present
-
-    - name: Asegurar PubkeyAuthentication está habilitado en sshd_config
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^PubkeyAuthentication'
-        line: 'PubkeyAuthentication yes'
-        state: present
-
-    - name: Reiniciar el servicio SSH
-      ansible.builtin.systemd:
-        name: ssh
-        state: restarted
-
-    - name: Allow ingoing SSH connections
+    - name: SysAdmin | Permitir conexiones SSH entrantes en el firewall
       community.general.ufw:
         rule: allow
         direction: in
-        port: 22
+        port: '22'
         proto: tcp
+        comment: 'Allow incoming SSH for sysadmin user'
 
-    - name: Agregar sysadmin a sudoers sin requerir contraseña
-      ansible.builtin.copy:
-        dest: /etc/sudoers.d/sysadmin
-        content: "sysadmin ALL=(ALL) NOPASSWD:ALL\n"
+    - name: SysAdmin | Agregar 'sysadmin' a sudoers sin requerir contraseña
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/sysadmin
+        line: "sysadmin ALL=(ALL) NOPASSWD:ALL"
+        state: present
+        create: true
         owner: root
         group: root
         mode: '0440'
+        validate: /usr/sbin/visudo -cf %s
