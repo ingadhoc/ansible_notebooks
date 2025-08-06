@@ -16,7 +16,7 @@
         mode: '1777'
 
     - name: Actualizar caché de paquetes
-      tags: always # Se ejecuta siempre, incluso si filtras por otras etiquetas.
+      tags: always
       ansible.builtin.apt:
         update_cache: true
       changed_when: false
@@ -28,14 +28,21 @@
 
     # Este rol SOLO se ejecuta si se pide explícitamente la etiqueta 'deploy'.
     - role: deploy
-      tags: deploy
+      tags:
+        - deploy
+        - never
 
   # --- TAREAS POSTERIORES ---
   post_tasks:
-    - name: Limpiar paquetes huérfanos y caché
-      tags: always # Se ejecuta siempre.
+    - name: Limpiar paquetes huérfanos (con purge)
+      tags: always
       ansible.builtin.apt:
         autoremove: true
         purge: true
+      changed_when: false
+
+    - name: Limpiar el caché de paquetes descargados
+      tags: always
+      ansible.builtin.apt:
         autoclean: true
       changed_when: false
