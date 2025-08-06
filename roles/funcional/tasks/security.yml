@@ -1,47 +1,26 @@
 ---
-- name: UFW - Instalar y configurar
-  tags: ufw
+- name: Firewall | Configurar UFW con políticas seguras por defecto
+  tags: ufw, security
+  become: true
   block:
-    - name: Instalar UFW
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - ufw
-          - gufw
-
-    - name: Denegar todo el tráfico entrante por defecto
+    - name: Firewall | Denegar todo el tráfico entrante por defecto
       community.general.ufw:
         default: deny
         direction: incoming
 
-    - name: Permitir todo el tráfico saliente por defecto
+    - name: Firewall | Permitir todo el tráfico saliente por defecto
       community.general.ufw:
         default: allow
         direction: outgoing
 
-    - name: Allow outgoing SSH connections
+    - name: Firewall | Permitir conexiones SSH entrantes (común para desarrolladores)
       community.general.ufw:
         rule: allow
-        direction: out
-        port: 22
+        direction: in
+        port: '22'
         proto: tcp
+        comment: 'Allow incoming SSH for remote access'
 
-    - name: Allow outgoing HTTP and HTTPS traffic
-      community.general.ufw:
-        rule: allow
-        direction: out
-        port: 80
-        proto: tcp
-
-    - name: Allow outgoing HTTP and HTTPS traffic
-      community.general.ufw:
-        rule: allow
-        direction: out
-        port: 443
-        proto: tcp
-
-    - name: Activar UFW
+    - name: Firewall | Activar y habilitar el servicio UFW
       community.general.ufw:
         state: enabled
