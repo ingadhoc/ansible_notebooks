@@ -19,17 +19,18 @@
         state: present
         key: "{{ lookup('file', 'sysadmin.pub') }}"
 
-    - name: SysAdmin | Securizar la configuración del servidor SSH
-      community.general.sshd_config:
-        name: "{{ item.key }}"
-        value: "{{ item.value }}"
+    - name: SysAdmin | Securizar la configuración del servidor SSH con lineinfile
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^{{ item.key }}"
+        line: "{{ item.key }} {{ item.value }}"
         state: present
       loop:
         - { key: 'AllowUsers', value: 'sysadmin' }
         - { key: 'PasswordAuthentication', value: 'no' }
         - { key: 'ChallengeResponseAuthentication', value: 'no' }
         - { key: 'PubkeyAuthentication', value: 'yes' }
-      notify: Restart sshd
+      notify: Restart sshd # El handler sigue siendo una buena práctica
 
     - name: SysAdmin | Permitir conexiones SSH entrantes en el firewall
       community.general.ufw:
