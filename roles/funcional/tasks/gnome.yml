@@ -30,23 +30,38 @@
   become: true
   become_user: "{{ remote_regular_user }}"
   block:
-    - name: GNOME | Descargar script de instalación de extensiones
-      ansible.builtin.get_url:
-        url: https://raw.githubusercontent.com/ToasterUwU/install-gnome-extensions/master/install-gnome-extensions.sh
-        dest: /tmp/install-gnome-extensions.sh
-        mode: "0755"
-
-    - name: GNOME | Construir lista final de extensiones a instalar
+    - name: GNOME | Construir lista final de extensiones requeridas
       ansible.builtin.set_fact:
-        extensions_to_install: >
+        extensions_required: >
           {{ gnome_extensions_common +
              (gnome_extensions_debian if ansible_facts['distribution'] == 'Debian' else []) +
              (gnome_extensions_ubuntu_2204 if ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] == '22.04' else []) }}
 
-    - name: GNOME | Instalar todas las extensiones en una sola pasada
-      ansible.builtin.command: "/tmp/install-gnome-extensions.sh --overwrite --enable {{ extensions_to_install | join(' ') }}"
-      register: extension_install_result
-      changed_when: "'Installing extensions' in extension_install_result.stdout"
+    - name: GNOME | Verificar qué extensiones ya están instaladas
+      ansible.builtin.stat:
+        path: "/home/{{ remote_regular_user }}/.local/share/gnome-shell/extensions/{{ item.uuid }}"
+      loop: "{{ extensions_required }}"
+      register: installed_extensions_stat
+
+    - name: GNOME | Determinar si es necesario instalar alguna extensión
+      ansible.builtin.set_fact:
+        # La variable será 'true' si la lista de extensiones no encontradas ('stat.exists == false') tiene un largo mayor a 0
+        extensions_are_missing: "{{ installed_extensions_stat.results | selectattr('stat.exists', 'false') | list | length > 0 }}"
+
+    - name: GNOME | Instalar extensiones faltantes (si es necesario)
+      when: extensions_are_missing
+      block:
+        - name: GNOME | Descargar script de instalación de extensiones
+          ansible.builtin.get_url:
+            url: https://raw.githubusercontent.com/ToasterUwU/install-gnome-extensions/master/install-gnome-extensions.sh
+            dest: /tmp/install-gnome-extensions.sh
+            mode: "0755"
+
+        - name: GNOME | Instalar todas las extensiones requeridas en una sola pasada
+          # El filtro map('attribute', 'id') extrae solo los IDs de nuestra lista de diccionarios
+          # El filtro join(' ') convierte la lista [744, 779] en el string "744 779"
+          ansible.builtin.command: "/tmp/install-gnome-extensions.sh --enable {{ extensions_required | map(attribute='id') | join(' ') }}"
+          changed_when: true # Si esta tarea se ejecuta, es porque algo cambió.
 
   always:
     - name: GNOME | Limpiar script de instalación de extensiones

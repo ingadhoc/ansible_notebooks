@@ -76,16 +76,16 @@ packages_to_remove:
 
 # Extensiones de GNOME
 gnome_extensions_common:
-  - 744 # Hide Activities Button
-  - 779 # Clipboard Indicator
-  - 1485 # Workspace Matrix
-  - 3968 # Improved Workspace Indicator
+  - { id: 744, uuid: "Hide_Activities@shay.shayel.org" }
+  - { id: 779, uuid: "clipboard-indicator@tudmotu.com" }
+  - { id: 1485, uuid: "wsmatrix@martin.zurowietz.de" }
+  - { id: 3968, uuid: "improved-workspace-indicator@michaelaquilina.github.io" }
 
 gnome_extensions_debian:
-  - 1160 # Dash to Panel
+  - { id: 1160, uuid: "dash-to-panel@jderose9.github.com" }
 
 gnome_extensions_ubuntu_2204:
-  - 751 # Audio Output Switcher
+  - { id: 751, uuid: "audio-output-switcher@anduchs.github.com" }
 
 # Paquetes de idioma
 language_packs_ubuntu:
