@@ -6,25 +6,27 @@
   vars:
     target_profile: "{{ profile_override | default('funcional') }}"
 
+  # --- TAREAS PREVIAS ---
   pre_tasks:
-    - name: Actualizar caché
-      tags: always
+    - name: Actualizar caché de paquetes
+      tags: always # Se ejecuta siempre, incluso si filtras por otras etiquetas.
       ansible.builtin.apt:
         update_cache: true
       changed_when: false
-    - name: Definir el perfil de provisionamiento
-      ansible.builtin.set_fact:
-        target_profile: "{{ target_profile | default('funcional') }}"
 
+  # --- SECCIÓN DE ROLES ---
   roles:
+    # Este rol se ejecuta por defecto o según la variable. NO está etiquetado.
     - role: "{{ target_profile }}"
 
+    # Este rol SOLO se ejecuta si se pide explícitamente la etiqueta 'deploy'.
     - role: deploy
       tags: deploy
 
+  # --- TAREAS POSTERIORES ---
   post_tasks:
     - name: Limpiar paquetes huérfanos y caché
-      tags: always
+      tags: always # Se ejecuta siempre.
       ansible.builtin.apt:
         autoremove: true
         purge: true
