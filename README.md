@@ -32,6 +32,8 @@ $ sudo bash adhoc-ansible
 $ sudo apt install python3-setuptools ansible git
 # Clonar repositorio con playbooks, tasks, etc.
 $ git clone git@github.com:ingadhoc/ansible_notebooks.git && cd ansible_notebooks
+# Instalar colecciones & dependencias
+$ ansible-galaxy install -r collections/requirements.yml
 # Para chequear la sintaxis (ahora funcionará)
 $ ansible-playbook local.yml --syntax-check
 # Para el rol Funcional (ejecución por defecto)
