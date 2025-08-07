@@ -53,17 +53,19 @@ packages_gui_utils:
   - libpam-fprintd
   - fido2-tools
 
-packages_ubuntu_only:
+packages_ubuntu_common:
+  - ubuntu-restricted-extras
+  - ppa-purge
+  - unrar
+  - p7zip-rar
+  - bleachbit
+
+packages_ubuntu_2204_power:
   - tlp
   - tlp-rdw
   - acpi-call-dkms
   - powertop
   - preload
-  - bleachbit
-  - ubuntu-restricted-extras
-  - ppa-purge
-  - unrar
-  - p7zip-rar
 
 packages_to_remove:
   - indicator-multiload

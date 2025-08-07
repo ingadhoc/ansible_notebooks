@@ -6,12 +6,21 @@
     name: "{{ packages_system + packages_compression + packages_apps + packages_hardware_analysis + packages_gui_utils + python_for_functionals}}"
     state: present
 
-- name: Paquetes | Instalar paquetes específicos de Ubuntu
+- name: Paquetes | Instalar paquetes comunes de Ubuntu
   tags: packages_funcional
   ansible.builtin.apt:
-    name: "{{ packages_ubuntu_only }}"
+    name: "{{ packages_ubuntu_common }}"
     state: present
   when: ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Paquetes | Instalar paquetes de energía para Ubuntu 22.04 (y anteriores)
+  tags: packages_funcional
+  ansible.builtin.apt:
+    name: "{{ packages_ubuntu_2204_power }}"
+    state: present
+  when:
+    - ansible_facts['distribution'] == 'Ubuntu'
+    - ansible_facts['distribution_version'] is version('22.04', '<=')
 
 - name: Paquetes | Eliminar programas no deseados
   tags: packages_funcional
