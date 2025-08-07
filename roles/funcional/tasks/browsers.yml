@@ -1,31 +1,33 @@
----
-- name: Install Google Chrome
+- name: Browsers - Instalar Google Chrome de forma limpia y segura
   tags: chrome
   become: true
   block:
-    - name: Chrome | Asegurar que 'gnupg' esté instalado
+    - name: Browsers - Asegurar que 'gnupg' esté instalado
       ansible.builtin.apt:
         name: gnupg
         state: present
 
-    - name: Chrome | Descargar y guardar la llave GPG de Google
+    - name: Browsers - Descargar y guardar la llave GPG de Google
       ansible.builtin.shell: >
         curl -fsSL https://dl.google.com/linux/linux_signing_key.pub |
         gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
       args:
-        # Esto hace la tarea idempotente, evitando volver a descargar la llave.
         creates: /usr/share/keyrings/google-chrome.gpg
       changed_when: false
 
-    - name: Chrome | Añadir el repositorio de Google Chrome
+    - name: Browsers - Asegurar que no existan configuraciones de repositorio antiguas
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/google-chrome.list
+        state: absent
+
+    - name: Browsers - Añadir el repositorio de Google Chrome (forma moderna)
       ansible.builtin.apt_repository:
-        # Apuntamos a la llave específica con 'signed-by'
         repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] https://dl.google.com/linux/chrome/deb/ stable main"
         state: present
         filename: google-chrome
-        update_cache: true # Actualiza el caché aquí, de forma segura.
+        update_cache: true
 
-    - name: Chrome | Instalar el paquete google-chrome-stable
+    - name: Browsers - Instalar el paquete google-chrome-stable
       ansible.builtin.apt:
         name: google-chrome-stable
         state: present
