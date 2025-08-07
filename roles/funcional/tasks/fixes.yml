@@ -12,22 +12,25 @@
     - { key: "/org/gnome/shell/extensions/dash-to-dock/click-action", value: "'minimize'" }
   when: ansible_facts['distribution'] == 'Ubuntu'
 
-- name: Arreglos | Reinstalar Xorg (solo si se solicita explícitamente)
+- name: Arreglos | Forzar Xorg y reinstalar (Solo para Ubuntu 22.04)
   tags: xorg_fixes
   become: true
-  ansible.builtin.command: apt-get install --reinstall -y xorg
-  when: force_xorg_reinstall | bool
-  changed_when: false
+  when:
+    - ansible_facts['distribution'] == 'Ubuntu'
+    - ansible_facts['distribution_version'] == '22.04'
+  block:
+    - name: Arreglos | Reinstalar Xorg (controlado por variable)
+      ansible.builtin.command: apt-get install --reinstall -y xorg
+      when: force_xorg_reinstall | bool
+      changed_when: false
 
-- name: Arreglos | Configurar GDM3 para forzar el uso de Xorg
-  tags: xorg_fixes
-  become: true
-  ansible.builtin.blockinfile:
-    path: /etc/gdm3/custom.conf
-    marker: "# {mark} ANSIBLE XORG FIX"
-    block: |
-      WaylandEnable=false
-      DefaultSession=gnome-xorg.desktop
-    insertafter: '^\[daemon\]'
-    state: present
-  notify: Restart GDM
+    - name: Arreglos | Configurar GDM3 para forzar el uso de Xorg
+      ansible.builtin.blockinfile:
+        path: /etc/gdm3/custom.conf
+        marker: "# {mark} ANSIBLE XORG FIX"
+        block: |
+          WaylandEnable=false
+          DefaultSession=gnome-xorg.desktop
+        insertafter: '^\[daemon\]'
+        state: present
+      notify: Restart GDM
