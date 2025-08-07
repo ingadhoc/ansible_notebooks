@@ -32,8 +32,9 @@
       ansible.builtin.set_fact:
         extensions_required: >
           {{ gnome_extensions_common +
-             (gnome_extensions_debian if ansible_facts['distribution'] == 'Debian' else []) +
-             (gnome_extensions_ubuntu_2204 if ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] == '22.04' else []) }}
+            (gnome_extensions_debian if ansible_facts['distribution'] == 'Debian' else []) +
+            (gnome_extensions_ubuntu_2204 if ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] == '22.04' else []) +
+            (gnome_extensions_ubuntu_2404 if ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] == '24.04' else []) }}
 
     - name: GNOME Extensions | Verificar qué extensiones ya están instaladas
       ansible.builtin.stat:
