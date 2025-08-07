@@ -15,11 +15,9 @@
 - name: Arreglos | Reinstalar Xorg (solo si se solicita explícitamente)
   tags: xorg_fixes
   become: true
-  ansible.builtin.apt:
-    name: xorg
-    state: present
-    reinstall: yes
+  ansible.builtin.command: apt-get install --reinstall -y xorg
   when: force_xorg_reinstall | bool
+  changed_when: false
 
 - name: Arreglos | Configurar GDM3 para forzar el uso de Xorg
   tags: xorg_fixes
