@@ -1,7 +1,6 @@
 ---
-- name: Gnome - Configurar e instalar extensiones
+- name: GNOME Extensions | Instalar dependencias
   tags: gnome
-
   ansible.builtin.apt:
     name:
       - gnome-tweaks
@@ -12,7 +11,7 @@
       - python3-psutil
     state: present
 
-- name: GNOME | Aplicar configuraciones de dconf (diálogos y reloj)
+- name: GNOME Extensions | Aplicar configuraciones de dconf (diálogos y reloj)
   tags: gnome, dconf
   become: true
   become_user: "{{ remote_regular_user }}"
@@ -24,47 +23,44 @@
     - { key: "/org/gnome/shell/overrides/attach-modal-dialogs", value: "false" }
     - { key: "/org/gnome/desktop/interface/clock-format", value: "'24h'" }
 
-# Instala las extensiones usando https://github.com/ToasterUwU/install-gnome-extensions
-- name: GNOME | Gestionar la instalación de extensiones
+- name: GNOME Extensions | Gestionar la instalación de extensiones
   tags: gnome, gnome-extensions
   become: true
   become_user: "{{ remote_regular_user }}"
   block:
-    - name: GNOME | Construir lista final de extensiones requeridas
+    - name: GNOME Extensions | Construir lista final de extensiones requeridas
       ansible.builtin.set_fact:
         extensions_required: >
           {{ gnome_extensions_common +
              (gnome_extensions_debian if ansible_facts['distribution'] == 'Debian' else []) +
              (gnome_extensions_ubuntu_2204 if ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] == '22.04' else []) }}
 
-    - name: GNOME | Verificar qué extensiones ya están instaladas
+    - name: GNOME Extensions | Verificar qué extensiones ya están instaladas
       ansible.builtin.stat:
         path: "/home/{{ remote_regular_user }}/.local/share/gnome-shell/extensions/{{ item.uuid }}"
       loop: "{{ extensions_required }}"
       register: installed_extensions_stat
 
-    - name: GNOME | Determinar si es necesario instalar alguna extensión
+    - name: GNOME Extensions | Determinar si es necesario instalar alguna extensión
       ansible.builtin.set_fact:
-        # La variable será 'true' si la lista de extensiones no encontradas ('stat.exists == false') tiene un largo mayor a 0
         extensions_are_missing: "{{ installed_extensions_stat.results | selectattr('stat.exists', 'false') | list | length > 0 }}"
 
-    - name: GNOME | Instalar extensiones faltantes (si es necesario)
+    - name: GNOME Extensions | Instalar extensiones faltantes (si es necesario)
       when: extensions_are_missing
       block:
-        - name: GNOME | Descargar script de instalación de extensiones
-          ansible.builtin.get_url:
-            url: https://raw.githubusercontent.com/ToasterUwU/install-gnome-extensions/master/install-gnome-extensions.sh
+        - name: GNOME Extensions | Copiar script de instalación personalizado a /tmp
+          ansible.builtin.copy:
+            src: install-gnome-extensions.sh # Busca en la carpeta 'files' del rol
             dest: /tmp/install-gnome-extensions.sh
             mode: "0755"
 
-        - name: GNOME | Instalar todas las extensiones requeridas en una sola pasada
-          # El filtro map('attribute', 'id') extrae solo los IDs de nuestra lista de diccionarios
-          # El filtro join(' ') convierte la lista [744, 779] en el string "744 779"
-          ansible.builtin.command: "/tmp/install-gnome-extensions.sh --enable {{ extensions_required | map(attribute='id') | join(' ') }}"
-          changed_when: true # Si esta tarea se ejecuta, es porque algo cambió.
+        - name: GNOME Extensions | Instalar todas las extensiones requeridas con el script
+          ansible.builtin.command: "/tmp/install-gnome-extensions.sh --overwrite --enable {{ extensions_required | map(attribute='id') | join(' ') }}"
+          register: extension_install_result
+          changed_when: "'Installing' in extension_install_result.stdout"
 
   always:
-    - name: GNOME | Limpiar script de instalación de extensiones
+    - name: GNOME Extensions | Limpiar script de instalación
       ansible.builtin.file:
         path: /tmp/install-gnome-extensions.sh
         state: absent
