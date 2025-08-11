@@ -1,5 +1,5 @@
 ---
-- name: Paquetes | Instalar todos los paquetes necesarios
+- name: Paquetes | Instalar paquetes de sistema y aplicaciones
   tags: packages_funcional
   vars:
     all_packages_to_install: >-
@@ -15,3 +15,18 @@
   ansible.builtin.apt:
     name: "{{ all_packages_to_install | difference(excluded_packages) }}"
     state: present
+
+- name: Paquetes | Instalar paquetes específicos de Ubuntu
+  tags: packages_funcional
+  ansible.builtin.apt:
+    name: "{{ packages_ubuntu_common + (packages_ubuntu_2204_power if ansible_facts['distribution_version'] is version('22.04', '<=') else []) }}"
+    state: present
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Paquetes | Eliminar programas no deseados
+  tags: packages_funcional
+  become: true
+  ansible.builtin.apt:
+    name: "{{ packages_to_remove }}"
+    state: absent
+    purge: true
