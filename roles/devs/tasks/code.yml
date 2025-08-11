@@ -1,76 +1,67 @@
 ---
-- name: Visual Studio Code - Install and Configure
+- name: Code | Añadir el repositorio oficial y el paquete de VS Code
   tags: code
+  become: true
   block:
-    - name: Code - Ensure old or corrupt GPG key is removed
-      become: true
-      ansible.builtin.file:
-        path: /etc/apt/keyrings/packages.microsoft.gpg
-        state: absent
+    - name: Code | Añadir la clave GPG de Microsoft
+      ansible.builtin.shell: >
+        curl -fsSL https://packages.microsoft.com/keys/microsoft.asc |
+        gpg --dearmor -o /etc/apt/keyrings/packages.microsoft.gpg
+      args:
+        creates: /etc/apt/keyrings/packages.microsoft.gpg
+      changed_when: false
 
-    - name: Code - Download Microsoft GPG key (ASCII) to a temporary file
-      become: true
-      ansible.builtin.get_url:
-        url: https://packages.microsoft.com/keys/microsoft.asc
-        dest: /tmp/microsoft.asc
-        mode: '0644'
-
-    - name: Code - Dearmor GPG key to binary format
-      become: true
-      ansible.builtin.shell:
-        cmd: gpg --dearmor -o /etc/apt/keyrings/packages.microsoft.gpg /tmp/microsoft.asc
-
-    - name: Code - Add VS Code APT repository
-      become: true
+    - name: Code | Añadir el repositorio de VS Code
       ansible.builtin.apt_repository:
         repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main"
         state: present
         filename: vscode
         update_cache: true
 
-    - name: Code - Remove temporary GPG key file
-      become: true
-      ansible.builtin.file:
-        path: /tmp/microsoft.asc
-        state: absent
-
-    - name: Code - Install Visual Studio Code
-      become: true
+    - name: Code | Instalar el paquete 'code'
       ansible.builtin.apt:
         name: code
         state: present
-      when: ansible_userspace_architecture == 'x86_64'
 
-    - name: Code - Install predefined extensions
-      become: true
-      ansible.builtin.shell: "su - {{ lookup('env', 'USER') }} -c 'code --install-extension {{ item }}'"
-      with_items: "{{ vscode_extension_list_devs }}"
+- name: Code | Gestionar extensiones de forma idempotente
+  tags: code
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  block:
+    - name: Code | Obtener lista de extensiones ya instaladas
+      ansible.builtin.command: "code --list-extensions"
+      register: installed_extensions
       changed_when: false
 
-    - name: Code - Set as default text editor
-      become: true
-      ansible.builtin.shell: "su - {{ lookup('env', 'USER') }} -c 'xdg-mime default code.desktop application/x-shellscript text/plain text/markdown application/x-yaml text/x-python'"
+    - name: Code | Instalar solo las extensiones que falten
+      ansible.builtin.command: "code --install-extension {{ item }}"
+      loop: "{{ vscode_extension_list_devs }}"
+      when: item not in installed_extensions.stdout_lines
+
+- name: Code | Gestionar la configuración del usuario
+  tags: code
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  block:
+    - name: Code | Establecer como editor por defecto para ciertos tipos de archivo
+      ansible.builtin.command: "xdg-mime default code.desktop application/x-shellscript text/plain text/markdown application/x-yaml text/x-python"
       changed_when: false
 
-    - name: Code - Create configuration directories
-      file:
-        path: "{{ ansible_env.HOME }}/{{ item }}"
+    - name: Code | Crear directorios de configuración en el home del usuario
+      ansible.builtin.file:
+        path: "/home/{{ remote_regular_user }}/{{ item }}"
         state: directory
         mode: "0755"
-      with_items:
-        - ".config"
-        - ".config/Code"
+      loop:
         - ".config/Code/User"
+        - ".config/pycodestyle"
+        - ".config/flake8"
 
-    - name: Code - Copy configuration files
+    - name: Code | Copiar archivos de configuración
       ansible.builtin.copy:
         src: "{{ item.src }}"
-        dest: "{{ ansible_env.HOME }}/{{ item.dest }}"
-        owner: "{{ lookup('env', 'USER') }}"
-        group: "{{ lookup('env', 'USER') }}"
+        dest: "/home/{{ remote_regular_user }}/{{ item.dest }}"
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
         mode: "0644"
-      with_items:
-        - { src: ./files/settings.json, dest: .config/Code/User/settings.json }
-        - { src: ./files/keybindings.json, dest: .config/Code/User/keybindings.json }
-        - { src: ./files/pycodestyle, dest: .config/pycodestyle }
-        - { src: ./files/flake8, dest: .config/flake8 }
+      loop: "{{ dev_vscode_config_files }}"
