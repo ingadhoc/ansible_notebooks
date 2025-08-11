@@ -1,46 +1,36 @@
 ---
-- name: Devs - Instalación paquetes varios
+- name: Paquetes Dev | Instalar herramientas de terminal y editores
   tags: packages_dev
-  block:
-    - name: Editor de texto, colorizer, terminal
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - ccze
-          - tmux
-          - tmuxp
-          - xclip
-          - bash-completion
-          - yakuake
-          - vim
-          - gnupg
+  become: true
+  ansible.builtin.apt:
+    name: "{{ dev_packages_base }}"
+    state: present
 
-
-- name: Yakuake - Instalación y configuración
+- name: Yakuake | Configurar la terminal desplegable para el usuario
   tags: yakuake
+  become: true
+  become_user: "{{ remote_regular_user }}"
   block:
-    - name: Yakuake - Configuraciones
-      become_method: sudo
-      become_user: "{{ lookup('env', 'USER') }}"
+    - name: Yakuake | Copiar archivo de configuración principal
       ansible.builtin.copy:
-        src: ./files/yakuakerc
-        dest: ~/.config/
+        src: yakuakerc
+        dest: "~/.config/yakuakerc"
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
-        mode: "0666"
+        mode: "0644" # Permiso estándar y seguro para archivos
 
-    - name: Yakuake - Directorio para configuración
+    - name: Yakuake | Asegurar que el directorio de perfiles de konsole existe
       ansible.builtin.file:
-        path: ~/.local/share/konsole
+        path: "~/.local/share/konsole"
         state: directory
-        mode: "774"
-
-    - name: Yakuake - Copiar archivo configuración
-      ansible.builtin.copy:
-        src: ./files/Profile_1.profile
-        dest: ~/.local/share/konsole
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
-        mode: "0666"
+        mode: "0755" # Permiso estándar y seguro para directorios
+
+    - name: Yakuake | Copiar el perfil de la terminal
+      ansible.builtin.copy:
+        src: Profile_1.profile
+        dest: "~/.local/share/konsole/Profile_1.profile"
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "0644" # Permiso estándar y seguro para archivos
