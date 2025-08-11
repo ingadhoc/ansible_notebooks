@@ -33,4 +33,4 @@
           DefaultSession=gnome-xorg.desktop
         insertafter: '^\[daemon\]'
         state: present
-      notify: Restart GDM
+
