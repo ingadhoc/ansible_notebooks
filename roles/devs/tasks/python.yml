@@ -1,97 +1,54 @@
 ---
-- name: Python3 - Instalar dependencias, librerías pip y paquetes
+- name: Python | Instalar paquetes de sistema para el entorno de desarrollo
   tags: python
+  become: true
+  ansible.builtin.apt:
+    name: "{{ dev_python_packages }}"
+    state: present
+    update_cache: true
+
+- name: Python | Gestionar entorno virtual y herramientas de linting
+  tags: python
+  become: true
+  become_user: "{{ remote_regular_user }}"
   block:
-    - name: Python3 - Instalar dependencias en Debian
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - ipython3
-          - python3-setuptools
-          - python3-pip-whl
-          - python3-pip
-          - pylint
-          - python3
-          - python3-venv
-        state: present
-      when: ansible_distribution == "Debian"
+    - name: Python | Crear directorio para entornos virtuales
+      ansible.builtin.file:
+        path: "/home/{{ remote_regular_user }}/python-venvs"
+        state: directory
+        mode: "0755"
 
-    - name: Python3 - Instalar dependencias en Ubuntu
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - ipython3
-          - python3-setuptools
-          - python3-pip-whl
-          - python3-pip
-          - pylint
-          - python3
-          - python3.10-venv
-        state: present
-      when: ansible_distribution == "Ubuntu"
+    - name: Python | Crear entorno virtual para linters
+      ansible.builtin.command: "python3 -m venv {{ dev_python_venv_path }}"
+      args:
+        creates: "{{ dev_python_venv_path }}/bin/pip"
 
-    - name: Crear un entorno virtual de Python
-      ansible.builtin.command: python3 -m venv /home/{{ remote_regular_user }}/lint-hook
-      changed_when: false
-
-    - name: Asegurarse de que pip esté actualizado en el entorno virtual
-      ansible.builtin.command: /home/{{ remote_regular_user }}/lint-hook/bin/pip install --upgrade pip
-      changed_when: false
-
-    - name: Python - Instalar pylint-odoo, flake8, pep8, pre-commit en el entorno virtual
-      become: true
+    - name: Python | Instalar herramientas de linting en el entorno virtual
       ansible.builtin.pip:
-        executable: /home/{{ remote_regular_user }}/lint-hook/bin/pip
-        name: "{{ items }}"
-        extra_args: --upgrade --pre
-      vars:
-        items:
-          - pylint-odoo
-          - flake8
-          - pep8
-          - pre-commit
+        executable: "{{ dev_python_venv_path }}/bin/pip"
+        name: "{{ dev_python_linter_packages }}"
+        state: present
 
-- name: Lint hooks - Configuración
+- name: Git Hooks | Configurar pre-commit hooks de OCA globalmente
   tags: lint_hooks
   block:
-    # Instalar lint hooks
-    - name: Lint hooks - Limpiar carpeta
-      ansible.builtin.file:
-        path: /home/{{ remote_regular_user }}/lint-hook
-        state: absent
-        force: true
-
-    - name: Lint hooks - Clonar repositorio
+    - name: Git Hooks | Clonar o actualizar el repositorio de maintainer-quality-tools
+      become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.git:
-        repo: https://github.com/OCA/maintainer-quality-tools
-        dest: /home/{{ remote_regular_user }}/lint-hook
+        repo: "{{ dev_hooks_repo_url }}"
+        dest: "{{ dev_hooks_repo_path }}"
         version: master
 
-#    - name: Lint hooks - Instalar requirements
-#      ansible.builtin.pip:
-#        chdir: /home/{{ remote_regular_user }}/lint-hook
-#        requirements: requirements.txt
-
-    # Fix pendiente: Usar módulo name y no command
-    # - name: Crear link simbólico
-    #   ansible.builtin.file:
-    #     src: /home/{{ remote_regular_user }}/lint-hook/*
-    #     dest: /usr/share/git-core/templates/hooks/
-    #     state: link
-    #     force: true
-
-    - name: Crear enlaces simbólicos para todos los archivos en el directorio de origen
+    - name: Git Hooks | Encontrar todos los archivos de hooks en el repositorio clonado
+      become: true
       ansible.builtin.find:
-        paths: "/home/{{ remote_regular_user }}/lint-hook/git"
+        paths: "{{ dev_hooks_repo_path }}/hooks"
         file_type: file
       register: hook_files
 
-    - name: Crear enlaces simbólicos en el destino
+    - name: Git Hooks | Crear enlaces simbólicos en la plantilla de hooks de Git
+      become: true
       ansible.builtin.file:
         src: "{{ item.path }}"
         dest: "/usr/share/git-core/templates/hooks/{{ item.path | basename }}"
@@ -99,8 +56,10 @@
         force: true
       loop: "{{ hook_files.files }}"
 
-    - name: Debug - Clonar el repositorio odoo_log_analyser
-      become_user: "{{ remote_regular_user }}"
-      ansible.builtin.git:
-        repo: https://github.com/adhoc-dev/odoo_log_analyser.git
-        dest: /home/{{ remote_regular_user }}/repositorios/odoo_log_analyser
+- name: Tools | Clonar repositorio de odoo_log_analyser
+  tags: odoo_tools
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  ansible.builtin.git:
+    repo: https://github.com/adhoc-dev/odoo_log_analyser.git
+    dest: "/home/{{ remote_regular_user }}/repositorios/odoo_log_analyser"
