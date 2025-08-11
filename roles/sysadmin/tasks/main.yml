@@ -1,7 +1,7 @@
 ---
 - name: Include vars
-  ansible.builtin.include_vars: ./roles/sysadmin/vars.yml
-  tags: sysadmin
+  tags: always, sysadmin
+  ansible.builtin.include_vars: "{{ role_path }}/vars/main.yml"
 
 - name: Include
   block:
@@ -11,8 +11,8 @@
       ansible.builtin.import_tasks: terraform.yml
     - name: SysAdmin - Gcloud
       ansible.builtin.import_tasks: gcloud.yml
-    # - name: SysAdmin - Virtualbox
-    #   ansible.builtin.import_tasks: virtualbox.yml
+    - name: SysAdmin - Virtualbox
+      ansible.builtin.import_tasks: virtualbox.yml
     - name: SysAdmin - Helm
       ansible.builtin.import_tasks: helm.yml
     - name: SysAdmin - Plugins para kubectl
