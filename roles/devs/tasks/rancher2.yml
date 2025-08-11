@@ -20,7 +20,7 @@
         - name: Rancher CLI | Descargar y extraer el binario en un solo paso
           ansible.builtin.unarchive:
             remote_src: true
-            src: "{{ (json_response.json.assets | selectattr('name', 'search', '^rancher-linux-amd64.*.tar.xz$') | list | first).browser_download_url }}"
+            src: "{{ (json_response.json.assets | selectattr('name', 'search', '^rancher-linux-amd64.*\\.tar\\.gz$') | list | first).browser_download_url }}"
             dest: "/usr/local/bin/"
             extra_opts:
               - "--strip-components=1"
