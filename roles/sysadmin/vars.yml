@@ -3,51 +3,6 @@
 remote_regular_user: "{{ ansible_env.SUDO_USER }}"
 remote_regular_user_uid: "{{ ansible_user_uid }}"
 
-# Paquetes para la instalación de VirtualBox en Debian
-sysadmin_virtualbox_packages:
-  - virtualbox
-  - virtualbox-dkms
-  - virtualbox-qt
-
-# Lista de plugins de kubectl para instalar
-# Cada elemento es un diccionario que describe cómo instalar el plugin.
-kubectl_plugins_list:
-  # Método 1: Binarios/Tarballs desde GitHub
-  - name: pluto
-    install_type: github_release
-    repo: FairwindsOps/pluto
-    asset_search: "linux_amd64.tar.gz$"
-    completion: "source <(pluto completion bash --no-footer)"
-
-  - name: kube-capacity
-    install_type: github_release
-    repo: robscott/kube-capacity
-    asset_search: "linux_x86_64.tar.gz$"
-    completion: "source <(kube-capacity completion bash)"
-
-  - name: popeye
-    install_type: github_release
-    repo: derailed/popeye
-    asset_search: "linux_amd64.tar.gz$"
-    completion: "source <(popeye completion bash)"
-
-  - name: rke
-    install_type: github_binary # Un tipo especial para binarios directos
-    repo: rancher/rke
-    asset_search: "rke_linux-amd64$"
-
-  # Método 2: Paquetes del sistema (APT)
-  - name: kubectx
-    install_type: apt
-    packages:
-      - kubectx # kubens se instala como dependencia
-
-  # Método 3: Paquetes .deb desde GitHub
-  - name: cnpg
-    install_type: github_deb
-    repo: cloudnative-pg/cloudnative-pg
-    asset_search: "linux_x86_64.deb$"
-
 # Extensiones predefinidas para sysadmin
 vscode_extension_list_sysadmin:
   # Container Tools
@@ -78,3 +33,16 @@ vscode_extension_list_sysadmin:
   - redhat.vscode-yaml
   # knative
   - redhat.vscode-knative
+
+# --- Configuración para VirtualBox ---
+# Prerrequisitos para la instalación en Debian y Ubuntu
+sysadmin_vbox_prereqs:
+  - gnupg
+  - dkms
+
+# Detalles de la clave GPG de Oracle
+sysadmin_vbox_gpg_url: "https://www.virtualbox.org/download/oracle_vbox_2016.asc"
+sysadmin_vbox_gpg_path: "/usr/share/keyrings/oracle-virtualbox-2016.gpg"
+
+# Paquete principal de VirtualBox a instalar desde el repositorio de Oracle
+sysadmin_vbox_package: "virtualbox-7.0"

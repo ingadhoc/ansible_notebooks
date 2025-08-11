@@ -15,7 +15,5 @@
       ansible.builtin.import_tasks: virtualbox.yml
     - name: SysAdmin - Helm
       ansible.builtin.import_tasks: helm.yml
-    - name: SysAdmin - Plugins para kubectl
-      ansible.builtin.import_tasks: kubectl_install_plugins.yml
     - name: SysAdmin - Fixes
       ansible.builtin.import_tasks: fixes.yml

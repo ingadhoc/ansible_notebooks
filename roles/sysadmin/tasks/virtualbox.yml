@@ -1,28 +1,33 @@
 ---
-- name: SysAdmin | Instalar VirtualBox
+- name: SysAdmin | Instalar y configurar VirtualBox
   tags: virtualbox
   become: true
-  when: ansible_facts['distribution'] == 'Debian'
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+    - not (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_release'] == 'trixie')
   block:
-    - name: VirtualBox | Asegurar que el repositorio de Oracle esté eliminado
-      ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release }} contrib"
-        state: absent
-    - name: VirtualBox | Asegurar que la clave GPG de Oracle esté eliminada
-      ansible.builtin.file:
-        path: /usr/share/keyrings/oracle-virtualbox-2016.gpg
-        state: absent
-
-    - name: VirtualBox | Habilitar los componentes 'contrib' y 'non-free'
-      ansible.builtin.apt_repository:
-        repo: "deb http://deb.debian.org/debian/ {{ ansible_distribution_release }} main contrib non-free-firmware"
+    - name: VirtualBox | Instalar prerrequisitos y headers del kernel
+      ansible.builtin.apt:
+        name: "{{ sysadmin_vbox_prereqs + ['linux-headers-' + ansible_kernel] }}"
         state: present
-        filename: 'debian-main-components'
         update_cache: true
 
-    - name: VirtualBox | Instalar paquetes de VirtualBox y dependencias
+    - name: VirtualBox | Añadir la clave GPG de Oracle
+      ansible.builtin.shell: "curl -fsSL {{ sysadmin_vbox_gpg_url }} | gpg --dearmor -o {{ sysadmin_vbox_gpg_path }}"
+      args:
+        creates: "{{ sysadmin_vbox_gpg_path }}"
+      changed_when: false
+
+    - name: VirtualBox | Añadir el repositorio de APT de Oracle
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by={{ sysadmin_vbox_gpg_path }}] https://download.virtualbox.org/virtualbox/debian {{ 'bookworm' if ansible_facts['distribution'] == 'Debian' else ansible_distribution_release }} contrib"
+        state: present
+        filename: virtualbox
+        update_cache: true
+
+    - name: VirtualBox | Instalar el paquete de VirtualBox
       ansible.builtin.apt:
-        name: "{{ sysadmin_virtualbox_packages + ['linux-headers-' + ansible_kernel] }}"
+        name: "{{ sysadmin_vbox_package }}"
         state: present
 
     - name: VirtualBox | Añadir usuario al grupo 'vboxusers'
