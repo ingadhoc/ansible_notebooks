@@ -1,42 +1,41 @@
 ---
-- name: Devs - Fixes básicos
+- name: Arreglos Dev | Establecer aplicaciones favoritas en el dock de GNOME
   tags: devs_fixes
-  block:
-    - name: Fixes - Agregar apps al panel lateral
-      when: ansible_facts['distribution'] == 'Ubuntu'
-      become_user: "{{ remote_regular_user }}"
-      community.general.dconf:
-        key: "/org/gnome/shell/favorite-apps"
-        value: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.kde.yakuake.desktop', 'org.gnome.Terminal.desktop', 'code.desktop']"
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  community.general.dconf:
+    key: "/org/gnome/shell/favorite-apps"
+    value: "{{ dev_gnome_favorite_apps }}"
+  when: ansible_facts['distribution'] == 'Ubuntu'
 
-    - name: Fixes - Bash Aliases
-      ansible.builtin.copy:
-        src: files/.bash_aliases
-        dest: /home/{{ remote_regular_user }}/.bash_aliases
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "644"
+- name: Arreglos Dev | Copiar archivos de configuración del shell (dotfiles)
+  tags: devs_fixes
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/home/{{ remote_regular_user }}/{{ item }}"
+    owner: "{{ remote_regular_user }}"
+    group: "{{ remote_regular_user }}"
+    mode: "0644"
+  loop:
+    - ".bash_aliases"
+    - ".adhoc_bash_ps.sh"
+    - ".tmux"
 
-    - name: Fixes - Copiar archivo .bashrc
-      ansible.builtin.copy:
-        src: files/.bashrc
-        dest: /home/{{ remote_regular_user }}/.bashrc
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "644"
+- name: Arreglos Dev | Asegurar que .bashrc cargue los archivos de configuración personalizados
+  tags: devs_fixes
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  ansible.builtin.blockinfile:
+    path: "/home/{{ remote_regular_user }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - DEV SOURCES"
+    block: |
+      # Cargar alias personalizados si el archivo existe
+      if [ -f ~/.bash_aliases ]; then
+          . ~/.bash_aliases
+      fi
 
-    - name: Fixes - Copiar archivo .adhoc_bash_ps.sh
-      ansible.builtin.copy:
-        src: files/.adhoc_bash_ps.sh
-        dest: /home/{{ remote_regular_user }}/.adhoc_bash_ps.sh
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "644"
-
-    - name: Fixes - Copiar archivo .tmux
-      ansible.builtin.copy:
-        src: files/.tmux
-        dest: /home/{{ remote_regular_user }}/.tmux
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
-        mode: "644"
+      if [ -f ~/.adhoc_bash_ps.sh ]; then
+          . ~/.adhoc_bash_ps.sh
+      fi
