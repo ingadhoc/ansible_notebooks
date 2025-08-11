@@ -56,7 +56,7 @@
             mode: "0755"
 
         - name: GNOME Extensions | Instalar todas las extensiones requeridas con el script
-          ansible.builtin.command: "/tmp/install-gnome-extensions.sh --overwrite --enable {{ extensions_required | map(attribute='id') | join(' ') }}"
+          ansible.builtin.command: "/tmp/install-gnome-extensions.sh --overwrite {{ extensions_required | map(attribute='id') | join(' ') }}"
           register: extension_install_result
           changed_when: "'Installing' in extension_install_result.stdout"
 

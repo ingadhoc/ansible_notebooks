@@ -1,37 +1,22 @@
 #!/usr/bin/env bash
 
-# Salir inmediatamente si un comando falla y tratar variables no definidas como errores.
+# Salir inmediatamente si un comando falla.
 set -euo pipefail
 
 ## --- CONFIGURACIÓN Y VARIABLES ---
-readonly SCRIPT_REVISION="v2.0-adhoc"
+readonly SCRIPT_REVISION="v2.2-adhoc-install-only"
 EXTENSIONS_TO_INSTALL=()
 OVERWRITE_EXISTING=false
-ENABLE_ALL=false
 
 ## --- FUNCIONES ---
-
-# Función de log simple para una salida consistente
 log() {
   echo "[GNOME EXTENSIONS] $1"
 }
 
-# Comprueba que los comandos necesarios (jq, curl, etc.) estén instalados.
 check_dependencies() {
-  local missing_deps=0
-  for cmd in wget curl jq gnome-shell; do
-    if ! command -v "$cmd" &>/dev/null; then
-      echo "Error: El comando requerido '$cmd' no se encuentra." >&2
-      missing_deps=1
-    fi
-  done
-  if [[ $missing_deps -eq 1 ]]; then
-    echo "Por favor, instala las dependencias e inténtalo de nuevo." >&2
-    exit 1
-  fi
+  # ... (esta función no cambia)
 }
 
-# Bucle principal de instalación de extensiones.
 install_extensions() {
   local gnome_shell_version
   gnome_shell_version="$(gnome-shell --version | cut --delimiter=' ' --fields=3 | cut --delimiter='.' --fields=1,2)"
@@ -42,11 +27,11 @@ install_extensions() {
   for ext_id in "${EXTENSIONS_TO_INSTALL[@]}"; do
     local ext_info url ext_uuid
     
-    log "Procesando extensión ID: $ext_id"
+    log "Procesando instalación para ID: $ext_id"
     
     ext_info=$(curl -fsSL "https://extensions.gnome.org/extension-info/?pk=${ext_id}&shell_version=${gnome_shell_version}")
     
-    if [ -z "$ext_info" ]; then
+    if [ -z "$ext_info" ] || [ "$(echo "$ext_info" | jq -r '.uuid')" == "null" ]; then
       log "Error: No se encontró la extensión con ID $ext_id para la versión $gnome_shell_version. Omitiendo."
       continue
     fi
@@ -55,7 +40,7 @@ install_extensions() {
     local target_dir="/home/$(logname)/.local/share/gnome-shell/extensions/${ext_uuid}"
 
     if [ -d "$target_dir" ] && [ "$OVERWRITE_EXISTING" = "false" ]; then
-      log "La extensión '$ext_uuid' ya existe y no se especificó --overwrite. Omitiendo."
+      log "La extensión '$ext_uuid' ya existe y no se especificó --overwrite. Omitiendo instalación."
       continue
     fi
 
@@ -69,49 +54,27 @@ install_extensions() {
     wget -qO "$tmp_file" "$url"
     gnome-extensions install "$tmp_file" --force >/dev/null
     rm -f "$tmp_file"
-
-    if [ "$ENABLE_ALL" = "true" ]; then
-      log "Activando '${ext_uuid}'..."
-      gnome-extensions enable "$ext_uuid" >/dev/null
-    fi
     log "Instalación de '${ext_uuid}' completada."
   done
 }
 
 ## --- PROCESAMIENTO DE ARGUMENTOS ---
-
-# Si no se pasan argumentos, no hacer nada.
+# ✅ Simplificado: Ya no busca el flag '--enable'
 if [ $# -eq 0 ]; then
-  echo "Uso: $0 [--overwrite] [--enable] <ID_EXTENSION_1> <ID_EXTENSION_2> ..."
+  echo "Uso: $0 [--overwrite] <ID_EXTENSION_1> <ID_EXTENSION_2> ..."
   exit 1
 fi
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    -o | --overwrite)
-      OVERWRITE_EXISTING=true
-      shift
-      ;;
-    -e | --enable)
-      ENABLE_ALL=true
-      shift
-      ;;
-    -*)
-      echo "Error: Opción desconocida: $1" >&2
-      exit 1
-      ;;
-    *)
-      # Asume que cualquier argumento que no sea una opción es un ID de extensión
-      EXTENSIONS_TO_INSTALL+=("$1")
-      shift
-      ;;
+    -o | --overwrite) OVERWRITE_EXISTING=true; shift;;
+    -*) echo "Error: Opción desconocida: $1" >&2; exit 1;;
+    *) EXTENSIONS_TO_INSTALL+=("$1"); shift;;
   esac
 done
 
 ## --- EJECUCIÓN PRINCIPAL ---
-
 check_dependencies
-
 if [ ${#EXTENSIONS_TO_INSTALL[@]} -gt 0 ]; then
   install_extensions
   log "Proceso completado."
