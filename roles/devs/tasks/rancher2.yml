@@ -1,47 +1,46 @@
 ---
-- name: Rancher2 - Instalación
+- name: Rancher CLI | Instalar y configurar la CLI de Rancher
   tags: rancher
+  become: true
   block:
-    - name: Rancher2 - Descargar binario y extraer
+    - name: Rancher CLI | Verificar si el binario ya está instalado
+      ansible.builtin.stat:
+        path: /usr/local/bin/rancher
+      register: rancher_cli
+
+    - name: Rancher CLI | Instalar la última versión
+      when: not rancher_cli.stat.exists
       block:
-        - name: Get Last Version URL
+        - name: Rancher CLI | Obtener la URL de la última versión
           ansible.builtin.uri:
-            url: https://api.github.com/repos/rancher/cli/releases/latest
+            url: "https://api.github.com/repos/{{ dev_rancher_cli_repo }}/releases/latest"
             return_content: true
           register: json_response
 
-        - name: Download and Install
-          loop: "{{ json_response.json.assets }}"
-          when:
-            - item.name is search("^rancher-linux-amd64")
-            - item.name is search("tar.xz$")
+        - name: Rancher CLI | Descargar y extraer el binario en un solo paso
           ansible.builtin.unarchive:
             remote_src: true
-            src: "{{ item.browser_download_url }}"
-            dest: /tmp
-
-        - name: Rancher2 - Mover binario al path
-          become: true
-          ansible.builtin.copy:
-            src: /tmp/rancher-{{ json_response.json.tag_name }}/rancher
-            dest: /usr/local/bin/rancher
+            src: "{{ (json_response.json.assets | selectattr('name', 'search', '^rancher-linux-amd64.*.tar.xz$') | list | first).browser_download_url }}"
+            dest: "/usr/local/bin/"
+            extra_opts:
+              - "--strip-components=1"
+            owner: root
+            group: root
             mode: "0755"
 
-        - name: Create symbolic link
-          ansible.builtin.file:
-            src: /usr/local/bin/rancher
-            dest: /usr/local/bin/rancher2
-            state: link
+    - name: Rancher CLI | Crear enlace simbólico 'rancher2' para compatibilidad
+      ansible.builtin.file:
+        src: /usr/local/bin/rancher
+        dest: /usr/local/bin/rancher2
+        state: link
+        force: true
 
-        - name: Rancher2 - Eliminar directorio temporal
-          ansible.builtin.file:
-            path: /tmp/rancher-{{ json_response.json.tag_name }}
-            state: absent
-
-        # - name: Add bash completion
-        #   ansible.builtin.blockinfile:
-        #     path: /home/{{ remote_regular_user }}/.bashrc
-        #     block: |
-        #       if command -v rancher >/dev/null 2>&1; then
-        #         source <(rancher completion bash)
-        #       fi
+    - name: Rancher CLI | Añadir autocompletado de bash para el usuario
+      become_user: "{{ remote_regular_user }}"
+      ansible.builtin.blockinfile:
+        path: "/home/{{ remote_regular_user }}/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - RANCHER COMPLETION"
+        block: |
+          if command -v rancher >/dev/null 2>&1; then
+            source <(rancher completion bash)
+          fi
