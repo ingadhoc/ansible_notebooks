@@ -2,6 +2,7 @@
 - name: Include vars
   ansible.builtin.include_vars: ./roles/devs/vars.yml
   tags: devs
+  no_log: true
 
 - name: Include
   block:
@@ -23,8 +24,6 @@
       ansible.builtin.import_tasks: rancher2.yml
     - name: Fixes
       ansible.builtin.import_tasks: fixes.yml
-    # - name: Prepare dev
-    #   ansible.builtin.import_tasks: prepare_dev.yml
     - name: Prepare RemoteDev
       ansible.builtin.import_tasks: prepare_remote_dev.yml
     - name: Ssh
