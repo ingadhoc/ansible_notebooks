@@ -1,49 +1,36 @@
 ---
-- name: Kubectl - Instalar
+- name: Kubectl | Instalar y configurar kubectl desde el nuevo repositorio de pkgs.k8s.io
   tags: kubectl
   become: true
   block:
-    - name: Actualizar el índice de paquetes de apt
+    - name: Kubectl | Instalar paquetes de prerrequisitos
       ansible.builtin.apt:
-        update_cache: true
-
-    - name: Instalar paquetes necesarios
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-      vars:
-        packages:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-
-    - name: Crear directorio para keyrings si no existe
-      ansible.builtin.file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
-
-    - name: Descargar la clave Release.key
-      ansible.builtin.get_url:
-        url: https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key
-        dest: /tmp/Release.key
-        mode: '0644'
-
-    - name: Convertir la clave a formato GPG y moverla a keyrings
-      ansible.builtin.command: gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/Release.key
-      changed_when: false
-
-    - name: Eliminar el archivo temporal de la clave
-      ansible.builtin.file:
-        path: /tmp/Release.key
-        state: absent
-
-    - name: Agregar el repositorio de Kubernetes
-      ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /"
+        name: "{{ dev_kubectl_prerequisites }}"
         state: present
         update_cache: true
 
-    - name: Instalar kubectl
+    - name: Kubectl | Eliminar el repositorio antiguo y obsoleto (apt.kubernetes.io)
+      ansible.builtin.apt_repository:
+        repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+        state: absent
+        filename: kubernetes
+
+    - name: Kubectl | Añadir la nueva clave GPG de Kubernetes
+      ansible.builtin.shell: >
+        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key |
+        gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      args:
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      changed_when: false
+
+    - name: Kubectl | Añadir el nuevo repositorio de Kubernetes (pkgs.k8s.io)
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /"
+        state: present
+        filename: kubernetes-pkgs
+        update_cache: true
+
+    - name: Kubectl | Instalar kubectl
       ansible.builtin.apt:
         name: kubectl
         state: present
