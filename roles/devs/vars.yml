@@ -1,6 +1,7 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
 remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
+remote_regular_user_uid: "{{ ansible_user_uid }}"
 
 # Lista de paquetes base para el perfil de DEV
 dev_packages_base:

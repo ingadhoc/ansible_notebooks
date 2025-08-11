@@ -30,6 +30,8 @@
   block:
     - name: Code | Obtener lista de extensiones ya instaladas
       ansible.builtin.command: "code --list-extensions"
+      environment:
+        DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ remote_regular_user_uid }}/bus"
       register: installed_extensions
       changed_when: false
 
