@@ -18,9 +18,9 @@
         creates: /usr/share/keyrings/hashicorp-archive-keyring.gpg
       changed_when: false
 
-    - name: Agregar el repositorio de HashiCorp
+    - name: Sysadmin | Agregar el repositorio de HashiCorp
       ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+        repo: "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ 'jammy' if ansible_facts['distribution'] == 'Debian' else ansible_distribution_release }} main"
         state: present
         filename: hashicorp
         update_cache: true
@@ -31,7 +31,11 @@
         state: present
 
     - name: Instalar autocompletado para el usuario regular
+      become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.command: "terraform -install-autocomplete"
       register: autocomplete_result
       changed_when: "'Configuration file written' in autocomplete_result.stdout"
+      failed_when: >
+        autocomplete_result.rc != 0 and
+        'already installed' not in autocomplete_result.stderr
