@@ -19,10 +19,11 @@
         state: present
         key: "{{ lookup('file', 'sysadmin.pub') }}"
 
-    - name: SysAdmin | Securizar la configuración del servidor SSH para ambos usuarios
-      community.general.sshd_config:
-        name: "{{ item.key }}"
-        value: "{{ item.value }}"
+    - name: SysAdmin | Securizar la configuración del servidor SSH
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^{{ item.key }}"
+        line: "{{ item.key }} {{ item.value }}"
         state: present
       loop:
         - { key: 'AllowUsers', value: 'sysadmin {{ remote_regular_user }}' }
