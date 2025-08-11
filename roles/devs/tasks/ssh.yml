@@ -1,32 +1,25 @@
 ---
-- name: SSH - Keys y configuración
+- name: SSH | Configurar el directorio y las claves del usuario
   tags: ssh
+  become: true
+  become_user: "{{ remote_regular_user }}"
   block:
-    ## Crear keys y configurar ssh
-    - name: SSH - Crear carpeta para key
+    - name: SSH | Asegurar que el directorio .ssh existe con los permisos correctos
       ansible.builtin.file:
         path: "/home/{{ remote_regular_user }}/.ssh"
         state: directory
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
         mode: "0700"
 
-    - name: SSH - Generar key "{{ remote_regular_user }}"
-      become_user: "{{ remote_regular_user }}"
+    - name: SSH | Generar clave SSH si no existe
       community.crypto.openssh_keypair:
-        path: "/home/{{ remote_regular_user }}/.ssh/id_rsa"
-        type: rsa
-        size: 4096
+        path: "{{ dev_ssh_config.key_path }}"
+        type: "{{ dev_ssh_config.key_type }}"
+        size: "{{ dev_ssh_config.key_size }}"
         state: present
-        force: true
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
         mode: "0600"
 
-    - name: SSH - Copiar configuraciones de sshconfig
+    - name: SSH | Desplegar la plantilla de configuración .ssh/config
       ansible.builtin.template:
-        src: ./files/sshconfig.j2
-        dest: /home/{{ remote_regular_user }}/.ssh/config
-        owner: "{{ remote_regular_user }}"
-        group: "{{ remote_regular_user }}"
+        src: "{{ dev_ssh_config.config_template_src }}"
+        dest: "/home/{{ remote_regular_user }}/.ssh/config"
         mode: "0600"

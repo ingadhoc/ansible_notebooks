@@ -2,11 +2,11 @@
 
 Host registry.gitlab.com
     Preferredauthentications publickey
-    IdentityFile ~/.ssh/id_rsa
+    IdentityFile {{ dev_ssh_config.key_path }}
 
 Host github.com
     Preferredauthentications publickey
-    IdentityFile ~/.ssh/id_rsa
+    IdentityFile {{ dev_ssh_config.key_path }}
 
 Host *
     ServerAliveInterval 30
