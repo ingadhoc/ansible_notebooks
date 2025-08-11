@@ -2,6 +2,7 @@
 - name: Include vars
   ansible.builtin.include_vars: ./roles/funcional/vars.yml
   tags: funcional
+  no_log: true
 
 - name: Include
   block:
