@@ -51,3 +51,10 @@ sysadmin_vbox_package: "virtualbox-7.0"
 sysadmin_nordvpn_gpg_path: "/usr/share/keyrings/nordvpn-archive-keyring.gpg"
 sysadmin_nordvpn_repo_line: "deb [signed-by={{ sysadmin_nordvpn_gpg_path }}] https://repo.nordvpn.com/deb/nordvpn/debian stable main"
 sysadmin_nordvpn_package: "nordvpn"
+
+# --- Configuración del Tema de Iconos Numix ---
+sysadmin_icon_packages:
+  - numix-icon-theme-circle
+  - gnome-tweaks
+
+sysadmin_numix_icon_theme_name: "Numix-Circle"

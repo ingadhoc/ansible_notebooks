@@ -17,5 +17,7 @@
       ansible.builtin.import_tasks: helm.yml
     - name: SysAdmin - NordVPN
       ansible.builtin.import_tasks: nordvpn.yml
+    - name: SysAdmin - Theme
+      ansible.builtin.import_tasks: theme_desktop.yml
     - name: SysAdmin - Fixes
       ansible.builtin.import_tasks: fixes.yml

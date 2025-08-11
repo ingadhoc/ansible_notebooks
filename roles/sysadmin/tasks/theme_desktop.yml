@@ -1,0 +1,18 @@
+---
+- name: SysAdmin | Instalar y configurar el tema de iconos Numix
+  tags: theme
+  become: true
+  when: ansible_facts['distribution'] == 'Debian'
+  block:
+    - name: Numix | Instalar los paquetes del tema de iconos
+      ansible.builtin.apt:
+        name: "{{ sysadmin_icon_packages }}"
+        state: present
+        update_cache: true
+
+    - name: Numix | Activar el tema de iconos para el usuario
+      become_user: "{{ remote_regular_user }}"
+      community.general.dconf:
+        key: "/org/gnome/desktop/interface/icon-theme"
+        value: "'{{ sysadmin_numix_icon_theme_name }}'"
+        state: present
