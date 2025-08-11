@@ -1,29 +1,17 @@
 ---
-- name: Paquetes - Instalación varios
+- name: Paquetes | Instalar todos los paquetes necesarios
   tags: packages_funcional
-  ansible.builtin.apt:
-    # Concatenamos todas las listas de paquetes en una sola.
-    name: "{{ packages_system + packages_compression + packages_apps + packages_hardware_analysis + packages_gui_utils + python_for_functionals}}"
-    state: present
+  vars:
+    all_packages_to_install: >-
+      {{ packages_system +
+         packages_compression +
+         packages_apps +
+         packages_hardware_analysis +
+         packages_gui_utils }}
 
-- name: Paquetes | Instalar paquetes comunes de Ubuntu
-  tags: packages_funcional
-  ansible.builtin.apt:
-    name: "{{ packages_ubuntu_common }}"
-    state: present
-  when: ansible_facts['distribution'] == 'Ubuntu'
+    excluded_packages: >-
+      {{ packages_exclude_debian_13 if ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '13' else [] }}
 
-- name: Paquetes | Instalar paquetes de energía para Ubuntu 22.04 (y anteriores)
-  tags: packages_funcional
   ansible.builtin.apt:
-    name: "{{ packages_ubuntu_2204_power }}"
+    name: "{{ all_packages_to_install | difference(excluded_packages) }}"
     state: present
-  when:
-    - ansible_facts['distribution'] == 'Ubuntu'
-    - ansible_facts['distribution_version'] is version('22.04', '<=')
-
-- name: Paquetes | Eliminar programas no deseados
-  tags: packages_funcional
-  ansible.builtin.apt:
-    name: "{{ packages_to_remove }}"
-    state: absent

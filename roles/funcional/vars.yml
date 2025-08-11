@@ -67,6 +67,10 @@ packages_ubuntu_2204_power:
   - powertop
   - preload
 
+packages_exclude_debian_13:
+  - stacer
+  - tldr
+
 packages_to_remove:
   - indicator-multiload
   - thunderbird
@@ -76,6 +80,7 @@ packages_to_remove:
   - gnome-maps
   - gnome-weather
   - gnome-calendar
+  - evolution
 
 python_for_functionals:
   - ipython3
