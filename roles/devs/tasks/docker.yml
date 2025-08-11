@@ -1,75 +1,57 @@
 ---
-- name: Docker - Instalación + compose
+- name: Docker | Instalar y configurar Docker Engine
   tags: docker
+  become: true
   block:
-    - name: Docker - Instalar dependencias
+    - name: Docker | Instalar paquetes de prerrequisitos
       ansible.builtin.apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - gnupg-agent
-          - software-properties-common
-          - lsb-release
+        name: "{{ dev_docker_prerequisites }}"
+        state: present
+        update_cache: true
+
+    - name: Docker | Asegurar que el directorio de keyrings de APT existe
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Docker | Añadir la clave GPG oficial de Docker
+      ansible.builtin.shell: >
+        curl -fsSL https://download.docker.com/linux/debian/gpg |
+        gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+      changed_when: false
+
+    - name: Docker | Añadir el repositorio de Docker
+      ansible.builtin.apt_repository:
+        repo: >
+          deb [arch={{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}
+          signed-by=/etc/apt/keyrings/docker.gpg]
+          https://download.docker.com/linux/{{ ansible_distribution | lower }}
+          {{ ansible_distribution_release }} stable
+        state: present
+        filename: docker
+        update_cache: true
+
+    - name: Docker | Instalar Docker Engine y plugins
+      ansible.builtin.apt:
+        name: "{{ dev_docker_packages }}"
         state: present
 
-    - name: Check Docker Installed
-      ansible.builtin.command: which docker
-      register: docker_check
-      ignore_errors: true
-      changed_when: false
+    - name: Docker | Asegurar que el servicio Docker esté activo y habilitado
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
 
-    - name: Download installer
-      ansible.builtin.get_url:
-        url: https://get.docker.com/
-        dest: /tmp/install-docker.sh
-        mode: '0755'
-      when: docker_check.rc == 1
-      changed_when: false
-
-    - name: Install and Setup Docker
-      become: true
-      ansible.builtin.command: |
-        /bin/sh /tmp/install-docker.sh
-        rm /tmp/install-docker.sh
-        systemctl enable docker
-        systemctl start docker
-      when: docker_check.rc == 1
-      changed_when: false
-
-    - name: Ensure Docker group exists
-      become: true
+    - name: Docker | Asegurar que el grupo 'docker' existe
       ansible.builtin.group:
         name: docker
         state: present
 
-    - name: Add user to Docker group
-      become: true
+    - name: Docker | Añadir el usuario al grupo 'docker' para evitar usar sudo
       ansible.builtin.user:
         name: "{{ remote_regular_user }}"
         groups: docker
         append: true
-
-    - name: Docker - Instalar docker compose plugin
-      ansible.builtin.apt:
-        name:
-          - docker-compose-plugin
-        update_cache: "yes"
-        state: present
-
-    - name: Docker - Instalar docker-compose
-      block:
-        - name: Get Last Version URL
-          ansible.builtin.uri:
-            url: https://api.github.com/repos/docker/compose/releases/latest
-            return_content: true
-          register: json_response
-
-        - name: Download and Install
-          loop: "{{ json_response.json.assets }}"
-          when: item.name is search("docker-compose-linux-x86_64$")
-          become: true
-          ansible.builtin.get_url:
-            url: "{{ item.browser_download_url }}"
-            dest: /usr/local/bin/docker-compose
-            mode: "+x"
