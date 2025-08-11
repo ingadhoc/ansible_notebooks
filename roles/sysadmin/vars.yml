@@ -1,6 +1,13 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
 remote_regular_user: "{{ ansible_env.SUDO_USER }}"
+remote_regular_user_uid: "{{ ansible_user_uid }}"
+
+# Paquetes para la instalación de VirtualBox en Debian
+sysadmin_virtualbox_packages:
+  - virtualbox
+  - virtualbox-dkms
+  - virtualbox-qt
 
 # Lista de plugins de kubectl para instalar
 # Cada elemento es un diccionario que describe cómo instalar el plugin.
