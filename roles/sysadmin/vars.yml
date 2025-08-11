@@ -46,3 +46,8 @@ sysadmin_vbox_gpg_path: "/usr/share/keyrings/oracle-virtualbox-2016.gpg"
 
 # Paquete principal de VirtualBox a instalar desde el repositorio de Oracle
 sysadmin_vbox_package: "virtualbox-7.0"
+
+# --- Configuración para NordVPN ---
+sysadmin_nordvpn_gpg_path: "/usr/share/keyrings/nordvpn-archive-keyring.gpg"
+sysadmin_nordvpn_repo_line: "deb [signed-by={{ sysadmin_nordvpn_gpg_path }}] https://repo.nordvpn.com/deb/nordvpn/debian stable main"
+sysadmin_nordvpn_package: "nordvpn"
