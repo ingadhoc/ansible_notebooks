@@ -13,14 +13,6 @@
         default: allow
         direction: outgoing
 
-    - name: Firewall | Permitir conexiones SSH entrantes (común para desarrolladores)
-      community.general.ufw:
-        rule: allow
-        direction: in
-        port: '22'
-        proto: tcp
-        comment: 'Allow incoming SSH for remote access'
-
     - name: Firewall | Activar y habilitar el servicio UFW
       community.general.ufw:
         state: enabled
