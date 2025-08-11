@@ -1,27 +1,27 @@
 ---
-- name: Configurar ambiente Odoo local
+- name: Odoo Dev | Preparar entorno de desarrollo local de Odoo
   tags: remote_dev
   become: false
   block:
-    - name: Reset ansible connection to apply group changes
+    - name: Odoo Dev | Refrescar conexión para aplicar cambios de grupo (ej. docker)
       ansible.builtin.meta: reset_connection
 
-    - name: Crear carpeta odoo en el home del usuario original
+    - name: Odoo Dev | Crear directorio base 'odoo'
       ansible.builtin.file:
-        path: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo"
+        path: "{{ dev_odoo_base_path }}"
         state: directory
         mode: '0755'
 
-    - name: Clonar repositorio docker-compose-context
+    - name: Odoo Dev | Clonar repositorio docker-compose-context a 'ctx'
       ansible.builtin.git:
-        repo: https://github.com/ingadhoc/docker-compose-context.git
-        dest: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo/ctx"
-        version: main
+        repo: "{{ dev_odoo_ctx_repo }}"
+        dest: "{{ dev_odoo_base_path }}/ctx"
+        version: main # Consejo: para entornos de producción, considera usar un tag específico en lugar de 'main'
         accept_hostkey: yes
 
-    - name: Clonar repositorio docker-compose-odoo para la versión (directorio '18')
+    - name: Odoo Dev | Clonar repositorio docker-compose-odoo a '18'
       ansible.builtin.git:
-        repo: https://github.com/ingadhoc/docker-compose-odoo.git
-        dest: "/home/{{ ansible_env.SUDO_USER | default(ansible_user_id) }}/odoo/18"
+        repo: "{{ dev_odoo_main_repo }}"
+        dest: "{{ dev_odoo_base_path }}/18"
         version: main
         accept_hostkey: yes
