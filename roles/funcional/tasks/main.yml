@@ -1,6 +1,6 @@
 ---
 - name: Include vars
-  ansible.builtin.include_vars: "{{ role_path }}/vars/main.yml"
+  ansible.builtin.include_vars: "{{ role_path }}/vars.yml"
   tags: funcional
   no_log: true
 

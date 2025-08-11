@@ -1,7 +1,7 @@
 ---
 - name: Include vars
   tags: always, sysadmin
-  ansible.builtin.include_vars: "{{ role_path }}/vars/main.yml"
+  ansible.builtin.include_vars: "{{ role_path }}/vars.yml"
 
 - name: Include
   block:
