@@ -8,7 +8,7 @@
     value: "{{ item.value }}"
     state: present
   loop:
-    - { key: "/org/gnome/shell/favorite-apps", value: "{{ gnome_functional_favorite_apps }}" }
+    - { key: "/org/gnome/shell/favorite-apps", value: "{{ gnome_favorite_apps }}" }
     - { key: "/org/gnome/shell/extensions/dash-to-dock/click-action", value: "'minimize'" }
   when: ansible_facts['distribution'] == 'Ubuntu'
 
@@ -20,9 +20,11 @@
     - ansible_facts['distribution_version'] == '22.04'
   block:
     - name: Arreglos | Reinstalar Xorg (controlado por variable)
-      ansible.builtin.command: apt-get install --reinstall -y xorg
+      ansible.builtin.apt:
+        name: xorg
+        state: present
+        force: true
       when: force_xorg_reinstall | bool
-      changed_when: false
 
     - name: Arreglos | Configurar GDM3 para forzar el uso de Xorg
       ansible.builtin.blockinfile:
@@ -33,4 +35,3 @@
           DefaultSession=gnome-xorg.desktop
         insertafter: '^\[daemon\]'
         state: present
-
