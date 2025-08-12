@@ -1,45 +1,53 @@
+# Usamos la base oficial de Debian Bookworm Slim
 FROM debian:bookworm-slim
 
+# Definimos los argumentos para el usuario
 ARG USERNAME=appuser
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
+# Configuramos el entorno para que no sea interactivo
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LC_ALL="C.UTF-8"
-RUN echo "APT::Get::Assume-Yes \"true\";" > /etc/apt/apt.conf.d/90assumeyes
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        # Basic
-        git \
-        sudo \
-        bash-completion \
-        ssh-client \
-        nano \
-        gnupg2 \
-        wget gpg ca-certificates \
-    # Ansible
-    && wget -O- "https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367" | gpg --dearmour -o /usr/share/keyrings/ansible-archive-keyring.gpg \
-    && echo "deb [signed-by=/usr/share/keyrings/ansible-archive-keyring.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu jammy main" | tee /etc/apt/sources.list.d/ansible.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-        ansible \
-        ansible-lint \
-        python3-argcomplete \
+# 1. Como ROOT, instalamos TODAS las dependencias del sistema de una vez
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Herramientas básicas
+    git \
+    sudo \
+    ssh-client \
+    # Añadimos gnupg para la firma de commits
+    gnupg \
+    # Herramientas para Python y Ansible
+    python3-venv \
+    python3-pip \
+    # Herramienta para configurar el idioma (locale)
+    locales \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# 2. Configuramos el locale para evitar errores de Ansible
+RUN sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen && locale-gen
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
-RUN adduser -u $USER_UID --disabled-password --gecos "" $USERNAME  \
-    && chown -R $USERNAME /app \
+# 3. Creamos el usuario y le damos permisos sudo
+RUN adduser -u $USER_UID --disabled-password --gecos "" $USERNAME \
+    && mkdir -p /etc/sudoers.d \
     && echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME \
-    && echo "[[ -f ~/.prompt_git ]] && source ~/.prompt_git" >> /home/$USERNAME/.bashrc
+    && chmod 0440 /etc/sudoers.d/$USERNAME
 
-USER appuser
+# 4. Cambiamos al usuario no-root
+USER $USERNAME
+WORKDIR /home/$USERNAME
 
-COPY .prompt_git /home/$USERNAME
+# 5. Creamos un entorno virtual dedicado y le instalamos las herramientas
+RUN python3 -m venv /home/$USERNAME/ansible-venv
+RUN /home/$USERNAME/ansible-venv/bin/pip install --no-cache-dir ansible-core ansible-lint
 
-RUN activate-global-python-argcomplete --user
+# 6. Exponemos la ruta al PATH de forma global
+ENV PATH="/home/appuser/ansible-venv/bin:$PATH"
+
+# Volvemos al directorio de trabajo de la aplicación
+WORKDIR /app
 
 CMD ["sleep", "infinity"]

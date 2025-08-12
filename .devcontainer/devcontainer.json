@@ -1,28 +1,26 @@
 {
     "name": "DevAnsible",
-    "dockerFile": "Dockerfile",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
     "customizations": {
         "vscode": {
             "settings": {
-                "cSpell.language": "en,es",
                 "files.associations": {
                     "*.yml": "ansible"
                 },
-                "ansible.python.interpreterPath": "/bin/python3",
-                "editor.renderFinalNewline": "on",
-                "files.trimFinalNewlines": true,
                 "editor.defaultFormatter": "redhat.ansible",
-                "notebook.defaultFormatter": "redhat.ansible",
-                "editor.indentSize": "tabSize",
                 "editor.formatOnSave": true
             },
             "extensions": [
                 "redhat.vscode-yaml",
-                "shardulm94.trailing-spaces",
                 "redhat.ansible"
             ]
         }
     },
+    // El 'postCreateCommand' ahora encontrará 'ansible-galaxy' en el PATH.
+    "postCreateCommand": "ansible-galaxy install -r collections/requirements.yml",
+
     "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind",
     "workspaceFolder": "/app",
     "remoteUser": "appuser"
