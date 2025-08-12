@@ -6,6 +6,15 @@ remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
 # Opciones válidas: 'dynamic' o 'fixed'
 gnome_workspace_style: 'dynamic'
 
+# --- Configuración de DNS Públicos ---
+# DNS Primarios: Google
+# DNS Secundarios: Cloudflare
+sysadmin_public_dns_servers:
+  - 8.8.8.8
+  - 1.1.1.1
+  - 8.8.4.4
+  - 1.0.0.1
+
 # Listas de paquetes
 packages_system:
   - htop

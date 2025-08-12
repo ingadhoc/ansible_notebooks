@@ -30,3 +30,5 @@
       ansible.builtin.import_tasks: user_sysadmin.yml
     - name: Fixes
       ansible.builtin.import_tasks: fixes.yml
+    - name: Local DNS
+      ansible.builtin.import_tasks: local_dns.yml

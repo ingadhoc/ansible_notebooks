@@ -1,0 +1,23 @@
+---
+- name: SysAdmin | Configurar servidores DNS públicos y persistentes
+  tags: dns
+  become: true
+  block:
+    - name: DNS | Configurar NetworkManager para usar DNS públicos
+      community.general.ini_file:
+        path: /etc/NetworkManager/NetworkManager.conf
+        section: main
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        state: present
+        mode: '0644'
+      loop:
+        - { option: "dns", value: "{{ sysadmin_public_dns_servers | join(',') }}" }
+        - { option: "rc-manager", value: "resolvconf" }
+      notify: Restart NetworkManager
+
+    - name: DNS | Asegurar que systemd-resolved no interfiera
+      ansible.builtin.systemd:
+        name: systemd-resolved
+        state: stopped
+        enabled: false
