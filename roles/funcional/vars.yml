@@ -133,8 +133,9 @@ language_packs_debian:
   - task-spanish-desktop
   - task-english
 
-# Distribuciones de teclado
-keyboard_layouts: "[('xkb', 'es'), ('xkb', 'us+intl')]"
+# Distribuciones de teclado a configurar en GNOME
+keyboard_layouts: |
+  [('xkb', 'es'), ('xkb', 'us+intl')]
 
 dconf_settings: >-
   {{

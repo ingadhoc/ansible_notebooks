@@ -21,8 +21,8 @@
 - name: Idiomas | Configurar distribuciones de teclado para el usuario
   tags: language, gnome
   become: true
-  become_user: "{{ remote_regular_user }}" # Usamos la variable estándar
+  become_user: "{{ remote_regular_user }}"
   community.general.dconf:
     key: "/org/gnome/desktop/input-sources/sources"
-    value: "{{ keyboard_layouts }}" # Usamos la variable
+    value: "{{ keyboard_layouts | trim }}"
     state: present
