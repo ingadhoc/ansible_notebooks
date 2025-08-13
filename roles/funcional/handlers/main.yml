@@ -8,3 +8,8 @@
   ansible.builtin.systemd:
     name: gdm3
     state: restarted
+
+- name: Restart NetworkManager
+  ansible.builtin.systemd:
+    name: NetworkManager
+    state: restarted
