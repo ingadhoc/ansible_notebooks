@@ -1,23 +1,26 @@
 ---
-- name: SysAdmin | Configurar servidores DNS públicos y persistentes
+- name: SysAdmin | Configurar DNS públicos a través de systemd-resolved
   tags: dns
   become: true
   block:
-    - name: DNS | Configurar NetworkManager para usar DNS públicos
+    - name: DNS | Configurar servidores DNS en resolved.conf
       community.general.ini_file:
-        path: /etc/NetworkManager/NetworkManager.conf
-        section: main
+        path: /etc/systemd/resolved.conf
+        section: Resolve
         option: "{{ item.option }}"
         value: "{{ item.value }}"
         state: present
         mode: '0644'
       loop:
-        - { option: "dns", value: "{{ sysadmin_public_dns_servers | join(',') }}" }
-        - { option: "rc-manager", value: "resolvconf" }
-      notify: Restart NetworkManager
+        - { option: "DNS", value: "{{ sysadmin_public_dns_servers | join(' ') }}" }
+        - { option: "FallbackDNS", value: "" }
+        - { option: "DNSOverTLS", value: "yes" }
+      notify: Restart systemd-resolved
 
-    - name: DNS | Asegurar que systemd-resolved no interfiera
-      ansible.builtin.systemd:
-        name: systemd-resolved
-        state: stopped
-        enabled: false
+    - name: DNS | Asegurar que /etc/resolv.conf sea un enlace a systemd-resolved
+      ansible.builtin.file:
+        src: /run/systemd/resolve/stub-resolv.conf
+        dest: /etc/resolv.conf
+        state: link
+        force: true
+      notify: Restart systemd-resolved
