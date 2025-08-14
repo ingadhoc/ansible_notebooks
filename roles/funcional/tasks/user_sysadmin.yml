@@ -1,5 +1,5 @@
 ---
-- name: SysAdmin | Crear y configurar el usuario 'sysadmin'
+- name: SysAdmin | Crear usuarios administrativos y configurar permisos
   tags: sysadmin
   become: true
   block:
@@ -19,27 +19,6 @@
         state: present
         key: "{{ lookup('file', 'sysadmin.pub') }}"
 
-    - name: SysAdmin | Securizar la configuración del servidor SSH
-      ansible.builtin.lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: "^{{ item.key }}"
-        line: "{{ item.key }} {{ item.value }}"
-        state: present
-      loop:
-        - { key: 'AllowUsers', value: 'sysadmin {{ remote_regular_user }}' }
-        - { key: 'PasswordAuthentication', value: 'no' }
-        - { key: 'ChallengeResponseAuthentication', value: 'no' }
-        - { key: 'PubkeyAuthentication', value: 'yes' }
-      notify: Restart sshd
-
-    - name: SysAdmin | Permitir conexiones SSH entrantes en el firewall
-      community.general.ufw:
-        rule: allow
-        direction: in
-        port: '22'
-        proto: tcp
-        comment: 'Allow incoming SSH for sysadmin user'
-
     - name: SysAdmin | Agregar 'sysadmin' a sudoers sin requerir contraseña
       ansible.builtin.lineinfile:
         path: /etc/sudoers.d/sysadmin
@@ -51,16 +30,24 @@
         mode: '0440'
         validate: /usr/sbin/visudo -cf %s
 
-    - name: "Usuario Principal | Asegurar sudo sin contraseña para {{ remote_regular_user }}"
+    - name: "Usuario Principal | Asegurar pertenencia al grupo sudo para: {{ remote_regular_user }}"
+      ansible.builtin.user:
+        name: "{{ remote_regular_user }}"
+        groups: sudo
+        append: true
+
+    - name: SSH | Securizar la configuración del servidor para ambos usuarios
       ansible.builtin.lineinfile:
-        path: "/etc/sudoers.d/99-{{ remote_regular_user }}-access"
-        line: "{{ remote_regular_user }} ALL=(ALL) NOPASSWD:ALL"
+        path: /etc/ssh/sshd_config
+        regexp: "^{{ item.key }}"
+        line: "{{ item.key }} {{ item.value }}"
         state: present
-        create: true
-        owner: root
-        group: root
-        mode: '0440'
-        validate: /usr/sbin/visudo -cf %s
+      loop:
+        - { key: 'AllowUsers', value: 'sysadmin {{ remote_regular_user }}' }
+        - { key: 'PasswordAuthentication', value: 'no' }
+        - { key: 'ChallengeResponseAuthentication', value: 'no' }
+        - { key: 'PubkeyAuthentication', value: 'yes' }
+      notify: Restart sshd
 
     - name: SysAdmin | Prevenir que 'sysadmin' sea usado para autenticación gráfica
       ansible.builtin.copy:
