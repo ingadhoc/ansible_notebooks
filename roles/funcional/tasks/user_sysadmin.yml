@@ -49,6 +49,14 @@
         - { key: 'PubkeyAuthentication', value: 'yes' }
       notify: Restart sshd
 
+    - name: PolicyKit | Asegurar que el directorio de reglas existe
+      ansible.builtin.file:
+        path: /etc/polkit-1/rules.d
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
     - name: SysAdmin | Prevenir que 'sysadmin' sea usado para autenticación gráfica
       ansible.builtin.copy:
         src: 49-deny-sysadmin-interactive.rules
