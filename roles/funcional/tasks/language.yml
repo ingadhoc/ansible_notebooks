@@ -1,28 +1,37 @@
-- name: Idiomas | Instalar paquetes de idioma para Ubuntu
+---
+- name: Idiomas | Instalar y configurar paquetes de idioma y teclado
   tags: language
-  ansible.builtin.apt:
-    name: "{{ language_packs_ubuntu }}"
-    state: present
-  when: ansible_facts['distribution'] == 'Ubuntu'
-
-- name: Idiomas | Instalar paquetes de idioma para Debian
-  tags: language
-  ansible.builtin.apt:
-    name: "{{ language_packs_debian }}"
-    state: present
-  when: ansible_facts['distribution'] == 'Debian'
-
-- name: Idiomas | Asegurar que el locale 'es_ES.UTF-8' esté generado
-  tags: language
-  community.general.locale_gen:
-    name: es_ES.UTF-8
-    state: present
-
-- name: Idiomas | Configurar distribuciones de teclado para el usuario
-  tags: language, gnome
   become: true
-  become_user: "{{ remote_regular_user }}"
-  community.general.dconf:
-    key: "/org/gnome/desktop/input-sources/sources"
-    value: "{{ keyboard_layouts | trim }}"
-    state: present
+  block:
+    - name: Idiomas | Instalar paquetes de idioma para Ubuntu
+      ansible.builtin.apt:
+        name: "{{ language_packs_ubuntu }}"
+        state: present
+      when: ansible_facts['distribution'] == 'Ubuntu'
+
+    - name: Idiomas | Instalar paquetes de idioma para Debian
+      ansible.builtin.apt:
+        name: "{{ language_packs_debian }}"
+        state: present
+      when: ansible_facts['distribution'] == 'Debian'
+
+    - name: Idiomas | Asegurar que el locale 'es_ES.UTF-8' esté generado
+      community.general.locale_gen:
+        name: es_ES.UTF-8
+        state: present
+
+    - name: Idiomas | Establecer la configuración regional (locale) del sistema
+      ansible.builtin.command: "localectl set-locale LANG=es_ES.UTF-8"
+      changed_when: false
+
+    - name: Idiomas | Establecer las distribuciones de teclado del sistema (X11)
+      ansible.builtin.command: "localectl set-x11-keymap es,us pc105 intl"
+      changed_when: false
+
+    - name: GNOME | Aplicar atajos de teclado para espacios de trabajo
+      become: true #
+      become_user: "{{ remote_regular_user }}"
+      community.general.dconf:
+        key: "/org/gnome/desktop/input-sources/sources"
+        value: "{{ keyboard_layouts | trim }}"
+        state: present
