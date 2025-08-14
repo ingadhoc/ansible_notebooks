@@ -75,8 +75,9 @@ dev_python_packages:
   - python3-pip
   - pylint
   - python3
-  # El paquete venv tiene un nombre diferente en Debian y Ubuntu
-  - "{{ 'python3.12-venv' if ansible_distribution == 'Ubuntu' else 'python3-venv' }}"
+  - "{{ 'python3.10-venv' if ansible_facts['distribution_version'] == '22.04' else
+       ('python3.12-venv' if ansible_facts['distribution_version'] == '24.04' else
+       'python3-venv') }}"
 
 # Ruta para el entorno virtual de los linters
 dev_python_venv_path: "/home/{{ remote_regular_user }}/python-venvs/linters"
