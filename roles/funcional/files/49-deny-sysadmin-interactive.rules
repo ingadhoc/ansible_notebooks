@@ -1,0 +1,6 @@
+// Prevenir que el usuario 'sysadmin' sea usado para autenticación interactiva en PolicyKit
+polkit.addRule(function(action, subject) {
+    if (subject.user == "sysadmin") {
+        return polkit.Result.NO;
+    }
+});

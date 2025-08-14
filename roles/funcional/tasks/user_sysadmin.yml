@@ -61,3 +61,11 @@
         group: root
         mode: '0440'
         validate: /usr/sbin/visudo -cf %s
+
+    - name: SysAdmin | Prevenir que 'sysadmin' sea usado para autenticación gráfica
+      ansible.builtin.copy:
+        src: 49-deny-sysadmin-interactive.rules
+        dest: /etc/polkit-1/rules.d/49-deny-sysadmin-interactive.rules
+        owner: root
+        group: root
+        mode: '0644'
