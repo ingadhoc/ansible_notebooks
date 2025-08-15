@@ -1,26 +1,35 @@
 ---
-- name: Rancher CLI | Instalar y configurar la CLI de Rancher
+- name: Rancher CLI | Instalar o actualizar la CLI de Rancher
   tags: rancher
   become: true
   block:
-    - name: Rancher CLI | Verificar si el binario ya está instalado y es válido
-      ansible.builtin.stat:
-        path: /usr/local/bin/rancher
-      register: devs_rancher_cli
+    - name: Rancher CLI | Verificar la versión instalada (si existe)
+      ansible.builtin.command: "rancher --version"
+      register: devs_rancher_current_version
+      changed_when: false
+      ignore_errors: true
+
+    - name: Rancher CLI | Obtener información de la última versión desde GitHub
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/{{ dev_rancher_cli_repo }}/releases/latest"
+        return_content: true
+      register: devs_rancher_latest_release
+
+    - name: Rancher CLI | Definir variables de versión
+      ansible.builtin.set_fact:
+        devs_current_version: >-
+          {{ devs_rancher_current_version.stdout |
+             regex_search('v([0-9]+\\.[0-9]+\\.[0-9]+)') |
+             replace('v', '') if devs_rancher_current_version.rc == 0 else '0.0.0' }}
+        devs_latest_version: "{{ devs_rancher_latest_release.json.tag_name | replace('v', '') }}"
 
     - name: Rancher CLI | Instalar la última versión (si es necesario)
-      when: not devs_rancher_cli.stat.exists or devs_rancher_cli.stat.size == 0
+      when: devs_current_version != devs_latest_version
       block:
-        - name: Rancher CLI | Obtener la URL de la última versión
-          ansible.builtin.uri:
-            url: "https://api.github.com/repos/{{ devs_rancher_cli_repo }}/releases/latest"
-            return_content: true
-          register: devs_json_response
-
         - name: Rancher CLI | Descargar y extraer el binario en un solo paso
           vars:
             download_url: >-
-              {{ (devs_json_response.json.assets |
+              {{ (devs_rancher_latest_release.json.assets |
                   selectattr('name', 'search', '^rancher-linux-amd64.*\\.tar\\.gz$') |
                   list | first).browser_download_url }}
           ansible.builtin.unarchive:
