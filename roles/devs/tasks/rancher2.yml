@@ -3,35 +3,35 @@
   tags: rancher
   become: true
   block:
-    - name: Rancher CLI | Verificar si el binario ya está instalado
+    - name: Rancher CLI | Verificar si el binario ya está instalado y es válido
       ansible.builtin.stat:
         path: /usr/local/bin/rancher
       register: devs_rancher_cli
 
-- name: Rancher CLI | Instalar la última versión
-  when: not devs_rancher_cli.stat.exists
-  block:
-    - name: Rancher CLI | Obtener la URL de la última versión
-      ansible.builtin.uri:
-        url: "https://api.github.com/repos/{{ dev_rancher_cli_repo }}/releases/latest"
-        return_content: true
-      register: devs_json_response
+    - name: Rancher CLI | Instalar la última versión (si es necesario)
+      when: not devs_rancher_cli.stat.exists or devs_rancher_cli.stat.size == 0
+      block:
+        - name: Rancher CLI | Obtener la URL de la última versión
+          ansible.builtin.uri:
+            url: "https://api.github.com/repos/{{ devs_rancher_cli_repo }}/releases/latest"
+            return_content: true
+          register: devs_json_response
 
-    - name: Rancher CLI | Descargar y extraer el binario en un solo paso
-      vars:
-        download_url: >-
-          {{ (devs_json_response.json.assets |
-              selectattr('name', 'search', '^rancher-linux-amd64.*\\.tar\\.gz$') |
-              list | first).browser_download_url }}
-      ansible.builtin.unarchive:
-        remote_src: true
-        src: "{{ download_url }}"
-        dest: "/usr/local/bin/"
-        extra_opts:
-          - "--strip-components=1"
-        owner: root
-        group: root
-        mode: "0755"
+        - name: Rancher CLI | Descargar y extraer el binario en un solo paso
+          vars:
+            download_url: >-
+              {{ (devs_json_response.json.assets |
+                  selectattr('name', 'search', '^rancher-linux-amd64.*\\.tar\\.gz$') |
+                  list | first).browser_download_url }}
+          ansible.builtin.unarchive:
+            remote_src: true
+            src: "{{ download_url }}"
+            dest: "/usr/local/bin/"
+            extra_opts:
+              - "--strip-components=1"
+            owner: root
+            group: root
+            mode: "0755"
 
     - name: Rancher CLI | Crear enlace simbólico 'rancher2' para compatibilidad
       ansible.builtin.file:
