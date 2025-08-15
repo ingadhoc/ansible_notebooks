@@ -63,12 +63,10 @@
         group: root
         mode: '0644'
 
-    - name: SysAdmin | Permitir conexiones SSH entrantes solo desde IPs de confianza
+    - name: SysAdmin | Permitir conexiones SSH entrantes desde cualquier IP
       community.general.ufw:
         rule: allow
         direction: in
-        from: "{{ item }}"
         port: '22'
         proto: tcp
-        comment: 'Allow incoming SSH from trusted IP'
-      loop: "{{ trusted_ssh_ips }}"
+        comment: 'Allow incoming SSH from anywhere'

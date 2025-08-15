@@ -208,8 +208,3 @@ gnome_functional_favorite_apps: "['google-chrome.desktop', 'org.gnome.Nautilus.d
 
 # Variable para controlar la reinstalación de Xorg
 force_xorg_reinstall: true
-
-# Lista de direcciones IP autorizadas para conectarse por SSH
-trusted_ssh_ips:
-  - "186.158.142.117"
-  - "89.116.204.135"
