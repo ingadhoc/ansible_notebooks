@@ -80,6 +80,15 @@ packages_exclude_debian_13:
   - stacer
   - tldr
 
+# Prerrequisitos para la gestión de extensiones de GNOME
+funcional_gnome_extension_prereqs:
+  - gnome-tweaks
+  - gnome-shell-extension-manager
+  - chrome-gnome-shell
+  - gnome-shell-extensions
+  - dbus-x11
+  - python3-psutil
+
 packages_to_remove:
   - indicator-multiload
   - thunderbird

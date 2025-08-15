@@ -1,33 +1,42 @@
-- name: Browsers - Instalar Google Chrome de forma limpia y segura
+- name: Browsers | Instalar Google Chrome de forma limpia y segura
   tags: chrome
   become: true
   block:
-    - name: Browsers - Asegurar que 'gnupg' esté instalado
+    - name: Browsers | Asegurar que 'gnupg' esté instalado
       ansible.builtin.apt:
         name: gnupg
         state: present
 
-    - name: Browsers - Descargar y guardar la llave GPG de Google
-      ansible.builtin.shell: >
-        curl -fsSL https://dl.google.com/linux/linux_signing_key.pub |
-        gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
-      args:
+    - name: Browsers | Descargar la clave GPG de Google a un archivo temporal
+      ansible.builtin.get_url:
+        url: https://dl.google.com/linux/linux_signing_key.pub
+        dest: /tmp/google_signing_key.asc
+        mode: '0644'
+
+    - name: Browsers | Desarmar la clave GPG y colocarla en su ubicación final
+      ansible.builtin.command:
+        cmd: gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg /tmp/google_signing_key.asc
         creates: /usr/share/keyrings/google-chrome.gpg
       changed_when: false
 
-    - name: Browsers - Asegurar que no existan configuraciones de repositorio antiguas
+    - name: Browsers | Limpiar el archivo temporal de la clave GPG
+      ansible.builtin.file:
+        path: /tmp/google_signing_key.asc
+        state: absent
+
+    - name: Browsers | Asegurar que no existan configuraciones de repositorio antiguas
       ansible.builtin.file:
         path: /etc/apt/sources.list.d/google-chrome.list
         state: absent
 
-    - name: Browsers - Añadir el repositorio de Google Chrome (forma moderna)
+    - name: Browsers | Añadir el repositorio de Google Chrome (forma moderna)
       ansible.builtin.apt_repository:
         repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] https://dl.google.com/linux/chrome/deb/ stable main"
         state: present
         filename: google-chrome
         update_cache: true
 
-    - name: Browsers - Instalar el paquete google-chrome-stable
+    - name: Browsers | Instalar el paquete google-chrome-stable
       ansible.builtin.apt:
         name: google-chrome-stable
         state: present

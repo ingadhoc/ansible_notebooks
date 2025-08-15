@@ -1,17 +1,3 @@
----
-- name: Arreglos | Aplicar personalizaciones de GNOME y del dock
-  tags: funcional_fixes, gnome
-  become: true
-  become_user: "{{ remote_regular_user }}"
-  community.general.dconf:
-    key: "{{ item.key }}"
-    value: "{{ item.value }}"
-    state: present
-  loop:
-    - { key: "/org/gnome/shell/favorite-apps", value: "{{ gnome_functional_favorite_apps }}" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/click-action", value: "'minimize'" }
-  when: ansible_facts['distribution'] == 'Ubuntu'
-
 - name: Arreglos | Forzar Xorg y reinstalar (Solo para Ubuntu 22.04)
   tags: xorg_fixes
   become: true

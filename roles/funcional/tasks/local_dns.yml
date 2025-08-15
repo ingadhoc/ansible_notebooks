@@ -1,5 +1,5 @@
 ---
-- name: SysAdmin | Configurar DNS públicos a través de systemd-resolved
+- name: DNS | Configurar DNS públicos a través de systemd-resolved
   tags: dns
   become: true
   block:

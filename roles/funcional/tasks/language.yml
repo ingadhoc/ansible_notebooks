@@ -7,13 +7,13 @@
       ansible.builtin.apt:
         name: "{{ language_packs_ubuntu }}"
         state: present
-      when: ansible_facts['distribution'] == 'Ubuntu'
+      when: ansible_facts['distribution'] | lower == 'ubuntu'
 
     - name: Idiomas | Instalar paquetes de idioma para Debian
       ansible.builtin.apt:
         name: "{{ language_packs_debian }}"
         state: present
-      when: ansible_facts['distribution'] == 'Debian'
+      when: ansible_facts['distribution'] | lower == 'debian'
 
     - name: Idiomas | Asegurar que el locale 'es_ES.UTF-8' esté generado
       community.general.locale_gen:
@@ -25,11 +25,11 @@
       changed_when: false
 
     - name: Idiomas | Establecer las distribuciones de teclado del sistema (X11)
-      ansible.builtin.command: "localectl set-x11-keymap es,us pc105 intl"
+      ansible.builtin.command: "localectl set-x11-keymap es,us"
       changed_when: false
 
-    - name: GNOME | Aplicar atajos de teclado para espacios de trabajo
-      become: true #
+    - name: Idiomas | Configurar las distribuciones de teclado para la sesión del usuario (GNOME)
+      become: true
       become_user: "{{ remote_regular_user }}"
       community.general.dconf:
         key: "/org/gnome/desktop/input-sources/sources"
