@@ -1,21 +1,16 @@
 ---
-- name: SysAdmin - Instalación paquetes y dependencias varias
+- name: SysAdmin | Instalar paquetes base
   tags: packages_sysadmin
-  block:
-    - name: Instalar paquetes y dependencias
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - kubecolor
+  become: true
+  ansible.builtin.apt:
+    name: "{{ sysadmin_packages_base }}"
+    state: present
+    update_cache: true
 
-    - name: Timeshift - Paquetes y dependencias
-      when: ansible_facts['distribution'] == 'Debian'
-      ansible.builtin.apt:
-        name: "{{ packages }}"
-        state: present
-      vars:
-        packages:
-          - rsync
-          - timeshift
+- name: SysAdmin | Instalar Timeshift y dependencias (solo Debian)
+  tags: packages_sysadmin
+  become: true
+  ansible.builtin.apt:
+    name: "{{ sysadmin_packages_timeshift }}"
+    state: present
+  when: ansible_facts['distribution'] == 'Debian'

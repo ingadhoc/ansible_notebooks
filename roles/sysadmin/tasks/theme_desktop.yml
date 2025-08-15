@@ -11,6 +11,7 @@
         update_cache: true
 
     - name: Numix | Activar el tema de iconos para el usuario
+      become: true
       become_user: "{{ remote_regular_user }}"
       community.general.dconf:
         key: "/org/gnome/desktop/interface/icon-theme"

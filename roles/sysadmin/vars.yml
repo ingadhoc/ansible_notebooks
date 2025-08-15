@@ -3,6 +3,28 @@
 remote_regular_user: "{{ ansible_env.SUDO_USER }}"
 remote_regular_user_uid: "{{ ansible_user_uid }}"
 
+# Paquetes generales
+sysadmin_packages_base:
+  - kubecolor
+
+# Paquetes para Timeshift (solo Debian)
+sysadmin_packages_timeshift:
+  - rsync
+  - timeshift
+
+# --- Configuración para Terraform ---
+# Paquete de Terraform
+sysadmin_terraform_package: "terraform"
+
+# Detalles del repositorio de HashiCorp
+sysadmin_hashicorp_gpg_url: "https://apt.releases.hashicorp.com/gpg"
+sysadmin_hashicorp_gpg_path: "/usr/share/keyrings/hashicorp-archive-keyring.gpg"
+sysadmin_hashicorp_repo_line: >
+  deb [signed-by={{ sysadmin_hashicorp_gpg_path }}]
+  https://apt.releases.hashicorp.com
+  {{ 'jammy' if ansible_facts['distribution'] == 'Debian' else ansible_distribution_release }}
+  main
+
 # Extensiones predefinidas para sysadmin
 vscode_extension_list_sysadmin:
   # Container Tools
