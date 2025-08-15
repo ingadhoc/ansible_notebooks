@@ -23,7 +23,7 @@
              replace('v', '') if devs_rancher_current_version.rc == 0 else '0.0.0' }}
         devs_latest_version: "{{ devs_rancher_latest_release.json.tag_name | replace('v', '') }}"
 
-    - name: Rancher CLI | Instalar la última versión (si es necesario)
+    - name: Rancher CLI | Instalar o actualizar si es necesario
       when: devs_current_version != devs_latest_version
       block:
         - name: Rancher CLI | Descargar y extraer el binario en un solo paso
