@@ -6,9 +6,7 @@
     "customizations": {
         "vscode": {
             "settings": {
-                "files.associations": {
-                    "*.yml": "ansible"
-                },
+                "files.associations": { "*.yml": "ansible" },
                 "editor.defaultFormatter": "redhat.ansible",
                 "editor.formatOnSave": true
             },
@@ -18,9 +16,7 @@
             ]
         }
     },
-    // El 'postCreateCommand' ahora encontrará 'ansible-galaxy' en el PATH.
     "postCreateCommand": "ansible-galaxy install -r collections/requirements.yml",
-
     "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind",
     "workspaceFolder": "/app",
     "remoteUser": "appuser"
