@@ -8,8 +8,6 @@
   block:
     - name: Packages
       ansible.builtin.import_tasks: packages_dev.yml
-    - name: Warp
-      ansible.builtin.import_tasks: warp_terminal.yml
     - name: Docker
       ansible.builtin.import_tasks: docker.yml
     - name: Meld

@@ -16,12 +16,6 @@ devs_packages_base:
   - meld
   - xz-utils
 
-# --- Configuración para Warp Terminal ---
-devs_warp_gpg_url: "https://releases.warp.dev/linux/keys/warp.gpg"
-devs_warp_gpg_path: "/usr/share/keyrings/warp.gpg"
-devs_warp_repo_line: "deb [arch=amd64 signed-by={{ devs_warp_gpg_path }}] https://releases.warp.dev/linux/deb stable main"
-devs_warp_package: "warp-terminal"
-
 # Lista de paquetes de Docker y sus componentes
 devs_docker_packages:
   - docker-ce
