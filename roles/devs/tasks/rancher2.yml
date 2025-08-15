@@ -11,7 +11,7 @@
 
     - name: Rancher CLI | Obtener información de la última versión desde GitHub
       ansible.builtin.uri:
-        url: "https://api.github.com/repos/{{ dev_rancher_cli_repo }}/releases/latest"
+        url: "https://api.github.com/repos/{{ devs_rancher_cli_repo }}/releases/latest"
         return_content: true
       register: devs_rancher_latest_release
 
