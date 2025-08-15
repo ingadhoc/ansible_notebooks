@@ -5,7 +5,7 @@
   block:
     - name: Docker | Instalar paquetes de prerrequisitos
       ansible.builtin.apt:
-        name: "{{ dev_docker_prerequisites }}"
+        name: "{{ devs_docker_prerequisites }}"
         state: present
         update_cache: true
 
@@ -45,7 +45,7 @@
 
     - name: Docker | Instalar Docker Engine y plugins
       ansible.builtin.apt:
-        name: "{{ dev_docker_packages }}"
+        name: "{{ devs_docker_packages }}"
         state: present
 
     - name: Docker | Asegurar que el servicio Docker esté activo y habilitado

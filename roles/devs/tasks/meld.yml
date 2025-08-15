@@ -7,4 +7,4 @@
     key: "{{ item.key }}"
     value: "{{ item.value }}"
     state: present
-  loop: "{{ dev_meld_dconf_settings }}"
+  loop: "{{ devs_meld_dconf_settings }}"
