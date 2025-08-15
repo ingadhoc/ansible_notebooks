@@ -13,7 +13,7 @@
       block:
         - name: Rancher CLI | Obtener la URL de la última versión
           ansible.builtin.uri:
-            url: "https://api.github.com/repos/{{ dev_rancher_cli_repo }}/releases/latest"
+            url: "https://api.github.com/repos/{{ devs_rancher_cli_repo }}/releases/latest"
             return_content: true
           register: devs_json_response
 
