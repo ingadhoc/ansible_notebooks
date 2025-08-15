@@ -15,13 +15,22 @@
         state: directory
         mode: '0755'
 
-    - name: Docker | Añadir la clave GPG oficial de Docker
-      ansible.builtin.shell: >
-        curl -fsSL https://download.docker.com/linux/debian/gpg |
-        gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-      args:
+    - name: Docker | Descargar la clave GPG de Docker a un archivo temporal
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/debian/gpg
+        dest: /tmp/docker.gpg
+        mode: '0644'
+
+    - name: Docker | Desarmar la clave GPG y colocarla en su ubicación final
+      ansible.builtin.command:
+        cmd: gpg --dearmor -o /etc/apt/keyrings/docker.gpg /tmp/docker.gpg
         creates: /etc/apt/keyrings/docker.gpg
       changed_when: false
+
+    - name: Docker | Limpiar el archivo temporal de la clave GPG
+      ansible.builtin.file:
+        path: /tmp/docker.gpg
+        state: absent
 
     - name: Docker | Añadir el repositorio de Docker
       ansible.builtin.apt_repository:

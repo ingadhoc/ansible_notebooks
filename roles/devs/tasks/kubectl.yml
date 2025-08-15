@@ -15,13 +15,22 @@
         state: absent
         filename: kubernetes
 
-    - name: Kubectl | Añadir la nueva clave GPG de Kubernetes
-      ansible.builtin.shell: >
-        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key |
-        gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-      args:
+    - name: Kubectl | Descargar la clave GPG de Kubernetes a un archivo temporal
+      ansible.builtin.get_url:
+        url: https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key
+        dest: /tmp/kubernetes_release.key
+        mode: '0644'
+
+    - name: Kubectl | Desarmar la clave GPG y colocarla en su ubicación final
+      ansible.builtin.command:
+        cmd: gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/kubernetes_release.key
         creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
       changed_when: false
+
+    - name: Kubectl | Limpiar el archivo temporal de la clave GPG
+      ansible.builtin.file:
+        path: /tmp/kubernetes_release.key
+        state: absent
 
     - name: Kubectl | Añadir el nuevo repositorio de Kubernetes (pkgs.k8s.io)
       ansible.builtin.apt_repository:

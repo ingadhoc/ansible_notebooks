@@ -16,12 +16,12 @@
       ansible.builtin.git:
         repo: "{{ dev_odoo_ctx_repo }}"
         dest: "{{ dev_odoo_base_path }}/ctx"
-        version: main # Consejo: para entornos de producción, considera usar un tag específico en lugar de 'main'
-        accept_hostkey: yes
+        version: main
+        accept_hostkey: true
 
     - name: Odoo Dev | Clonar repositorio docker-compose-odoo a '18'
       ansible.builtin.git:
         repo: "{{ dev_odoo_main_repo }}"
         dest: "{{ dev_odoo_base_path }}/18"
         version: main
-        accept_hostkey: yes
+        accept_hostkey: true

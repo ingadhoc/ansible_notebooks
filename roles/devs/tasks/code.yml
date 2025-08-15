@@ -1,15 +1,24 @@
 ---
-- name: Code | Añadir el repositorio oficial y el paquete de VS Code
+- name: Code | Añadir el repositorio oficial de VS Code
   tags: code
   become: true
   block:
-    - name: Code | Añadir la clave GPG de Microsoft
-      ansible.builtin.shell: >
-        curl -fsSL https://packages.microsoft.com/keys/microsoft.asc |
-        gpg --dearmor -o /etc/apt/keyrings/packages.microsoft.gpg
-      args:
+    - name: Code | Descargar la clave GPG de Microsoft a un archivo temporal
+      ansible.builtin.get_url:
+        url: https://packages.microsoft.com/keys/microsoft.asc
+        dest: /tmp/microsoft.asc
+        mode: '0644'
+
+    - name: Code | Desarmar la clave GPG y colocarla en su ubicación final
+      ansible.builtin.command:
+        cmd: gpg --dearmor -o /etc/apt/keyrings/packages.microsoft.gpg /tmp/microsoft.asc
         creates: /etc/apt/keyrings/packages.microsoft.gpg
       changed_when: false
+
+    - name: Code | Limpiar el archivo temporal de la clave GPG
+      ansible.builtin.file:
+        path: /tmp/microsoft.asc
+        state: absent
 
     - name: Code | Añadir el repositorio de VS Code
       ansible.builtin.apt_repository:
@@ -32,13 +41,15 @@
       ansible.builtin.command: "code --list-extensions"
       environment:
         DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ remote_regular_user_uid }}/bus"
-      register: installed_extensions
+      register: devs_installed_extensions
       changed_when: false
 
     - name: Code | Instalar solo las extensiones que falten
       ansible.builtin.command: "code --install-extension {{ item }}"
       loop: "{{ vscode_extension_list_devs }}"
-      when: item not in installed_extensions.stdout_lines
+      when: item not in devs_installed_extensions.stdout_lines
+      register: devs_extension_install_result
+      changed_when: "'was successfully installed' in devs_extension_install_result.stdout"
 
 - name: Code | Gestionar la configuración del usuario
   tags: code

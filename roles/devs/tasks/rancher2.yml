@@ -6,21 +6,27 @@
     - name: Rancher CLI | Verificar si el binario ya está instalado
       ansible.builtin.stat:
         path: /usr/local/bin/rancher
-      register: rancher_cli
+      register: devs_rancher_cli
 
     - name: Rancher CLI | Instalar la última versión
-      when: not rancher_cli.stat.exists
+      when: not devs_rancher_cli.stat.exists
       block:
         - name: Rancher CLI | Obtener la URL de la última versión
           ansible.builtin.uri:
             url: "https://api.github.com/repos/{{ dev_rancher_cli_repo }}/releases/latest"
             return_content: true
-          register: json_response
+          register: devs_json_response
 
         - name: Rancher CLI | Descargar y extraer el binario en un solo paso
+          vars:
+            download_url: >-
+              {{ (devs_json_response.json.assets |
+                  selectattr('name', 'search', '^rancher-linux-amd64.*\\.tar\\.gz$') |
+                  list | first).browser_download_url }}
           ansible.builtin.unarchive:
             remote_src: true
-            src: "{{ (json_response.json.assets | selectattr('name', 'search', '^rancher-linux-amd64.*\\.tar\\.gz$') | list | first).browser_download_url }}"
+            # 2. Use the simple variable
+            src: "{{ download_url }}"
             dest: "/usr/local/bin/"
             extra_opts:
               - "--strip-components=1"
@@ -36,6 +42,7 @@
         force: true
 
     - name: Rancher CLI | Añadir autocompletado de bash para el usuario
+      become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.blockinfile:
         path: "/home/{{ remote_regular_user }}/.bashrc"
