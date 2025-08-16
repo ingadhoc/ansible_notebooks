@@ -11,18 +11,16 @@
 
     - name: Rancher CLI | Obtener información de la última versión desde GitHub
       ansible.builtin.uri:
-        url: "https://api.github.com/repos/{{ dev_rancher_cli_repo }}/releases/latest"
+        url: "https://api.github.com/repos/{{ devs_rancher_cli_repo }}/releases/latest"
         return_content: true
       register: devs_rancher_latest_release
 
     - name: Rancher CLI | Definir y comparar las versiones
       ansible.builtin.set_fact:
-        # Extraemos el número de versión del texto (ej. "rancher version v2.12.0" -> "2.12.0")
         devs_current_version: >-
           {{ devs_rancher_current_version.stdout |
              regex_search('v([0-9]+\\.[0-9]+\\.[0-9]+)') |
              replace('v', '') if devs_rancher_current_version.rc == 0 else '0.0.0' }}
-        # Extraemos el tag de la última versión (ej. "v2.12.0" -> "2.12.0")
         devs_latest_version: "{{ devs_rancher_latest_release.json.tag_name | replace('v', '') }}"
 
     - name: Rancher CLI | Instalar o actualizar si es necesario
@@ -31,9 +29,8 @@
         - name: "Rancher CLI | Descargando e instalando versión {{ devs_latest_version }}"
           vars:
             download_url: >-
-              {{ (devs_rancher_latest_release.json.assets |
-                  selectattr('name', 'search', '^rancher-linux-amd64.*\\.tar\\.gz$') |
-                  list | first).browser_download_url }}
+              {{ devs_rancher_latest_release.json |
+                 json_query("assets[?contains(name, 'linux-amd64') && ends_with(name, '.tar.gz')].browser_download_url | [0]") }}
           ansible.builtin.unarchive:
             remote_src: true
             src: "{{ download_url }}"
