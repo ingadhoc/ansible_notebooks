@@ -1,11 +1,7 @@
 ---
 - name: Odoo Dev | Preparar entorno de desarrollo local de Odoo
   tags: remote_dev
-  become: false
   block:
-    - name: Odoo Dev | Refrescar conexión para aplicar cambios de grupo (ej. docker)
-      ansible.builtin.meta: reset_connection
-
     - name: Odoo Dev | Crear directorio base 'odoo'
       ansible.builtin.file:
         path: "{{ devs_odoo_base_path }}"
@@ -17,11 +13,9 @@
         repo: "{{ devs_odoo_ctx_repo }}"
         dest: "{{ devs_odoo_base_path }}/ctx"
         version: main
-        accept_hostkey: true
 
     - name: Odoo Dev | Clonar repositorio docker-compose-odoo a '18'
       ansible.builtin.git:
         repo: "{{ devs_odoo_main_repo }}"
         dest: "{{ devs_odoo_base_path }}/18"
         version: main
-        accept_hostkey: true
