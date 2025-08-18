@@ -46,7 +46,7 @@
 
     - name: Code | Instalar solo las extensiones que falten
       ansible.builtin.command: "code --install-extension {{ item }}"
-      loop: "{{ vscode_extension_list_devs }}"
+      loop: "{{ devs_vscode_extension_list }}"
       when: item not in devs_installed_extensions.stdout_lines
       register: devs_extension_install_result
       changed_when: "'was successfully installed' in devs_extension_install_result.stdout"
