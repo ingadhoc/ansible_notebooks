@@ -89,10 +89,6 @@ devs_python_linter_packages:
   - pep8
   - pre-commit
 
-# Repositorio con los hooks de git
-devs_hooks_repo_url: "https://github.com/OCA/maintainer-quality-tools"
-devs_hooks_repo_path: "/home/{{ remote_regular_user }}/repositorios/maintainer-quality-tools"
-
 # Ruta para los hooks de Git globales
 devs_git_hooks_path: "/home/{{ remote_regular_user }}/.git_hooks"
 
