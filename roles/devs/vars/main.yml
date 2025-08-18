@@ -51,7 +51,7 @@ devs_vscode_config_files:
   - { src: "flake8", dest: ".config/flake8" }
 
 # Extensiones predefinidas para devs
-vscode_extension_list_devs:
+devs_vscode_extension_list:
   # Install Visual Studio Code extensions.
   - ms-python.python
   # Supercharge the Git capabilities built into Visual Studio Code
