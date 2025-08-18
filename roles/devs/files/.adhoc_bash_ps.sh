@@ -10,7 +10,7 @@ Color_Off="\[\033[0m\]"
 
 #UserMachine="$BIYellow[\u@$Yellow\h]"
 
-adhoc_promp_git_branch(){
+adhoc_prompt_git_branch(){
     local git_branch="$(git branch --show-current 2>/dev/null)";
     local git_ps1_style="";
     local reset='\e(B\e[0m'
@@ -27,7 +27,7 @@ adhoc_promp_git_branch(){
     echo -en $git_ps1_style
 }
 
-adhoc_promp_last_cmd_status(){
+adhoc_prompt_last_cmd_status(){
     if [[ $? == 0 ]]; then
         return
     fi
@@ -36,14 +36,14 @@ adhoc_promp_last_cmd_status(){
     echo -en "${red}‼${reset} "
 }
 
-adhoc_promp_user(){
+adhoc_prompt_user(){
     local userColor='\e[1;30m\e[1;102m'
     # local userColor='\e[32m'
     local reset='\e(B\e[m'
     echo -en "${userColor} \u ${reset}"
 }
 
-adhoc_promp_gcloud(){
+adhoc_prompt_gcloud(){
     local gcloud_config_path="$HOME/.config/gcloud"
     if [[ ! -f "$gcloud_config_path/active_config" ]]; then
         return
@@ -68,7 +68,7 @@ adhoc_promp_gcloud(){
     echo -en "${gcloudColor} G:$account:${project:="not-set"} ${reset}"
 }
 
-adhoc_promp_k8s(){
+adhoc_prompt_k8s(){
     local gcloud_config_path="$HOME/.kube/config"
     if [[ ! -f "$gcloud_config_path" ]]; then
         return
@@ -93,7 +93,7 @@ adhoc_promp_k8s(){
     echo -en "${ps1_style} ⎈:$current_context ${reset}"
 }
 
-adhoc_promp_rancher(){
+adhoc_prompt_rancher(){
     local config_path="$HOME/.rancher/cli2.json"
     if [[ ! -f "$config_path" ]]; then
         return
@@ -117,30 +117,30 @@ adhoc_promp_rancher(){
     echo -en "${ps1_style} R:$current_context ${reset}"
 }
 
-adhoc_promp_path(){
+adhoc_prompt_path(){
     local pathColor='\e[1;30m\e[1;106m'
     local reset='\e(B\e[m'
     echo -en "${pathColor} \w ${reset}"
 }
 
-PS1="\$(adhoc_promp_last_cmd_status)$(adhoc_promp_user)"
+PS1="\$(adhoc_prompt_last_cmd_status)$(adhoc_prompt_user)"
 
 if command -v gcloud &> /dev/null; then
-    PS1=$PS1"\$(adhoc_promp_gcloud)"
+    PS1=$PS1"\$(adhoc_prompt_gcloud)"
 fi
 
 if command -v kubectl &> /dev/null; then
-    PS1=$PS1"\$(adhoc_promp_k8s)"
+    PS1=$PS1"\$(adhoc_prompt_k8s)"
 fi
 
 if command -v rancher2 &> /dev/null; then
-    PS1=$PS1"\$(adhoc_promp_rancher)"
+    PS1=$PS1"\$(adhoc_prompt_rancher)"
 fi
 
-PS1=$PS1"$(adhoc_promp_path)"
+PS1=$PS1"$(adhoc_prompt_path)"
 
 if command -v git &> /dev/null; then
-    PS1=$PS1" \$(adhoc_promp_git_branch)"
+    PS1=$PS1" \$(adhoc_prompt_git_branch)"
 fi
 
 PS1=$PS1"\n\$ "
