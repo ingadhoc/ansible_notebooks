@@ -1,45 +1,20 @@
 ---
-- name: Rancher CLI | Instalar o actualizar la CLI de Rancher
+- name: Rancher CLI | Instalar o actualizar usando script dedicado
   tags: rancher
   become: true
   block:
-    - name: Rancher CLI | Verificar la versión instalada (si existe)
-      ansible.builtin.command: "rancher --version"
-      register: devs_rancher_current_version
-      changed_when: false
-      ignore_errors: true
+    - name: Rancher CLI | Copiar el script de instalación al equipo
+      ansible.builtin.copy:
+        src: install_rancher_cli.sh
+        dest: /tmp/install_rancher_cli.sh
+        mode: '0755'
 
-    - name: Rancher CLI | Obtener información de la última versión desde GitHub
-      ansible.builtin.uri:
-        url: "https://api.github.com/repos/{{ devs_rancher_cli_repo }}/releases/latest"
-        return_content: true
-      register: devs_rancher_latest_release
-
-    - name: Rancher CLI | Definir y comparar las versiones
-      ansible.builtin.set_fact:
-        devs_current_version: >-
-          {{ devs_rancher_current_version.stdout |
-             regex_search('v([0-9]+\\.[0-9]+\\.[0-9]+)') |
-             replace('v', '') if devs_rancher_current_version.rc == 0 else '0.0.0' }}
-        devs_latest_version: "{{ devs_rancher_latest_release.json.tag_name | replace('v', '') }}"
-
-    - name: Rancher CLI | Instalar o actualizar si es necesario
-      when: devs_current_version != devs_latest_version
-      block:
-        - name: "Rancher CLI | Descargando e instalando versión {{ devs_latest_version }}"
-          vars:
-            download_url: >-
-              {{ devs_rancher_latest_release.json |
-                 json_query("assets[?contains(name, 'linux-amd64') && ends_with(name, '.tar.gz')].browser_download_url | [0]") }}
-          ansible.builtin.unarchive:
-            remote_src: true
-            src: "{{ download_url }}"
-            dest: "/usr/local/bin/"
-            extra_opts:
-              - "--strip-components=1"
-            owner: root
-            group: root
-            mode: "0755"
+    - name: Rancher CLI | Ejecutar el script de instalación
+      # El script se encarga de la idempotencia y las actualizaciones.
+      ansible.builtin.command: /tmp/install_rancher_cli.sh
+      register: devs_rancher_install_script_result
+      # La tarea reporta un cambio solo si el script realmente instaló o actualizó algo.
+      changed_when: "'Descargando' in devs_rancher_install_script_result.stdout"
 
     - name: Rancher CLI | Crear enlace simbólico 'rancher2' para compatibilidad
       ansible.builtin.file:
