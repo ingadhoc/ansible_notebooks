@@ -50,8 +50,8 @@ dev_vscode_config_files:
   - { src: "pycodestyle", dest: ".config/pycodestyle" }
   - { src: "flake8", dest: ".config/flake8" }
 
-# Extensiones predefinidas para devs
-vscode_extension_list_devs:
+# Extensiones predefinidas para dev
+dev_vscode_extension_list:
   # Install Visual Studio Code extensions.
   - ms-python.python
   # Supercharge the Git capabilities built into Visual Studio Code
@@ -128,13 +128,13 @@ dev_git_generic_hook_list:
   - pre-receive
   - prepare-commit-msg
   - update
-  
+
 # Prerrequisitos para añadir el repositorio de Kubernetes
 dev_kubectl_prerequisites:
   - apt-transport-https
   - ca-certificates
   - curl
-  
+
 # --- Configuración de Rancher CLI ---
 dev_rancher_cli_repo: "rancher/cli"
 

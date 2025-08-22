@@ -23,7 +23,6 @@
 
   # --- SECCIÓN DE ROLES ---
   roles:
-    # Este rol se ejecuta por defecto o según la variable. NO está etiquetado.
     - role: "{{ target_profile }}"
 
     # Este rol SOLO se ejecuta si se pide explícitamente la etiqueta 'deploy'.

@@ -6,14 +6,14 @@
     - name: Rancher CLI | Verificar si el binario ya está instalado
       ansible.builtin.stat:
         path: /usr/local/bin/rancher
-      register: rancher_cli
+      register: devs_rancher_cli
 
     - name: Rancher CLI | Instalar la última versión
-      when: not rancher_cli.stat.exists
+      when: not devs_rancher_cli.stat.exists
       block:
         - name: Rancher CLI | Obtener la URL de la última versión
           ansible.builtin.uri:
-            url: "https://api.github.com/repos/{{ dev_rancher_cli_repo }}/releases/latest"
+            url: "https://api.github.com/repos/{{ devs_rancher_cli_repo }}/releases/latest"
             return_content: true
           register: json_response
 

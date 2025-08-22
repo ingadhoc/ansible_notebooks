@@ -16,9 +16,14 @@
         filename: kubernetes
 
     - name: Kubectl | Añadir la nueva clave GPG de Kubernetes
+      ansible.builtin.get_url:
+        url: https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key
+        dest: /tmp/kubernetes-release.key
+        mode: '0644'
+
+    - name: Kubectl | Convertir y guardar la clave GPG
       ansible.builtin.shell: >
-        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key |
-        gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/kubernetes-release.key
       args:
         creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
       changed_when: false
