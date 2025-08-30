@@ -3,13 +3,28 @@
   tags: code
   become: true
   block:
-    - name: Code | Añadir la clave GPG de Microsoft
-      ansible.builtin.shell: >
-        curl -fsSL https://packages.microsoft.com/keys/microsoft.asc |
-        gpg --dearmor -o /etc/apt/keyrings/packages.microsoft.gpg
+    - name: Code | Crear directorio para claves GPG
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Code | Descargar la clave GPG de Microsoft
+      ansible.builtin.get_url:
+        url: https://packages.microsoft.com/keys/microsoft.asc
+        dest: /tmp/microsoft.asc
+        mode: '0644'
+
+    - name: Code | Convertir y guardar la clave GPG
+      ansible.builtin.shell: gpg --dearmor -o /etc/apt/keyrings/packages.microsoft.gpg < /tmp/microsoft.asc
       args:
         creates: /etc/apt/keyrings/packages.microsoft.gpg
       changed_when: false
+
+    - name: Code | Limpiar archivo temporal
+      ansible.builtin.file:
+        path: /tmp/microsoft.asc
+        state: absent
 
     - name: Code | Añadir el repositorio de VS Code
       ansible.builtin.apt_repository:
@@ -32,13 +47,14 @@
       ansible.builtin.command: "code --list-extensions"
       environment:
         DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ remote_regular_user_uid }}/bus"
-      register: installed_extensions
+      register: developer_installed_extensions
       changed_when: false
 
     - name: Code | Instalar solo las extensiones que falten
       ansible.builtin.command: "code --install-extension {{ item }}"
-      loop: "{{ vscode_extension_list_devs }}"
-      when: item not in installed_extensions.stdout_lines
+      loop: "{{ developer_vscode_extension_list }}"
+      when: item not in developer_installed_extensions.stdout_lines
+      changed_when: true
 
 - name: Code | Gestionar la configuración del usuario
   tags: code
@@ -66,4 +82,4 @@
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
         mode: "0644"
-      loop: "{{ dev_vscode_config_files }}"
+      loop: "{{ developer_vscode_config_files }}"
