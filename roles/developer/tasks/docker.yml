@@ -5,7 +5,7 @@
   block:
     - name: Docker | Instalar paquetes de prerrequisitos
       ansible.builtin.apt:
-        name: "{{ dev_docker_prerequisites }}"
+        name: "{{ developer_docker_prerequisites }}"
         state: present
         update_cache: true
 
@@ -16,12 +16,22 @@
         mode: '0755'
 
     - name: Docker | Añadir la clave GPG oficial de Docker
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/debian/gpg
+        dest: /tmp/docker.gpg
+        mode: '0644'
+
+    - name: Docker | Convertir la clave GPG al formato requerido
       ansible.builtin.shell: >
-        curl -fsSL https://download.docker.com/linux/debian/gpg |
-        gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        gpg --dearmor -o /etc/apt/keyrings/docker.gpg /tmp/docker.gpg
       args:
         creates: /etc/apt/keyrings/docker.gpg
       changed_when: false
+
+    - name: Docker | Limpiar archivo temporal de clave GPG
+      ansible.builtin.file:
+        path: /tmp/docker.gpg
+        state: absent
 
     - name: Docker | Añadir el repositorio de Docker
       ansible.builtin.apt_repository:
@@ -36,7 +46,7 @@
 
     - name: Docker | Instalar Docker Engine y plugins
       ansible.builtin.apt:
-        name: "{{ dev_docker_packages }}"
+        name: "{{ developer_docker_packages }}"
         state: present
 
     - name: Docker | Asegurar que el servicio Docker esté activo y habilitado
