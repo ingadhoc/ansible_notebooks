@@ -19,7 +19,7 @@ Priorizamos el uso de Debian para mantener un sistema base limpio, estable y lib
 El sistema está organizado en perfiles jerárquicos. Cada perfil incluye la configuración del anterior, creando un sistema incremental:
 
 * **`funcional` (Base)**: Contiene el software y la configuración esencial para todos los miembros de la empresa (navegadores, herramientas de comunicación, seguridad básica, etc.).
-* **`devs`**: Incluye el perfil `funcional` y añade todas las herramientas de desarrollo (Docker, VS Code, Git, Python, kubectl, etc.).
+* **`developer`**: Incluye el perfil `funcional` y añade todas las herramientas de desarrollo (Docker, VS Code, Git, Python, kubectl, etc.).
 * **`sysadmin`**: Incluye ambos perfiles anteriores y añade herramientas de administración de sistemas e infraestructura (Terraform, gcloud, VirtualBox, etc.).
 
 ---
@@ -76,10 +76,10 @@ ansible-galaxy install -r collections/requirements.yml
 # Para el rol Funcional (perfil por defecto)
 ansible-playbook local.yml -K --verbose
 
-# Para el rol Devs (ejecutará funcional -> devs)
-ansible-playbook local.yml -e "profile_override=devs" -K --verbose
+# Para el rol Developer (ejecutará funcional -> developer)
+ansible-playbook local.yml -e "profile_override=developer" -K --verbose
 
-# Para el rol SysAdmin (ejecutará funcional -> devs -> sysadmin)
+# Para el rol SysAdmin (ejecutará funcional -> developer -> sysadmin)
 ansible-playbook local.yml -e "profile_override=sysadmin" -K --verbose
 
 # Para instalar solo herramientas de deploy rápido (ej. kubectl)

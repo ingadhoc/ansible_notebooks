@@ -8,10 +8,10 @@
       ansible.builtin.command: "code --list-extensions"
       environment:
         DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ remote_regular_user_uid }}/bus"
-      register: installed_extensions
+      register: sysadmin_installed_extensions
       changed_when: false
       
     - name: Sysadmin | Instalar solo las extensiones de sysadmin que falten
       ansible.builtin.command: "code --install-extension {{ item }}"
       loop: "{{ vscode_extension_list_sysadmin }}"
-      when: item not in installed_extensions.stdout_lines
+      when: item not in sysadmin_installed_extensions.stdout_lines
