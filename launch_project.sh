@@ -42,7 +42,7 @@ apt-get install -y git pipx > /dev/null
 # 3. Asegurar una instalación limpia de Ansible del sistema
 log "Desinstalando cualquier versión de Ansible gestionada por apt..."
 apt-get remove --purge -y ansible ansible-core > /dev/null || true
-apt-get autovemove -y > /dev/null
+apt-get autoremove -y > /dev/null
 
 # 4. Instalar Ansible de forma segura con pipx
 log "Instalando Ansible vía pipx para el usuario '$SCRIPT_USER'..."
