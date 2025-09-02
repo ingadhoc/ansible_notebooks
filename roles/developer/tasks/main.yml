@@ -1,7 +1,7 @@
 ---
 - name: Include vars
   ansible.builtin.include_vars: "{{ role_path }}/vars.yml"
-  tags: devs
+  tags: developer
   no_log: true
 
 - name: Include

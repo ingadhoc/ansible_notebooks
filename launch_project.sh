@@ -75,11 +75,11 @@ log "Por favor, selecciona el perfil para provisionar esta notebook:"
 # (El resto del script con el menú y la ejecución de ansible puede quedar como en la versión mejorada anterior)
 # ...
 PS3="Ingresa el número de tu opción: "
-options=("Funcional" "Devs" "SysAdmin" "Salir y ejecutar manualmente")
+options=("Funcional" "Developer" "SysAdmin" "Salir y ejecutar manualmente")
 select opt in "${options[@]}"; do
   case $opt in
     "Funcional") PROFILE_TO_RUN="funcional"; break;;
-    "Devs") PROFILE_TO_RUN="devs"; break;;
+    "Developer") PROFILE_TO_RUN="developer"; break;;
     "SysAdmin") PROFILE_TO_RUN="sysadmin"; break;;
     "Salir y ejecutar manualmente")
       log "Instalación base completada. Puedes ejecutar playbooks manualmente."

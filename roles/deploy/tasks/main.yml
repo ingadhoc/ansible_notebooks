@@ -6,9 +6,9 @@
 - name: Include
   block:
     - name: Kubectl
-      ansible.builtin.import_tasks: ../roles/devs/tasks/kubectl.yml
+      ansible.builtin.import_tasks: ../roles/developer/tasks/kubectl.yml
     - name: Rancher2
-      ansible.builtin.import_tasks: ../roles/devs/tasks/rancher2.yml
+      ansible.builtin.import_tasks: ../roles/developer/tasks/rancher2.yml
     - name: GCloud
       ansible.builtin.import_tasks: ../roles/sysadmin/tasks/gcloud.yml
     - name: Terraform
