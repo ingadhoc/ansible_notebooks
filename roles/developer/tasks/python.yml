@@ -18,13 +18,9 @@
         state: directory
         mode: "0755"
 
-    - name: Python | Crear entorno virtual para linters
-      ansible.builtin.command: "python3 -m venv {{ developer_python_venv_path }}"
-      changed_when: false
-
     - name: Python | Instalar herramientas de linting en el entorno virtual
       ansible.builtin.pip:
-        executable: "{{ developer_python_venv_path }}/bin/pip"
+        virtualenv: "{{ developer_python_venv_path }}"
         name: "{{ developer_python_linter_packages }}"
         state: present
 
