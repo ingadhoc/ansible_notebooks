@@ -20,8 +20,7 @@
 
     - name: Python | Crear entorno virtual para linters
       ansible.builtin.command: "python3 -m venv {{ developer_python_venv_path }}"
-      args:
-        creates: "{{ developer_python_venv_path }}/bin/pip"
+      changed_when: false
 
     - name: Python | Instalar herramientas de linting en el entorno virtual
       ansible.builtin.pip:
@@ -43,7 +42,7 @@
     - name: Git Hooks | Encontrar todos los archivos de hooks en el repositorio clonado
       become: true
       ansible.builtin.find:
-        paths: "{{ developer_hooks_repo_path }}/hooks"
+        paths: "{{ developer_hooks_repo_path }}/git_hooks"
         file_type: file
       register: developer_hook_files
 
@@ -63,4 +62,4 @@
   ansible.builtin.git:
     repo: https://github.com/adhoc-dev/odoo_log_analyser.git
     dest: "/home/{{ remote_regular_user }}/repositorios/odoo_log_analyser"
-    version: master
+    version: main
