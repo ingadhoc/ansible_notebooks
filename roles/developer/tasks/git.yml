@@ -10,25 +10,25 @@
         name: "{{ item.name }}"
         value: "{{ item.value }}"
         scope: global
-      loop: "{{ dev_git_config_settings }}"
+      loop: "{{ developer_git_config_settings }}"
 
     - name: Git | Crear directorio para hooks globales
       ansible.builtin.file:
-        path: "{{ dev_git_hooks_path }}"
+        path: "{{ developer_git_hooks_path }}"
         state: directory
         mode: '0755'
 
     - name: Git | Copiar script de hook genérico a múltiples destinos
       ansible.builtin.copy:
         src: default_hook.sh
-        dest: "{{ dev_git_hooks_path }}/{{ item }}"
+        dest: "{{ developer_git_hooks_path }}/{{ item }}"
         mode: "0755"
-      loop: "{{ dev_git_generic_hook_list }}"
+      loop: "{{ developer_git_generic_hook_list }}"
 
     - name: Git | Copiar script de hook 'pre-push'
       ansible.builtin.copy:
         src: pre-push
-        dest: "{{ dev_git_hooks_path }}/pre-push"
+        dest: "{{ developer_git_hooks_path }}/pre-push"
         mode: "0755"
 
     - name: Git | Copiar archivo de prompt personalizado

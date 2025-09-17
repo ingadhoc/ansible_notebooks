@@ -3,7 +3,7 @@
   tags: python
   become: true
   ansible.builtin.apt:
-    name: "{{ dev_python_packages }}"
+    name: "{{ developer_python_packages }}"
     state: present
     update_cache: true
 
@@ -19,14 +19,14 @@
         mode: "0755"
 
     - name: Python | Crear entorno virtual para linters
-      ansible.builtin.command: "python3 -m venv {{ dev_python_venv_path }}"
+      ansible.builtin.command: "python3 -m venv {{ developer_python_venv_path }}"
       args:
-        creates: "{{ dev_python_venv_path }}/bin/pip"
+        creates: "{{ developer_python_venv_path }}/bin/pip"
 
     - name: Python | Instalar herramientas de linting en el entorno virtual
       ansible.builtin.pip:
-        executable: "{{ dev_python_venv_path }}/bin/pip"
-        name: "{{ dev_python_linter_packages }}"
+        executable: "{{ developer_python_venv_path }}/bin/pip"
+        name: "{{ developer_python_linter_packages }}"
         state: present
 
 - name: Git Hooks | Configurar pre-commit hooks de OCA globalmente
@@ -36,16 +36,16 @@
       become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.git:
-        repo: "{{ dev_hooks_repo_url }}"
-        dest: "{{ dev_hooks_repo_path }}"
+        repo: "{{ developer_hooks_repo_url }}"
+        dest: "{{ developer_hooks_repo_path }}"
         version: master
 
     - name: Git Hooks | Encontrar todos los archivos de hooks en el repositorio clonado
       become: true
       ansible.builtin.find:
-        paths: "{{ dev_hooks_repo_path }}/hooks"
+        paths: "{{ developer_hooks_repo_path }}/hooks"
         file_type: file
-      register: hook_files
+      register: developer_hook_files
 
     - name: Git Hooks | Crear enlaces simbólicos en la plantilla de hooks de Git
       become: true
@@ -54,12 +54,13 @@
         dest: "/usr/share/git-core/templates/hooks/{{ item.path | basename }}"
         state: link
         force: true
-      loop: "{{ hook_files.files }}"
+      loop: "{{ developer_hook_files.files }}"
 
-- name: Tools | Clonar repositorio de odoo_log_analyser
+- name: Tools | Clonar o actualizar repositorio de odoo_log_analyser
   tags: odoo_tools
   become: true
   become_user: "{{ remote_regular_user }}"
   ansible.builtin.git:
     repo: https://github.com/adhoc-dev/odoo_log_analyser.git
     dest: "/home/{{ remote_regular_user }}/repositorios/odoo_log_analyser"
+    version: master

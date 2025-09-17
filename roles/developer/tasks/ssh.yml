@@ -12,14 +12,14 @@
 
     - name: SSH | Generar clave SSH si no existe
       community.crypto.openssh_keypair:
-        path: "{{ dev_ssh_config.key_path }}"
-        type: "{{ dev_ssh_config.key_type }}"
-        size: "{{ dev_ssh_config.key_size }}"
+        path: "{{ developer_ssh_config.key_path }}"
+        type: "{{ developer_ssh_config.key_type }}"
+        size: "{{ developer_ssh_config.key_size }}"
         state: present
         mode: "0600"
 
     - name: SSH | Desplegar la plantilla de configuración .ssh/config
       ansible.builtin.template:
-        src: "{{ dev_ssh_config.config_template_src }}"
+        src: "{{ developer_ssh_config.config_template_src }}"
         dest: "/home/{{ remote_regular_user }}/.ssh/config"
         mode: "0600"

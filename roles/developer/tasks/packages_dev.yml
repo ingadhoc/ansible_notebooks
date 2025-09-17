@@ -3,7 +3,7 @@
   tags: packages_dev
   become: true
   ansible.builtin.apt:
-    name: "{{ dev_packages_base }}"
+    name: "{{ developer_packages_base }}"
     state: present
 
 - name: Yakuake | Configurar la terminal desplegable para el usuario

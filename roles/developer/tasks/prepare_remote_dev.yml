@@ -8,20 +8,20 @@
 
     - name: Odoo Dev | Crear directorio base 'odoo'
       ansible.builtin.file:
-        path: "{{ dev_odoo_base_path }}"
+        path: "{{ developer_odoo_base_path }}"
         state: directory
         mode: '0755'
 
     - name: Odoo Dev | Clonar repositorio docker-compose-context a 'ctx'
       ansible.builtin.git:
-        repo: "{{ dev_odoo_ctx_repo }}"
-        dest: "{{ dev_odoo_base_path }}/ctx"
+        repo: "{{ developer_odoo_ctx_repo }}"
+        dest: "{{ developer_odoo_base_path }}/ctx"
         version: main # Consejo: para entornos de producción, considera usar un tag específico en lugar de 'main'
-        accept_hostkey: yes
+        accept_hostkey: true
 
     - name: Odoo Dev | Clonar repositorio docker-compose-odoo a '18'
       ansible.builtin.git:
-        repo: "{{ dev_odoo_main_repo }}"
-        dest: "{{ dev_odoo_base_path }}/18"
+        repo: "{{ developer_odoo_main_repo }}"
+        dest: "{{ developer_odoo_base_path }}/18"
         version: main
-        accept_hostkey: yes
+        accept_hostkey: true

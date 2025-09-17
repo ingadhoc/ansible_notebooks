@@ -5,7 +5,7 @@
   become_user: "{{ remote_regular_user }}"
   community.general.dconf:
     key: "/org/gnome/shell/favorite-apps"
-    value: "{{ dev_gnome_favorite_apps }}"
+    value: "{{ developer_gnome_favorite_apps }}"
   when: ansible_facts['distribution'] == 'Ubuntu'
 
 - name: Arreglos Dev | Copiar archivos de configuración del shell (dotfiles)

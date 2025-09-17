@@ -1,4 +1,3 @@
-# roles/devs/tasks/meld.yml
 ---
 - name: Meld | Aplicar configuraciones de la herramienta de comparación
   tags: meld
@@ -8,4 +7,4 @@
     key: "{{ item.key }}"
     value: "{{ item.value }}"
     state: present
-  loop: "{{ dev_meld_dconf_settings }}"
+  loop: "{{ developer_meld_dconf_settings }}"
