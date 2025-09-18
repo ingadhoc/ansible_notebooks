@@ -6,21 +6,29 @@
     - name: Rancher CLI | Verificar si el binario ya está instalado
       ansible.builtin.stat:
         path: /usr/local/bin/rancher
-      register: devs_rancher_cli
+      register: developer_rancher_cli
 
     - name: Rancher CLI | Instalar la última versión
       when: not devs_rancher_cli.stat.exists
       block:
         - name: Rancher CLI | Obtener la URL de la última versión
           ansible.builtin.uri:
-            url: "https://api.github.com/repos/{{ devs_rancher_cli_repo }}/releases/latest"
+            url: "https://api.github.com/repos/{{ developer_rancher_cli_repo }}/releases/latest"
             return_content: true
-          register: json_response
+          register: developer_json_response
+
+        - name: Rancher CLI | Extraer URL del asset
+          ansible.builtin.set_fact:
+            developer_rancher_asset_url: >-
+              {{ (developer_json_response.json.assets
+                  | selectattr('name', 'search', '^rancher-linux-amd64.*\\.tar\\.gz$')
+                  | list
+                  | first).browser_download_url }}
 
         - name: Rancher CLI | Descargar y extraer el binario en un solo paso
           ansible.builtin.unarchive:
             remote_src: true
-            src: "{{ (json_response.json.assets | selectattr('name', 'search', '^rancher-linux-amd64.*\\.tar\\.gz$') | list | first).browser_download_url }}"
+            src: "{{ developer_rancher_asset_url }}"
             dest: "/usr/local/bin/"
             extra_opts:
               - "--strip-components=1"
@@ -36,11 +44,12 @@
         force: true
 
     - name: Rancher CLI | Añadir autocompletado de bash para el usuario
+      become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.blockinfile:
         path: "/home/{{ remote_regular_user }}/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED BLOCK - RANCHER COMPLETION"
         block: |
           if command -v rancher >/dev/null 2>&1; then
-            source <(rancher completion bash)
+            source <(rancher completion)
           fi
