@@ -42,14 +42,3 @@
         dest: /usr/local/bin/rancher2
         state: link
         force: true
-
-    - name: Rancher CLI | Añadir autocompletado de bash para el usuario
-      become: true
-      become_user: "{{ remote_regular_user }}"
-      ansible.builtin.blockinfile:
-        path: "/home/{{ remote_regular_user }}/.bashrc"
-        marker: "# {mark} ANSIBLE MANAGED BLOCK - RANCHER COMPLETION"
-        block: |
-          if command -v rancher >/dev/null 2>&1; then
-            source <(rancher completion)
-          fi
