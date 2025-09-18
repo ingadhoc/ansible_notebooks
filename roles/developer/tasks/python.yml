@@ -12,15 +12,24 @@
   become: true
   become_user: "{{ remote_regular_user }}"
   block:
-    - name: Python | Crear directorio para entornos virtuales
+    - name: Python | Crear directorio padre para entornos virtuales
       ansible.builtin.file:
         path: "/home/{{ remote_regular_user }}/python-venvs"
         state: directory
         mode: "0755"
 
+    - name: Python | Asegurar que cualquier venv anterior corrupto sea eliminado
+      ansible.builtin.file:
+        path: "{{ developer_python_venv_path }}"
+        state: absent
+
+    - name: Python | Crear un nuevo y limpio entorno virtual para linters
+      ansible.builtin.command: "python3 -m venv {{ developer_python_venv_path }}"
+      changed_when: true
+
     - name: Python | Instalar herramientas de linting en el entorno virtual
       ansible.builtin.pip:
-        virtualenv: "{{ developer_python_venv_path }}"
+        executable: "{{ developer_python_venv_path }}/bin/pip"
         name: "{{ developer_python_linter_packages }}"
         state: present
 
