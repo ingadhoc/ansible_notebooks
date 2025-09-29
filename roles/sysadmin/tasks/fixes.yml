@@ -10,8 +10,16 @@
         DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ remote_regular_user_uid }}/bus"
       register: sysadmin_installed_extensions
       changed_when: false
-      
+
     - name: Sysadmin | Instalar solo las extensiones de sysadmin que falten
       ansible.builtin.command: "code --install-extension {{ item }}"
       loop: "{{ vscode_extension_list_sysadmin }}"
       when: item not in sysadmin_installed_extensions.stdout_lines
+      register: sysadmin_installed_extension_install
+      changed_when: >
+        sysadmin_installed_extension_install is defined and
+        (sysadmin_installed_extension_install.results | selectattr('stdout','search','already installed') | list | length)
+        < (sysadmin_installed_extension_install.results | length)
+      failed_when: >
+        sysadmin_installed_extension_install is defined and
+        (sysadmin_installed_extension_install.results | selectattr('rc','ne',0) | rejectattr('stdout','search','already installed') | list | length) > 0

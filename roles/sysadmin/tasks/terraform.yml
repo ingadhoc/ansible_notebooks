@@ -4,38 +4,53 @@
   become: true
   block:
 
-    - name: Asegurar que el directorio para keyrings de APT existe
+    - name: Terraform | Asegurar que el directorio para keyrings de APT existe
       ansible.builtin.file:
         path: /usr/share/keyrings
         state: directory
         mode: '0755'
 
-    - name: Descargar y guardar la llave GPG de HashiCorp
-      ansible.builtin.shell: >
-        curl -fsSL https://apt.releases.hashicorp.com/gpg |
-        gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+    - name: Terraform | Descargar la clave GPG de HashiCorp
+      ansible.builtin.get_url:
+        url: https://apt.releases.hashicorp.com/gpg
+        dest: /tmp/hashicorp.gpg
+        mode: '0644'
+
+    - name: Terraform | Convertir y mover la clave GPG
+      ansible.builtin.shell: |
+        set -o pipefail
+        gpg --dearmor < /tmp/hashicorp.gpg > /usr/share/keyrings/hashicorp-archive-keyring.gpg
       args:
         creates: /usr/share/keyrings/hashicorp-archive-keyring.gpg
       changed_when: false
 
-    - name: Sysadmin | Agregar el repositorio de HashiCorp
+    - name: Terraform | Limpiar archivo temporal de clave GPG
+      ansible.builtin.file:
+        path: /tmp/hashicorp.gpg
+        state: absent
+
+    - name: Terraform | Agregar el repositorio de HashiCorp
       ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com {{ 'jammy' if ansible_facts['distribution'] == 'Debian' else ansible_distribution_release }} main"
+        repo: >-
+          deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg]
+          https://apt.releases.hashicorp.com
+          {{ 'jammy' if ansible_facts['distribution'] == 'Debian' else ansible_distribution_release }}
+          main
         state: present
         filename: hashicorp
         update_cache: true
 
-    - name: Instalar terraform
+    - name: Terraform | Instalar terraform
       ansible.builtin.apt:
         name: terraform
         state: present
 
-    - name: Instalar autocompletado para el usuario regular
+    - name: Terraform | Instalar autocompletado para el usuario regular
       become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.command: "terraform -install-autocomplete"
-      register: autocomplete_result
-      changed_when: "'Configuration file written' in autocomplete_result.stdout"
+      register: sysadmin_autocomplete_result
+      changed_when: "'Configuration file written' in sysadmin_autocomplete_result.stdout"
       failed_when: >
-        autocomplete_result.rc != 0 and
-        'already installed' not in autocomplete_result.stderr
+        sysadmin_autocomplete_result.rc != 0 and
+        'already installed' not in sysadmin_autocomplete_result.stderr

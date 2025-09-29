@@ -10,13 +10,23 @@
         state: directory
         mode: '0755'
 
-    - name: Descargar y guardar la llave GPG de Google Cloud
-      ansible.builtin.shell: >
-        curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg |
-        gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+    - name: Descargar la llave GPG de Google Cloud
+      ansible.builtin.get_url:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        dest: /tmp/google-cloud-apt-key.gpg
+        mode: '0644'
+        force: false
+
+    - name: Convertir y guardar la llave GPG en /usr/share/keyrings
+      ansible.builtin.command:
+        cmd: gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg /tmp/google-cloud-apt-key.gpg
       args:
         creates: /usr/share/keyrings/cloud.google.gpg
-      changed_when: false
+
+    - name: Remover archivo temporal de llave GPG
+      ansible.builtin.file:
+        path: /tmp/google-cloud-apt-key.gpg
+        state: absent
 
     - name: Agregar el repositorio de Google Cloud SDK
       ansible.builtin.apt_repository:

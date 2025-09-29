@@ -4,13 +4,24 @@
   tags: nordvpn
   become: true
   block:
-    - name: NordVPN | Añadir la clave GPG del repositorio de NordVPN
-      ansible.builtin.shell: >
-        curl -fsSL https://repo.nordvpn.com/gpg/nordvpn_public.asc |
-        gpg --dearmor -o {{ sysadmin_nordvpn_gpg_path }}
+    - name: NordVPN | Descargar la clave GPG del repositorio de NordVPN
+      ansible.builtin.get_url:
+        url: https://repo.nordvpn.com/gpg/nordvpn_public.asc
+        dest: /tmp/nordvpn_public.asc
+        mode: '0644'
+
+    - name: NordVPN | Convertir y mover la clave GPG
+      ansible.builtin.shell: |
+        set -o pipefail
+        gpg --dearmor < /tmp/nordvpn_public.asc > {{ sysadmin_nordvpn_gpg_path }}
       args:
         creates: "{{ sysadmin_nordvpn_gpg_path }}"
       changed_when: false
+
+    - name: NordVPN | Limpiar archivo temporal de clave GPG
+      ansible.builtin.file:
+        path: /tmp/nordvpn_public.asc
+        state: absent
 
     - name: NordVPN | Añadir el repositorio de APT de NordVPN
       ansible.builtin.apt_repository:
