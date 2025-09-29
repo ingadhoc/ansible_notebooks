@@ -12,6 +12,11 @@
         state: directory
         mode: '0755'
 
+    - name: Odoo Dev | Verificar si el directorio ctx existe
+      ansible.builtin.stat:
+        path: "{{ developer_odoo_base_path }}/ctx"
+      register: developer_ctx_dir
+
     - name: Odoo Dev | Clonar/actualizar repositorio docker-compose-context a 'ctx'
       ansible.builtin.git:
         repo: "{{ developer_odoo_ctx_repo }}"
@@ -19,6 +24,12 @@
         version: main
         accept_hostkey: true
         update: true
+        force: true
+
+    - name: Odoo Dev | Verificar si el directorio 18 existe
+      ansible.builtin.stat:
+        path: "{{ developer_odoo_base_path }}/18"
+      register: developer_18_dir
 
     - name: Odoo Dev | Clonar/actualizar repositorio docker-compose-odoo a '18'
       ansible.builtin.git:
@@ -27,3 +38,4 @@
         version: main
         accept_hostkey: true
         update: true
+        force: true
