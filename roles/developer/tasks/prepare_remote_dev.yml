@@ -12,16 +12,18 @@
         state: directory
         mode: '0755'
 
-    - name: Odoo Dev | Clonar repositorio docker-compose-context a 'ctx'
+    - name: Odoo Dev | Clonar/actualizar repositorio docker-compose-context a 'ctx'
       ansible.builtin.git:
         repo: "{{ developer_odoo_ctx_repo }}"
         dest: "{{ developer_odoo_base_path }}/ctx"
-        version: main # Consejo: para entornos de producción, considera usar un tag específico en lugar de 'main'
+        version: main
         accept_hostkey: true
+        update: true
 
-    - name: Odoo Dev | Clonar repositorio docker-compose-odoo a '18'
+    - name: Odoo Dev | Clonar/actualizar repositorio docker-compose-odoo a '18'
       ansible.builtin.git:
         repo: "{{ developer_odoo_main_repo }}"
         dest: "{{ developer_odoo_base_path }}/18"
         version: main
         accept_hostkey: true
+        update: true
