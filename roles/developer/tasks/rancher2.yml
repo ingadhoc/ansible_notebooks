@@ -9,7 +9,7 @@
       register: developer_rancher_cli
 
     - name: Rancher CLI | Instalar la última versión
-      when: not devs_rancher_cli.stat.exists
+      when: not developer_rancher_cli.stat.exists
       block:
         - name: Rancher CLI | Obtener la URL de la última versión
           ansible.builtin.uri:
