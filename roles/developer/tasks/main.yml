@@ -6,27 +6,27 @@
 
 - name: Include
   block:
-    - name: Packages
+    - name: Developer - Packages
       ansible.builtin.import_tasks: packages_dev.yml
-    - name: Docker
+    - name: Developer - Docker
       ansible.builtin.import_tasks: docker.yml
-    - name: Meld
+    - name: Developer - Meld
       ansible.builtin.import_tasks: meld.yml
-    - name: Code
+    - name: Developer - Code
       ansible.builtin.import_tasks: code.yml
-    - name: Python
+    - name: Developer - Python
       ansible.builtin.import_tasks: python.yml
-    - name: Git
+    - name: Developer - Gcloud
+      ansible.builtin.import_tasks: gcloud.yml
+    - name: Developer - Git
       ansible.builtin.import_tasks: git.yml
-    - name: Kubectl
+    - name: Developer - Kubectl
       ansible.builtin.import_tasks: kubectl.yml
-    - name: Rancher2
-      ansible.builtin.import_tasks: rancher2.yml
-    - name: Fixes
+    - name: Developer - Fixes
       ansible.builtin.import_tasks: fixes.yml
-    - name: Prepare RemoteDev
+    - name: Developer - Prepare RemoteDev
       ansible.builtin.import_tasks: prepare_remote_dev.yml
-    - name: Ssh
+    - name: Developer - Ssh
       ansible.builtin.import_tasks: ssh.yml
-    - name: GH
+    - name: Developer - GH
       ansible.builtin.import_tasks: gh_cli.yml

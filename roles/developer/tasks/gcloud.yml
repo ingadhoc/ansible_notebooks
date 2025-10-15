@@ -35,7 +35,9 @@
         filename: google-cloud-sdk
         update_cache: true
 
-    - name: Instalar google-cloud-sdk
+    - name: Instalar paquetes y dependencias de gcloud
       ansible.builtin.apt:
-        name: google-cloud-sdk
+        name:
+          - google-cloud-sdk
+          - google-cloud-sdk-gke-gcloud-auth-plugin
         state: present

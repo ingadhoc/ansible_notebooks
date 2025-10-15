@@ -9,8 +9,6 @@
       ansible.builtin.import_tasks: packages.yml
     - name: SysAdmin - Terraform
       ansible.builtin.import_tasks: terraform.yml
-    - name: SysAdmin - Gcloud
-      ansible.builtin.import_tasks: gcloud.yml
     - name: SysAdmin - Virtualbox
       ansible.builtin.import_tasks: virtualbox.yml
     - name: SysAdmin - Helm
