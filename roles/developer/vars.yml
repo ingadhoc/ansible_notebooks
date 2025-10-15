@@ -135,9 +135,6 @@ developer_kubectl_prerequisites:
   - ca-certificates
   - curl
 
-# --- Configuración de Rancher CLI ---
-developer_rancher_cli_repo: "rancher/cli"
-
 # Lista de aplicaciones favoritas para el perfil de Developer
 developer_gnome_favorite_apps: >
   ['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.kde.yakuake.desktop',
