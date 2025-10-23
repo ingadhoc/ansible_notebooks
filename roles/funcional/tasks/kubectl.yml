@@ -5,7 +5,7 @@
   block:
     - name: Kubectl | Instalar paquetes de prerrequisitos
       ansible.builtin.apt:
-        name: "{{ developer_kubectl_prerequisites }}"
+        name: "{{ funcional_kubectl_prerequisites }}"
         state: present
         update_cache: true
 

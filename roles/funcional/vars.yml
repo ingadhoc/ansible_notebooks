@@ -99,6 +99,12 @@ python_for_functionals:
   - pylint
   - python3
 
+# Prerrequisitos para añadir el repositorio de Kubernetes
+funcional_kubectl_prerequisites:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+
 # Extensiones de GNOME
 gnome_extensions_common:
   - { id: 744, uuid: "Hide_Activities@shay.shayel.org" }

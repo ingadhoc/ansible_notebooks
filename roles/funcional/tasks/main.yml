@@ -8,6 +8,10 @@
   block:
     - name: Packages
       ansible.builtin.import_tasks: packages.yml
+    - name: Gcloud
+      ansible.builtin.import_tasks: gcloud.yml
+    - name: Kubectl
+      ansible.builtin.import_tasks: kubectl.yml
     - name: AdhocCli
       ansible.builtin.import_tasks: adhoccli.yml
     - name: Browsers

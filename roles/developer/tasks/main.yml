@@ -16,12 +16,8 @@
       ansible.builtin.import_tasks: code.yml
     - name: Developer - Python
       ansible.builtin.import_tasks: python.yml
-    - name: Developer - Gcloud
-      ansible.builtin.import_tasks: gcloud.yml
     - name: Developer - Git
       ansible.builtin.import_tasks: git.yml
-    - name: Developer - Kubectl
-      ansible.builtin.import_tasks: kubectl.yml
     - name: Developer - Fixes
       ansible.builtin.import_tasks: fixes.yml
     - name: Developer - Prepare RemoteDev
