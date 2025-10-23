@@ -8,12 +8,24 @@
         state: present
 
     - name: Browsers - Descargar y guardar la llave GPG de Google
-      ansible.builtin.shell: >
-        curl -fsSL https://dl.google.com/linux/linux_signing_key.pub |
-        gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
+      ansible.builtin.get_url:
+        url: https://dl.google.com/linux/linux_signing_key.pub
+        dest: /tmp/linux_signing_key.pub
+        mode: '0644'
+        owner: root
+        group: root
+        force: false
+
+    - name: Browsers - Convertir la llave GPG a keyring
+      ansible.builtin.command: >
+        gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg /tmp/linux_signing_key.pub
       args:
         creates: /usr/share/keyrings/google-chrome.gpg
-      changed_when: false
+
+    - name: Browsers - Eliminar fichero temporal de la llave
+      ansible.builtin.file:
+        path: /tmp/linux_signing_key.pub
+        state: absent
 
     - name: Browsers - Asegurar que no existan configuraciones de repositorio antiguas
       ansible.builtin.file:

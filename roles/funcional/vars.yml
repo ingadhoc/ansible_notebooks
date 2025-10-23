@@ -106,22 +106,22 @@ funcional_kubectl_prerequisites:
   - curl
 
 # Extensiones de GNOME
-gnome_extensions_common:
+funcional_gnome_extensions_common:
   - { id: 744, uuid: "Hide_Activities@shay.shayel.org" }
   - { id: 779, uuid: "clipboard-indicator@tudmotu.com" }
 
 # Extensiones solo para Debian
-gnome_extensions_debian:
+funcional_gnome_extensions_debian:
   - { id: 1160, uuid: "dash-to-panel@jderose9.github.com" }
 
 # Extensiones solo para Ubuntu 22.04
-gnome_extensions_ubuntu_2204:
+funcional_gnome_extensions_ubuntu_2204:
   - { id: 751, uuid: "audio-output-switcher@anduchs.github.com" }
   - { id: 1485, uuid: "wsmatrix@martin.zurowietz.de" }
   - { id: 3968, uuid: "improved-workspace-indicator@michaelaquilina.github.io" }
 
 # Extensiones solo para Ubuntu 24.04
-gnome_extensions_ubuntu_2404: []
+funcional_gnome_extensions_ubuntu_2404: []
 
 
 # Paquetes de idioma

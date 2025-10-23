@@ -2,9 +2,9 @@
 - name: UI | Aplicar ajustes de rendimiento y comportamiento
   tags: performance, ui, gnome
   become: true
-  become_user: "{{ remote_regular_user }}"  # Usamos la variable estándar
+  become_user: "{{ remote_regular_user }}"
   community.general.dconf:
     key: "{{ item.key }}"
     value: "{{ item.value }}"
     state: present
-  loop: "{{ ui_performance_dconf_settings }}" # Loop sobre la nueva variable
+  loop: "{{ ui_performance_dconf_settings }}"

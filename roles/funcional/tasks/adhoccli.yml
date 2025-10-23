@@ -1,36 +1,30 @@
 ---
-- name: adhoccli - Configurar repositorio Adhoc y instalar adhoccli
+- name: Adhoccli - Configurar repositorio Adhoc y instalar adhoccli
   tags: adhoccli
   become: true
 
-  block:    # Aseguramos los prerrequisitos. 'apt' es idempotente y no hará nada si ya están.
-    - name: Adhoc | Asegurar prerrequisitos para repositorios APT
+  block:
+    - name: Adhoccli - Asegurar prerrequisitos para repositorios APT
       ansible.builtin.apt:
         name:
           - gnupg
           - apt-transport-https
         state: present
 
-    # Combinamos la descarga y conversión de la clave en un solo paso.
-    # No se crean archivos temporales.
-    - name: Adhoc | Descargar y guardar la llave GPG del repositorio
-      ansible.builtin.shell: >
-        curl -fsSL https://apt.dev-adhoc.com/adhoc-devops.asc |
-        gpg --dearmor -o /usr/share/keyrings/adhoc-devops.gpg
-      args:
-        # La clave de la idempotencia: solo se ejecuta si el archivo no existe.
-        creates: /usr/share/keyrings/adhoc-devops.gpg
-      changed_when: false # El cambio real es la creación del archivo, no la ejecución del shell.
+    - name: Adhoccli - Descargar y guardar la llave GPG del repositorio
+      ansible.builtin.apt_key:
+        url: https://apt.dev-adhoc.com/adhoc-devops.asc
+        keyring: /usr/share/keyrings/adhoc-devops.gpg
+        state: present
 
-    # Reemplazamos el 'shell' con el módulo específico para esta tarea.
-    - name: Adhoc | Añadir el repositorio de Adhoc
+    - name: Adhoccli - Añadir el repositorio de Adhoc
       ansible.builtin.apt_repository:
         repo: "deb [signed-by=/usr/share/keyrings/adhoc-devops.gpg] https://apt.dev-adhoc.com/ stable main"
         state: present
-        filename: adhoc # Crea /etc/apt/sources.list.d/adhoc.list
-        update_cache: true # Actualiza el caché de forma segura y solo si es necesario.
+        filename: adhoc
+        update_cache: true
 
-    - name: Adhoc | Instalar la herramienta 'adhoccli'
+    - name: Adhoccli - Instalar la herramienta 'adhoccli'
       ansible.builtin.apt:
         name: adhoccli
         state: present
