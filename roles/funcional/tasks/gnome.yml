@@ -48,7 +48,7 @@
 
     - name: GNOME Extensions | Determinar si es necesario instalar alguna extensión
       ansible.builtin.set_fact:
-        funcional_extensions_are_missing: "{{ installed_extensions_stat.results | selectattr('stat.exists', 'false') | list | length > 0 }}"
+        funcional_extensions_are_missing: "{{ funcional_installed_extensions_stat.results | selectattr('stat.exists', 'false') | list | length > 0 }}"
 
     - name: GNOME Extensions | Instalar extensiones faltantes (si es necesario)
       when: funcional_extensions_are_missing
