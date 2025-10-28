@@ -43,7 +43,7 @@
     - name: GNOME Extensions | Verificar qué extensiones ya están instaladas
       ansible.builtin.stat:
         path: "/home/{{ remote_regular_user }}/.local/share/gnome-shell/extensions/{{ item.uuid }}"
-      loop: "{{ extensions_required }}"
+      loop: "{{ funcional_extensions_required }}"
       register: funcional_installed_extensions_stat
 
     - name: GNOME Extensions | Determinar si es necesario instalar alguna extensión
@@ -60,7 +60,7 @@
             mode: "0755"
 
         - name: GNOME Extensions | Instalar todas las extensiones requeridas con el script
-          ansible.builtin.command: "/tmp/install-gnome-extensions.sh --overwrite {{ extensions_required | map(attribute='id') | join(' ') }}"
+          ansible.builtin.command: "/tmp/install-gnome-extensions.sh --overwrite {{ funcional_extensions_required | map(attribute='id') | join(' ') }}"
           register: funcional_extension_install_result
           changed_when: "'Installing' in funcional_extension_install_result.stdout"
 
