@@ -10,34 +10,55 @@
         state: directory
         mode: '0755'
 
+    - name: Asegurar que gnupg esté instalado
+      ansible.builtin.apt:
+        name: gnupg
+        state: present
+
+    - name: Verificar si la llave GPG ya está instalada
+      ansible.builtin.stat:
+        path: "{{ external_repos.gcloud.keyring_path }}"
+      register: gcloud_gpg_key
+
     - name: Descargar la llave GPG de Google Cloud
       ansible.builtin.get_url:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        url: "{{ external_repos.gcloud.gpg_url }}"
         dest: /tmp/google-cloud-apt-key.gpg
         mode: '0644'
-        force: false
+      when: not gcloud_gpg_key.stat.exists
 
     - name: Convertir y guardar la llave GPG en /usr/share/keyrings
       ansible.builtin.command:
-        cmd: gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg /tmp/google-cloud-apt-key.gpg
-      args:
-        creates: /usr/share/keyrings/cloud.google.gpg
+        cmd: gpg --dearmor -o {{ external_repos.gcloud.keyring_path }} /tmp/google-cloud-apt-key.gpg
+      when: not gcloud_gpg_key.stat.exists
 
     - name: Remover archivo temporal de llave GPG
       ansible.builtin.file:
         path: /tmp/google-cloud-apt-key.gpg
         state: absent
+      when: not gcloud_gpg_key.stat.exists
 
-    - name: Agregar el repositorio de Google Cloud SDK
+    - name: Verificar si el repositorio ya está configurado
+      ansible.builtin.stat:
+        path: /etc/apt/sources.list.d/google-cloud-cli.list
+      register: gcloud_repo_file
+
+    - name: Agregar el repositorio de Google Cloud CLI
       ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main"
+        repo: "deb [signed-by={{ external_repos.gcloud.keyring_path }}] {{ external_repos.gcloud.repo_url }} cloud-sdk main"
         state: present
-        filename: google-cloud-sdk
+        filename: google-cloud-cli
+      register: gcloud_repo_added
+      when: not gcloud_repo_file.stat.exists
+
+    - name: Actualizar cache de APT si el repositorio fue agregado
+      ansible.builtin.apt:
         update_cache: true
+      when: gcloud_repo_added.changed
 
     - name: Instalar paquetes y dependencias de gcloud
       ansible.builtin.apt:
         name:
-          - google-cloud-sdk
-          - google-cloud-sdk-gke-gcloud-auth-plugin
+          - google-cloud-cli
+          - google-cloud-cli-gke-gcloud-auth-plugin
         state: present

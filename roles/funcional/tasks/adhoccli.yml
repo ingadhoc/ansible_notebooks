@@ -13,14 +13,14 @@
 
     - name: Adhoccli - Verificar si la llave GPG ya está instalada
       ansible.builtin.stat:
-        path: /usr/share/keyrings/adhoc-devops.gpg
+        path: "{{ external_repos.adhoccli.keyring_path }}"
       register: adhoccli_gpg_key
 
     - name: Adhoccli - Descargar y convertir la llave GPG del repositorio
       ansible.builtin.shell: |
-        wget -qO - https://apt.dev-adhoc.com/adhoc-devops.asc | gpg --dearmor -o /usr/share/keyrings/adhoc-devops.gpg
+        wget -qO - {{ external_repos.adhoccli.gpg_url }} | gpg --dearmor -o {{ external_repos.adhoccli.keyring_path }}
       args:
-        creates: /usr/share/keyrings/adhoc-devops.gpg
+        creates: "{{ external_repos.adhoccli.keyring_path }}"
       when: not adhoccli_gpg_key.stat.exists
 
     - name: Adhoccli - Verificar si el repositorio ya está configurado
@@ -30,7 +30,7 @@
 
     - name: Adhoccli - Añadir el repositorio de Adhoc
       ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/usr/share/keyrings/adhoc-devops.gpg] https://apt.dev-adhoc.com/ stable main"
+        repo: "deb [signed-by={{ external_repos.adhoccli.keyring_path }}] {{ external_repos.adhoccli.repo_url }} stable main"
         state: present
         filename: adhoc
       register: adhoccli_repo_added

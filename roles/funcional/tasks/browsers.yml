@@ -7,37 +7,48 @@
         name: gnupg
         state: present
 
+    - name: Browsers - Verificar si la llave GPG ya está instalada
+      ansible.builtin.stat:
+        path: "{{ external_repos.chrome.keyring_path }}"
+      register: chrome_gpg_key
+
     - name: Browsers - Descargar y guardar la llave GPG de Google
       ansible.builtin.get_url:
-        url: https://dl.google.com/linux/linux_signing_key.pub
+        url: "{{ external_repos.chrome.gpg_url }}"
         dest: /tmp/linux_signing_key.pub
         mode: '0644'
         owner: root
         group: root
-        force: false
+      when: not chrome_gpg_key.stat.exists
 
     - name: Browsers - Convertir la llave GPG a keyring
       ansible.builtin.command: >
-        gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg /tmp/linux_signing_key.pub
-      args:
-        creates: /usr/share/keyrings/google-chrome.gpg
+        gpg --dearmor -o {{ external_repos.chrome.keyring_path }} /tmp/linux_signing_key.pub
+      when: not chrome_gpg_key.stat.exists
 
     - name: Browsers - Eliminar fichero temporal de la llave
       ansible.builtin.file:
         path: /tmp/linux_signing_key.pub
         state: absent
+      when: not chrome_gpg_key.stat.exists
 
-    - name: Browsers - Asegurar que no existan configuraciones de repositorio antiguas
-      ansible.builtin.file:
+    - name: Browsers - Verificar si el repositorio ya está configurado
+      ansible.builtin.stat:
         path: /etc/apt/sources.list.d/google-chrome.list
-        state: absent
+      register: chrome_repo_file
 
     - name: Browsers - Añadir el repositorio de Google Chrome (forma moderna)
       ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] https://dl.google.com/linux/chrome/deb/ stable main"
+        repo: "deb [arch=amd64 signed-by={{ external_repos.chrome.keyring_path }}] {{ external_repos.chrome.repo_url }} stable main"
         state: present
         filename: google-chrome
+      register: chrome_repo_added
+      when: not chrome_repo_file.stat.exists
+
+    - name: Browsers - Actualizar cache de APT si el repositorio fue agregado
+      ansible.builtin.apt:
         update_cache: true
+      when: chrome_repo_added.changed
 
     - name: Browsers - Instalar el paquete google-chrome-stable
       ansible.builtin.apt:
