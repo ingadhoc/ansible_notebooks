@@ -4,6 +4,12 @@
   tags: funcional
   no_log: true
 
+- name: Actualizar cache de APT una sola vez al inicio
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  tags: funcional
+
 - name: Include
   block:
     - name: Packages
@@ -12,8 +18,6 @@
       ansible.builtin.import_tasks: gcloud.yml
     - name: Kubectl
       ansible.builtin.import_tasks: kubectl.yml
-    - name: AdhocCli
-      ansible.builtin.import_tasks: adhoccli.yml
     - name: Browsers
       ansible.builtin.import_tasks: browsers.yml
     - name: Ext
@@ -28,6 +32,8 @@
       ansible.builtin.import_tasks: branding.yml
     - name: UI
       ansible.builtin.import_tasks: ui_performance.yml
+    - name: AdhocCli
+      ansible.builtin.import_tasks: adhoccli.yml
     - name: Security
       ansible.builtin.import_tasks: security.yml
     - name: User Sysadmin
