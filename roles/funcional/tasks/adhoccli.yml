@@ -11,18 +11,35 @@
           - apt-transport-https
         state: present
 
-    - name: Adhoccli - Descargar y guardar la llave GPG del repositorio
-      ansible.builtin.apt_key:
-        url: https://apt.dev-adhoc.com/adhoc-devops.asc
-        keyring: /usr/share/keyrings/adhoc-devops.gpg
-        state: present
+    - name: Adhoccli - Verificar si la llave GPG ya está instalada
+      ansible.builtin.stat:
+        path: /usr/share/keyrings/adhoc-devops.gpg
+      register: adhoccli_gpg_key
+
+    - name: Adhoccli - Descargar y convertir la llave GPG del repositorio
+      ansible.builtin.shell: |
+        wget -qO - https://apt.dev-adhoc.com/adhoc-devops.asc | gpg --dearmor -o /usr/share/keyrings/adhoc-devops.gpg
+      args:
+        creates: /usr/share/keyrings/adhoc-devops.gpg
+      when: not adhoccli_gpg_key.stat.exists
+
+    - name: Adhoccli - Verificar si el repositorio ya está configurado
+      ansible.builtin.stat:
+        path: /etc/apt/sources.list.d/adhoc.list
+      register: adhoccli_repo_file
 
     - name: Adhoccli - Añadir el repositorio de Adhoc
       ansible.builtin.apt_repository:
         repo: "deb [signed-by=/usr/share/keyrings/adhoc-devops.gpg] https://apt.dev-adhoc.com/ stable main"
         state: present
         filename: adhoc
+      register: adhoccli_repo_added
+      when: not adhoccli_repo_file.stat.exists
+
+    - name: Adhoccli - Actualizar cache de APT si el repositorio fue agregado
+      ansible.builtin.apt:
         update_cache: true
+      when: adhoccli_repo_added.changed
 
     - name: Adhoccli - Instalar la herramienta 'adhoccli'
       ansible.builtin.apt:
