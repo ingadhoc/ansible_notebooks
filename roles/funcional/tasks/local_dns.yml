@@ -24,3 +24,4 @@
         state: link
         force: true
       notify: Restart systemd-resolved
+      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))

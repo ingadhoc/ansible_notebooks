@@ -7,12 +7,15 @@
       community.general.ufw:
         default: deny
         direction: incoming
+      notify: Restart UFW
 
     - name: Firewall | Permitir todo el tráfico saliente por defecto
       community.general.ufw:
         default: allow
         direction: outgoing
+      notify: Restart UFW
 
     - name: Firewall | Activar y habilitar el servicio UFW
       community.general.ufw:
         state: enabled
+      notify: Restart UFW

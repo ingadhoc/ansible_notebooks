@@ -13,3 +13,17 @@
   ansible.builtin.systemd:
     name: systemd-resolved
     state: restarted
+  failed_when: false
+  # En contenedores Docker y algunas configuraciones, systemd-resolved puede no existir
+
+- name: Restart UFW
+  ansible.builtin.systemd:
+    name: ufw
+    state: restarted
+  failed_when: false
+
+- name: Restart fail2ban
+  ansible.builtin.systemd:
+    name: fail2ban
+    state: restarted
+  failed_when: false
