@@ -1,0 +1,68 @@
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: ../../../../collections/requirements.yml
+    force: false
+
+driver:
+  name: docker
+
+platforms:
+  - name: debian12-funcional
+    image: geerlingguy/docker-debian12-ansible:latest
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    tmpfs:
+      - /run
+      - /tmp
+
+  - name: ubuntu2204-funcional
+    image: geerlingguy/docker-ubuntu2204-ansible:latest
+    command: ""
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroupns_mode: host
+    privileged: true
+    pre_build_image: true
+    tmpfs:
+      - /run
+      - /tmp
+
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      callbacks_enabled: timer, profile_tasks
+      stdout_callback: yaml
+      roles_path: ../../../../roles
+  inventory:
+    host_vars:
+      debian12-funcional:
+        ansible_user: root
+      ubuntu2204-funcional:
+        ansible_user: root
+  playbooks:
+    converge: converge.yml
+    verify: verify.yml
+  env:
+    ANSIBLE_ROLES_PATH: ../../../../roles
+
+verifier:
+  name: ansible
+
+scenario:
+  name: default
+  test_sequence:
+    - dependency
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
+    - destroy

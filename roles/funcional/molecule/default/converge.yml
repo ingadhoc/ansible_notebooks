@@ -1,0 +1,31 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+
+  vars:
+    # Simular que estamos corriendo con sudo
+    ansible_env:
+      SUDO_USER: testuser
+    # Deshabilitar tareas de GUI que no funcionan en Docker
+    skip_gnome_tasks: true
+
+  pre_tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 600
+      changed_when: false
+
+    - name: Install basic dependencies for testing
+      ansible.builtin.apt:
+        name:
+          - sudo
+          - gnupg
+          - lsb-release
+          - software-properties-common
+          - dbus
+        state: present
+
+  roles:
+    - role: funcional
