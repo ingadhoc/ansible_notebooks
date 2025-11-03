@@ -35,3 +35,4 @@
         key: "/org/gnome/desktop/input-sources/sources"
         value: "{{ keyboard_layouts | trim }}"
         state: present
+      when: not (skip_gnome_tasks | default(false))
