@@ -6,3 +6,28 @@
 Vagrantfile
 
 ansible.log
+
+# Molecule
+.molecule/
+.cache/
+*.pyc
+__pycache__/
+
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Testing artifacts
+.pytest_cache/
+.tox/
+htmlcov/
+.coverage
+*.log
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
