@@ -5,6 +5,7 @@
   when:
     - ansible_facts['os_family'] == 'Debian'
     - not (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_release'] == 'trixie')
+    - not (sysadmin_skip_virtualbox | default(false))
   block:
     - name: VirtualBox | Instalar prerrequisitos y headers del kernel
       ansible.builtin.apt:
@@ -19,11 +20,10 @@
         mode: '0644'
 
     - name: VirtualBox | Convertir y mover la clave GPG
-      ansible.builtin.shell: |
-        set -o pipefail
-        gpg --dearmor < /tmp/vbox-oracle.gpg > {{ sysadmin_vbox_gpg_path }}
+      ansible.builtin.shell: gpg --dearmor < /tmp/vbox-oracle.gpg > {{ sysadmin_vbox_gpg_path }}
       args:
         creates: "{{ sysadmin_vbox_gpg_path }}"
+        executable: /bin/bash
       changed_when: false
 
     - name: VirtualBox | Limpiar archivo temporal de clave GPG
