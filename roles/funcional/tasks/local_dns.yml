@@ -4,13 +4,15 @@
   become: true
   block:
     
-    # 1. Instala el paquete (En Ubuntu no hará nada, en Debian lo instalará)
-    - name: DNS | Asegurar que systemd-resolved esté instalado
+    # 1. Instala el paquete solo en Debian (Ubuntu ya lo tiene integrado)
+    - name: DNS | Asegurar que systemd-resolved esté instalado (solo Debian)
       ansible.builtin.apt:
         name: systemd-resolved
         state: present
         update_cache: true
-      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
+      when:
+        - ansible_facts['distribution'] == 'Debian'
+        - not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
 
     # 2. Habilita el servicio (Garantiza que /run/systemd/resolve/ existe)
     - name: DNS | Asegurar que systemd-resolved esté habilitado y corriendo
