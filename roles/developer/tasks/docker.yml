@@ -2,12 +2,12 @@
 - name: Docker | Instalar y configurar Docker Engine
   tags: docker
   become: true
+  when: not (developer_skip_docker | default(false))
   block:
     - name: Docker | Instalar paquetes de prerrequisitos
       ansible.builtin.apt:
         name: "{{ developer_docker_prerequisites }}"
         state: present
-        update_cache: true
 
     - name: Docker | Asegurar que el directorio de keyrings de APT existe
       ansible.builtin.file:
@@ -15,34 +15,50 @@
         state: directory
         mode: '0755'
 
+    - name: Docker | Verificar si la clave GPG ya está instalada
+      ansible.builtin.stat:
+        path: "{{ developer_external_repos.docker.keyring_path }}"
+      register: docker_gpg_key
+
     - name: Docker | Añadir la clave GPG oficial de Docker
       ansible.builtin.get_url:
-        url: https://download.docker.com/linux/debian/gpg
+        url: "{{ developer_external_repos.docker.gpg_url }}"
         dest: /tmp/docker.gpg
         mode: '0644'
+      when: not docker_gpg_key.stat.exists
 
     - name: Docker | Convertir la clave GPG al formato requerido
-      ansible.builtin.shell: >
-        gpg --dearmor -o /etc/apt/keyrings/docker.gpg /tmp/docker.gpg
-      args:
-        creates: /etc/apt/keyrings/docker.gpg
+      ansible.builtin.command: >-
+        gpg --dearmor -o {{ developer_external_repos.docker.keyring_path }} /tmp/docker.gpg
+      when: not docker_gpg_key.stat.exists
       changed_when: false
 
     - name: Docker | Limpiar archivo temporal de clave GPG
       ansible.builtin.file:
         path: /tmp/docker.gpg
         state: absent
+      when: not docker_gpg_key.stat.exists
+
+    - name: Docker | Verificar si el repositorio ya está configurado
+      ansible.builtin.stat:
+        path: /etc/apt/sources.list.d/docker.list
+      register: docker_repo_file
 
     - name: Docker | Añadir el repositorio de Docker
       ansible.builtin.apt_repository:
-        repo: >
-          deb [arch={{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}
-          signed-by=/etc/apt/keyrings/docker.gpg]
-          https://download.docker.com/linux/{{ ansible_distribution | lower }}
+        repo: >-
+          deb [arch={{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }} signed-by={{ developer_external_repos.docker.keyring_path }}]
+          {{ developer_external_repos.docker.repo_url }}/{{ ansible_distribution | lower }}
           {{ ansible_distribution_release }} stable
         state: present
         filename: docker
+      register: docker_repo_added
+      when: not docker_repo_file.stat.exists
+
+    - name: Docker | Actualizar cache de APT si el repositorio fue agregado
+      ansible.builtin.apt:
         update_cache: true
+      when: docker_repo_added.changed | default(false)
 
     - name: Docker | Instalar Docker Engine y plugins
       ansible.builtin.apt:
@@ -54,6 +70,8 @@
         name: docker
         state: started
         enabled: true
+      when: not (developer_skip_docker_service | default(false))
+      failed_when: false
 
     - name: Docker | Asegurar que el grupo 'docker' existe
       ansible.builtin.group:

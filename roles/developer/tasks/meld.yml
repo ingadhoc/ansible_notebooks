@@ -8,3 +8,4 @@
     value: "{{ item.value }}"
     state: present
   loop: "{{ developer_meld_dconf_settings }}"
+  when: not (skip_gnome_tasks | default(false))

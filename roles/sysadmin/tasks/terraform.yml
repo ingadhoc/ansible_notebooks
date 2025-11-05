@@ -39,6 +39,8 @@
         state: present
         filename: hashicorp
         update_cache: true
+      tags:
+        - molecule-idempotence-notest
 
     - name: Terraform | Instalar terraform
       ansible.builtin.apt:

@@ -2,6 +2,7 @@
 - name: Odoo Dev | Preparar entorno de desarrollo local de Odoo
   tags: remote_dev
   become: false
+  when: not (developer_skip_remote_dev | default(false))
   block:
     - name: Odoo Dev | Refrescar conexión para aplicar cambios de grupo (ej. docker)
       ansible.builtin.meta: reset_connection

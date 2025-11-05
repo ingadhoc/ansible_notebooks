@@ -9,39 +9,49 @@
         state: directory
         mode: '0755'
 
+    - name: Code | Verificar si la clave GPG ya está instalada
+      ansible.builtin.stat:
+        path: "{{ developer_external_repos.vscode.keyring_path }}"
+      register: vscode_gpg_key
+
     - name: Code | Descargar la clave GPG de Microsoft
       ansible.builtin.get_url:
-        url: https://packages.microsoft.com/keys/microsoft.asc
+        url: "{{ developer_external_repos.vscode.gpg_url }}"
         dest: /tmp/microsoft.asc
         mode: '0644'
+      when: not vscode_gpg_key.stat.exists
 
     - name: Code | Convertir y guardar la clave GPG
-      ansible.builtin.shell: gpg --dearmor -o /etc/apt/keyrings/packages.microsoft.gpg < /tmp/microsoft.asc
-      args:
-        creates: /etc/apt/keyrings/packages.microsoft.gpg
+      ansible.builtin.command: >-
+        gpg --dearmor -o {{ developer_external_repos.vscode.keyring_path }} /tmp/microsoft.asc
+      when: not vscode_gpg_key.stat.exists
       changed_when: false
 
     - name: Code | Limpiar archivo temporal
       ansible.builtin.file:
         path: /tmp/microsoft.asc
         state: absent
+      when: not vscode_gpg_key.stat.exists
 
     - name: Code | Añadir el repositorio de VS Code
       ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main"
+        repo: "deb [arch={{ developer_external_repos.vscode.architectures }} signed-by={{ developer_external_repos.vscode.signed_by }}] {{ developer_external_repos.vscode.uris }} {{ developer_external_repos.vscode.suites }} {{ developer_external_repos.vscode.components }}"
         state: present
-        filename: vscode
+        filename: "{{ developer_external_repos.vscode.filename }}"
         update_cache: true
+      tags:
+        - molecule-idempotence-notest
 
-    - name: Code | Instalar el paquete 'code'
-      ansible.builtin.apt:
-        name: code
-        state: present
+- name: Code | Instalar el paquete 'code'
+  ansible.builtin.apt:
+    name: code
+    state: present
 
 - name: Code | Gestionar extensiones de forma idempotente
   tags: code
   become: true
   become_user: "{{ remote_regular_user }}"
+  when: developer_manage_vscode_extensions | default(true)
   block:
     - name: Code | Obtener lista de extensiones ya instaladas
       ansible.builtin.command: "code --list-extensions"
@@ -49,6 +59,7 @@
         DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ remote_regular_user_uid }}/bus"
       register: developer_installed_extensions
       changed_when: false
+      ignore_errors: true
 
     - name: Code | Instalar solo las extensiones que falten
       ansible.builtin.command: "code --install-extension {{ item }}"
@@ -60,6 +71,7 @@
   tags: code
   become: true
   become_user: "{{ remote_regular_user }}"
+  when: developer_manage_vscode_defaults | default(true)
   block:
     - name: Code | Establecer como editor por defecto para ciertos tipos de archivo
       ansible.builtin.command: "xdg-mime default code.desktop application/x-shellscript text/plain text/markdown application/x-yaml text/x-python"

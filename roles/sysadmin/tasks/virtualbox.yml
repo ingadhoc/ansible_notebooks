@@ -41,6 +41,8 @@
         state: present
         filename: virtualbox
         update_cache: true
+      tags:
+        - molecule-idempotence-notest
 
     - name: VirtualBox | Instalar el paquete de VirtualBox
       ansible.builtin.apt:

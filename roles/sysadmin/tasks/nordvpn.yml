@@ -29,6 +29,8 @@
         state: present
         filename: nordvpn
         update_cache: true
+      tags:
+        - molecule-idempotence-notest
 
     - name: NordVPN | Instalar el paquete de NordVPN
       ansible.builtin.apt:

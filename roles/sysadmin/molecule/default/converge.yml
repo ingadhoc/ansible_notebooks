@@ -1,0 +1,27 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  become: true
+
+  pre_tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      changed_when: false
+
+    - name: Install base dependencies for testing
+      ansible.builtin.apt:
+        name:
+          - sudo
+          - python3
+          - python3-apt
+          - systemd
+          - dbus
+          - ca-certificates
+          - gnupg
+        state: present
+
+  roles:
+    - role: sysadmin
