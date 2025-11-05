@@ -9,8 +9,8 @@
       ansible.builtin.import_tasks: packages.yml
     - name: SysAdmin - Terraform
       ansible.builtin.import_tasks: terraform.yml
-    - name: SysAdmin - Virtualbox
-      ansible.builtin.import_tasks: virtualbox.yml
+    - name: SysAdmin - KVM/QEMU
+      ansible.builtin.import_tasks: kvm.yml
     - name: SysAdmin - Helm
       ansible.builtin.import_tasks: helm.yml
     - name: SysAdmin - NordVPN

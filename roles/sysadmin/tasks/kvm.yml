@@ -1,0 +1,58 @@
+---
+- name: SysAdmin | Instalar y configurar KVM/QEMU
+  tags: kvm
+  become: true
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+    - not (sysadmin_skip_kvm | default(false))
+  block:
+    - name: KVM | Verificar soporte de virtualización en CPU
+      ansible.builtin.shell: |
+        if grep -E '(vmx|svm)' /proc/cpuinfo > /dev/null; then
+          echo "supported"
+        else
+          echo "not_supported"
+        fi
+      register: kvm_cpu_check
+      changed_when: false
+      failed_when: false
+
+    - name: KVM | Mostrar advertencia si no hay soporte de virtualización
+      ansible.builtin.debug:
+        msg: "⚠️  CPU no soporta virtualización (VT-x/AMD-V). KVM no funcionará correctamente."
+      when: kvm_cpu_check.stdout == "not_supported"
+
+    - name: KVM | Instalar paquetes KVM y herramientas de virtualización
+      ansible.builtin.apt:
+        name: "{{ sysadmin_kvm_packages }}"
+        state: present
+        update_cache: true
+
+    - name: KVM | Asegurar que el servicio libvirtd esté habilitado y corriendo
+      ansible.builtin.systemd:
+        name: libvirtd
+        enabled: true
+        state: started
+      when: not (sysadmin_skip_kvm_service | default(false))
+
+    - name: KVM | Añadir usuario a los grupos libvirt y kvm
+      ansible.builtin.user:
+        name: "{{ remote_regular_user }}"
+        groups: "{{ sysadmin_kvm_user_groups }}"
+        append: true
+
+    - name: KVM | Verificar que el módulo kvm está cargado
+      ansible.builtin.shell: lsmod | grep -E '^kvm'
+      register: kvm_module_check
+      changed_when: false
+      failed_when: false
+
+    - name: KVM | Información sobre módulos KVM cargados
+      ansible.builtin.debug:
+        msg: "✅ Módulos KVM cargados: {{ kvm_module_check.stdout_lines }}"
+      when: kvm_module_check.rc == 0
+
+    - name: KVM | Advertencia si módulo KVM no está cargado
+      ansible.builtin.debug:
+        msg: "⚠️  Módulo KVM no detectado. Es posible que necesites habilitar VT-x/AMD-V en BIOS."
+      when: kvm_module_check.rc != 0

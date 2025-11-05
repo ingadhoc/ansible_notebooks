@@ -58,9 +58,9 @@
       changed_when: false
       failed_when: verify_helm_version.rc != 0
 
-    - name: Verify | Check VirtualBox installation (skip if not installed)
-      ansible.builtin.command: vboxmanage --version
-      register: verify_vbox_version
+    - name: Verify | Check KVM installation (skip if not installed)
+      ansible.builtin.command: virsh version
+      register: verify_kvm_version
       changed_when: false
       failed_when: false
       tags:
@@ -88,5 +88,5 @@
         msg:
           - "Terraform version: {{ verify_terraform_version.stdout_lines[0] | default('Not available') }}"
           - "Helm version: {{ verify_helm_version.stdout | default('Not available') }}"
-          - "VirtualBox version: {{ verify_vbox_version.stdout | default('Not installed') }}"
+          - "KVM/Libvirt version: {{ verify_kvm_version.stdout | default('Not installed') }}"
           - "NordVPN version: {{ verify_nordvpn_version.stdout | default('Not installed') }}"
