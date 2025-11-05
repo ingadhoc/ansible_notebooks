@@ -1,8 +1,15 @@
 # Proyecto de Aprovisionamiento de Notebooks con Ansible
 
+![Molecule CI](https://github.com/ingadhoc/ansible_notebooks/workflows/Molecule%20CI/badge.svg?branch=main)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Ansible](https://img.shields.io/badge/ansible-%3E%3D2.15-blue.svg)
+![Platforms](https://img.shields.io/badge/platforms-Debian%2012%20%7C%20Ubuntu%2022.04-blue.svg)
+
 ## 🎯 Resumen Ejecutivo
 
 Este proyecto utiliza Ansible para automatizar la configuración completa de notebooks para los distintos perfiles de trabajo en Adhoc.
+
+**✨ Nuevo**: Tests automatizados con Molecule para todos los roles. Ver [documentación de testing](docs/TESTING.md).
 
 Para información interna más detallada sobre los objetivos, procedimientos y pendientes, consulta [el documento de diseño interno](https://www.adhoc.inc/odoo/knowledge/2053?debug=1).
 
@@ -218,10 +225,52 @@ docker search geerlingguy/docker-debian13
 
 ---
 
+## 🧪 Testing y Desarrollo
+
+Este proyecto incluye tests automatizados con Molecule para validar todos los roles en Debian 12 y Ubuntu 22.04.
+
+### Estado de Tests
+
+| Rol | Tasks | Idempotencia | Debian 12 | Ubuntu 22.04 |
+|-----|-------|--------------|-----------|--------------|
+| funcional | Variable | ✅ | ✅ | ✅ |
+| developer | 123-126 | ✅ | ✅ | ✅ |
+| sysadmin | 109 | ✅ | ✅ | ✅ |
+
+### Ejecutar Tests Localmente
+
+```bash
+# Setup
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+ansible-galaxy install -r collections/requirements.yml
+
+# Ejecutar tests completos (50-60 min)
+cd roles/sysadmin
+molecule test
+
+# Workflow iterativo (5 min)
+molecule create    # Una vez
+molecule converge  # Iterar cambios
+molecule test      # Test final
+```
+
+### Documentación de Testing
+
+- **[docs/TESTING.md](docs/TESTING.md)** - Guía completa de Molecule y workflow
+- **[docs/LESSONS_LEARNED.md](docs/LESSONS_LEARNED.md)** - Troubleshooting y lecciones aprendidas
+
+### CI/CD
+
+Los tests se ejecutan automáticamente en GitHub Actions para cada PR y push a `main`/`develop`. Ver [`.github/workflows/molecule.yml`](.github/workflows/molecule.yml).
+
+---
+
 ## 📚 Documentación Adicional
 
-- **[docs/MOLECULE_GUIDE.md](docs/MOLECULE_GUIDE.md)** - Guía completa de Molecule y testing
-- **[docs/MULTI_DISTRO_TESTING.md](docs/MULTI_DISTRO_TESTING.md)** - Testing multi-distribución
+- **[docs/TESTING.md](docs/TESTING.md)** - Guía completa de testing con Molecule
+- **[docs/LESSONS_LEARNED.md](docs/LESSONS_LEARNED.md)** - Troubleshooting y debugging
 - **[docs/TESTING.md](docs/TESTING.md)** - Estrategias de testing
 - **[docs/molecule-multi-distro-example.yml](docs/molecule-multi-distro-example.yml)** - Ejemplo de configuración
 - **[roles/funcional/README.md](roles/funcional/README.md)** - Documentación del rol funcional
