@@ -134,18 +134,23 @@ jobs:
         run: |
           ansible-galaxy install -r collections/requirements.yml
 
-      - name: Run Molecule tests (when molecule exists)
+      - name: Run Molecule tests
         run: |
-          if [ -d "roles/developer/molecule" ]; then
-            cd roles/developer
-            molecule test
-          else
-            echo "⚠️  Molecule tests for developer role not yet implemented"
-          fi
+          cd roles/developer
+          molecule test
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
           MOLECULE_DISTRO: ${{ matrix.distro }}
+
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: molecule-logs-developer-${{ matrix.distro }}
+          path: |
+            roles/developer/molecule/default/*.log
+            ~/.cache/molecule/
 
   test-sysadmin:
     name: Test sysadmin role
@@ -176,18 +181,23 @@ jobs:
         run: |
           ansible-galaxy install -r collections/requirements.yml
 
-      - name: Run Molecule tests (when molecule exists)
+      - name: Run Molecule tests
         run: |
-          if [ -d "roles/sysadmin/molecule" ]; then
-            cd roles/sysadmin
-            molecule test
-          else
-            echo "⚠️  Molecule tests for sysadmin role not yet implemented"
-          fi
+          cd roles/sysadmin
+          molecule test
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
           MOLECULE_DISTRO: ${{ matrix.distro }}
+
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: molecule-logs-sysadmin-${{ matrix.distro }}
+          path: |
+            roles/sysadmin/molecule/default/*.log
+            ~/.cache/molecule/
 
   summary:
     name: Test Summary
