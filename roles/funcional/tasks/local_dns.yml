@@ -2,9 +2,13 @@
 - name: SysAdmin | Configurar DNS públicos a través de systemd-resolved
   tags: dns
   become: true
+  # TEMPORALMENTE DESHABILITADO EN DEBIAN: Causa problemas de conectividad
+  # TODO: Investigar solución robusta para Debian
+  when: ansible_facts['distribution'] == 'Ubuntu'
   block:
     
     # 1. Instala el paquete solo en Debian (Ubuntu ya lo tiene integrado)
+    # NOTA: Este bloque completo está deshabilitado en Debian, esta tarea no se ejecutará
     - name: DNS | Asegurar que systemd-resolved esté instalado (solo Debian)
       ansible.builtin.apt:
         name: systemd-resolved
