@@ -1,8 +1,20 @@
 ---
 - name: Converge
   hosts: all
-  gather_facts: true
   become: true
+
+  vars:
+    ansible_env:
+      SUDO_USER: testuser
+    skip_gnome_tasks: true
+    developer_manage_vscode_extensions: false
+    developer_manage_vscode_defaults: false
+    developer_skip_docker: false
+    developer_skip_docker_service: true
+    developer_skip_remote_dev: true
+    sysadmin_skip_virtualbox: true
+    sysadmin_skip_virtualbox_service: true
+    sysadmin_skip_nordvpn_service: true
 
   pre_tasks:
     - name: Update apt cache
@@ -25,3 +37,13 @@
 
   roles:
     - role: sysadmin
+      vars:
+        skip_gnome_tasks: true
+        developer_manage_vscode_extensions: false
+        developer_manage_vscode_defaults: false
+        developer_skip_docker: false
+        developer_skip_docker_service: true
+        developer_skip_remote_dev: true
+        sysadmin_skip_virtualbox: true
+        sysadmin_skip_virtualbox_service: true
+        sysadmin_skip_nordvpn_service: true

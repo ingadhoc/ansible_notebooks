@@ -38,17 +38,25 @@ provisioner:
   config_options:
     defaults:
       callbacks_enabled: timer, profile_tasks
+      stdout_callback: yaml
+      roles_path: ../../../../roles
   inventory:
     host_vars:
       debian12-sysadmin:
         ansible_user: root
       ubuntu2204-sysadmin:
         ansible_user: root
+  playbooks:
+    converge: converge.yml
+    verify: verify.yml
+  env:
+    ANSIBLE_ROLES_PATH: ../../../../roles
 
 verifier:
   name: ansible
 
 scenario:
+  name: default
   test_sequence:
     - dependency
     - syntax
