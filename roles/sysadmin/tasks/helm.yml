@@ -5,21 +5,26 @@
   block:
 
     - name: Helm | Descargar script de instalación
+      become: true
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
         dest: /tmp/get_helm.sh
         mode: '0755'
+      changed_when: false
 
     - name: Helm | Ejecutar script de instalación si no existe el binario
       become: true
-      ansible.builtin.script: /tmp/get_helm.sh
+      ansible.builtin.shell: bash /tmp/get_helm.sh
       args:
         creates: /usr/local/bin/helm
+        executable: /bin/bash
 
     - name: Helm | Limpiar el script de instalación
+      become: true
       ansible.builtin.file:
         path: /tmp/get_helm.sh
         state: absent
+      changed_when: false
 
     - name: Helm | Configurar autocompletado de bash para el usuario
       ansible.builtin.blockinfile:
