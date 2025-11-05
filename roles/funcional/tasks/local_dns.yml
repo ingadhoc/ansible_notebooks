@@ -3,6 +3,24 @@
   tags: dns
   become: true
   block:
+    
+    # 1. Instala el paquete (En Ubuntu no hará nada, en Debian lo instalará)
+    - name: DNS | Asegurar que systemd-resolved esté instalado
+      ansible.builtin.apt:
+        name: systemd-resolved
+        state: present
+        update_cache: true
+      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
+
+    # 2. Habilita el servicio (Garantiza que /run/systemd/resolve/ existe)
+    - name: DNS | Asegurar que systemd-resolved esté habilitado y corriendo
+      ansible.builtin.systemd:
+        name: systemd-resolved.service
+        enabled: true
+        state: started
+      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
+
+    # 3. Configura el servicio
     - name: DNS | Configurar servidores DNS en resolved.conf
       community.general.ini_file:
         path: /etc/systemd/resolved.conf
@@ -15,8 +33,10 @@
         - { option: "DNS", value: "{{ sysadmin_public_dns_servers | join(' ') }}" }
         - { option: "FallbackDNS", value: "" }
         - { option: "DNSOverTLS", value: "yes" }
-      notify: Restart systemd-resolved
+      notify: Restart systemd-resolved # Asumo que tienes este handler definido
+      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
 
+    # 4. Crea el enlace simbólico
     - name: DNS | Asegurar que /etc/resolv.conf sea un enlace a systemd-resolved
       ansible.builtin.file:
         src: /run/systemd/resolve/stub-resolv.conf
