@@ -191,7 +191,7 @@ branding_dconf_settings:
   - { key: "/org/gnome/desktop/background/picture-uri", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}'" }
   - { key: "/org/gnome/desktop/background/picture-uri-dark", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_dark }}'" }
   - { key: "/org/gnome/desktop/screensaver/picture-uri", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}'" }
-  - { key: "/org/gnome/desktop/background/picture-options", value: "'scaled'" }
+  - { key: "/org/gnome/desktop/background/picture-options", value: "'zoom'" }
   - { key: "/org/gnome/desktop/background/primary-color", value: "'#d6d6d4'" }
 
 # Ajustes de dconf para mejorar el rendimiento y comportamiento de la UI
