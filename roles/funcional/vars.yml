@@ -191,7 +191,7 @@ branding_dconf_settings:
   - { key: "/org/gnome/desktop/background/picture-uri", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}'" }
   - { key: "/org/gnome/desktop/background/picture-uri-dark", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_dark }}'" }
   - { key: "/org/gnome/desktop/screensaver/picture-uri", value: "'file:///home/{{ remote_regular_user }}/{{ branding_wallpaper_light }}'" }
-  - { key: "/org/gnome/desktop/background/picture-options", value: "'scaled'" }
+  - { key: "/org/gnome/desktop/background/picture-options", value: "'zoom'" }
   - { key: "/org/gnome/desktop/background/primary-color", value: "'#d6d6d4'" }
 
 # Ajustes de dconf para mejorar el rendimiento y comportamiento de la UI
@@ -205,3 +205,27 @@ gnome_functional_favorite_apps: "['google-chrome.desktop', 'org.gnome.Nautilus.d
 
 # Variable para controlar la reinstalación de Xorg
 force_xorg_reinstall: true # Cambiar a 'true' solo si es necesario depurar
+
+# URLs y configuraciones de repositorios externos
+external_repos:
+  gcloud:
+    gpg_url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+    repo_url: "https://packages.cloud.google.com/apt"
+    keyring_path: "/usr/share/keyrings/cloud.google.gpg"
+  chrome:
+    gpg_url: "https://dl.google.com/linux/linux_signing_key.pub"
+    repo_url: "https://dl.google.com/linux/chrome/deb/"
+    keyring_path: "/usr/share/keyrings/google-chrome.gpg"
+  kubectl:
+    gpg_url: "https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key"
+    repo_url: "https://pkgs.k8s.io/core:/stable:/v1.31/deb/"
+    keyring_path: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+  adhoccli:
+    gpg_url: "https://apt.dev-adhoc.com/adhoc-devops.asc"
+    repo_url: "https://apt.dev-adhoc.com/"
+    keyring_path: "/usr/share/keyrings/adhoc-devops.gpg"
+    github_url: "https://github.com/ingadhoc/adhoc-cli"
+
+# Timeouts para descargas
+download_timeout: 30
+apt_cache_valid_time: 3600  # 1 hora

@@ -34,18 +34,21 @@ vscode_extension_list_sysadmin:
   # knative
   - redhat.vscode-knative
 
-# --- Configuración para VirtualBox ---
-# Prerrequisitos para la instalación en Debian y Ubuntu
-sysadmin_vbox_prereqs:
-  - gnupg
-  - dkms
+# --- Configuración para KVM/QEMU ---
+# Paquetes principales para KVM y herramientas de virtualización
+sysadmin_kvm_packages:
+  - qemu-kvm
+  - libvirt-daemon-system
+  - libvirt-clients
+  - bridge-utils
+  - virt-manager
+  - virtinst
+  - virt-viewer
 
-# Detalles de la clave GPG de Oracle
-sysadmin_vbox_gpg_url: "https://www.virtualbox.org/download/oracle_vbox_2016.asc"
-sysadmin_vbox_gpg_path: "/usr/share/keyrings/oracle-virtualbox-2016.gpg"
-
-# Paquete principal de VirtualBox a instalar desde el repositorio de Oracle
-sysadmin_vbox_package: "virtualbox-7.0"
+# Grupos a los que añadir el usuario para usar KVM
+sysadmin_kvm_user_groups:
+  - libvirt
+  - kvm
 
 # --- Configuración para NordVPN ---
 sysadmin_nordvpn_gpg_path: "/usr/share/keyrings/nordvpn-archive-keyring.gpg"

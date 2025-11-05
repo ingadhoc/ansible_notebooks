@@ -10,7 +10,9 @@
   loop:
     - { key: "/org/gnome/shell/favorite-apps", value: "{{ gnome_functional_favorite_apps }}" }
     - { key: "/org/gnome/shell/extensions/dash-to-dock/click-action", value: "'minimize'" }
-  when: ansible_facts['distribution'] == 'Ubuntu'
+  when:
+    - ansible_facts['distribution'] == 'Ubuntu'
+    - not (skip_gnome_tasks | default(false))
 
 - name: Arreglos | Forzar Xorg y reinstalar (Solo para Ubuntu 22.04)
   tags: xorg_fixes

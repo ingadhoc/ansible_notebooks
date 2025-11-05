@@ -1,0 +1,55 @@
+# Pre-commit Configuration for Ansible Notebooks
+# Install: pip install pre-commit && pre-commit install
+
+repos:
+  # YAML Linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [--config-file, .yamllint]
+
+  # Ansible Linting
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v24.2.0
+    hooks:
+      - id: ansible-lint
+        files: \.(yaml|yml)$
+        exclude: ^(molecule/|collections/|\.github/)
+        args:
+          - --exclude
+          - molecule/
+          - --exclude
+          - collections/
+
+  # General Linting
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(docs/|README\.md)
+      - id: end-of-file-fixer
+        exclude: ^(docs/|README\.md)
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: detect-private-key
+        exclude: ^(roles/.*/files/.*\.pub)  # Excluir claves públicas
+
+  # Markdown Linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        args: [--fix, --disable, MD013, MD033, MD041]
+        exclude: ^(docs/TEST_RUN_NOTES\.md|CHANGELOG\.md)
+
+  # Security checks
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: [--baseline, .secrets.baseline]
+        exclude: ^(\.github/copilot-instructions\.md)

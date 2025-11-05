@@ -3,18 +3,35 @@
   tags: gh, github
   become: true
   block:
+    - name: GitHub CLI | Verificar si la clave GPG ya está instalada
+      ansible.builtin.stat:
+        path: "{{ developer_external_repos.github_cli.keyring_path }}"
+      register: github_cli_gpg_key
+
     - name: GitHub CLI | Descargar y colocar la clave GPG del repositorio
       ansible.builtin.get_url:
-        url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
-        dest: /usr/share/keyrings/githubcli-archive-keyring.gpg
+        url: "{{ developer_external_repos.github_cli.gpg_url }}"
+        dest: "{{ developer_external_repos.github_cli.keyring_path }}"
         mode: '0644'
+      when: not github_cli_gpg_key.stat.exists
+
+    - name: GitHub CLI | Verificar si el repositorio ya está configurado
+      ansible.builtin.stat:
+        path: /etc/apt/sources.list.d/github-cli.list
+      register: github_cli_repo_file
 
     - name: GitHub CLI | Añadir el repositorio oficial
       ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
+        repo: "deb [arch=amd64 signed-by={{ developer_external_repos.github_cli.keyring_path }}] {{ developer_external_repos.github_cli.repo_url }}"
         state: present
         filename: github-cli
+      register: github_cli_repo_added
+      when: not github_cli_repo_file.stat.exists
+
+    - name: GitHub CLI | Actualizar cache de APT si el repositorio fue agregado
+      ansible.builtin.apt:
         update_cache: true
+      when: github_cli_repo_added.changed | default(false)
 
     - name: GitHub CLI | Instalar el paquete 'gh'
       ansible.builtin.apt:

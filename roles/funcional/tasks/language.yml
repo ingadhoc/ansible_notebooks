@@ -23,10 +23,22 @@
     - name: Idiomas | Establecer la configuración regional (locale) del sistema
       ansible.builtin.command: "localectl set-locale LANG=es_ES.UTF-8"
       changed_when: false
+      register: localectl_result
+      failed_when: false
+
+    - name: Idiomas | Establecer locale via /etc/default/locale (fallback)
+      ansible.builtin.lineinfile:
+        path: /etc/default/locale
+        regexp: '^LANG='
+        line: 'LANG=es_ES.UTF-8'
+        create: true
+        mode: '0644'
+      when: localectl_result.rc != 0
 
     - name: Idiomas | Establecer las distribuciones de teclado del sistema (X11)
       ansible.builtin.command: "localectl set-x11-keymap es,us pc105 ,alt-intl"
       changed_when: false
+      failed_when: false
 
     - name: Idiomas | Configurar las distribuciones de teclado para la sesión del usuario (GNOME)
       become: true
@@ -35,3 +47,4 @@
         key: "/org/gnome/desktop/input-sources/sources"
         value: "{{ keyboard_layouts | trim }}"
         state: present
+      when: not (skip_gnome_tasks | default(false))

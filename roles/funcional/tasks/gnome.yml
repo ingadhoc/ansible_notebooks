@@ -22,11 +22,13 @@
   loop:
     - { key: "/org/gnome/shell/overrides/attach-modal-dialogs", value: "false" }
     - { key: "/org/gnome/desktop/interface/clock-format", value: "'24h'" }
+  when: not (skip_gnome_tasks | default(false))
 
 - name: GNOME Extensions | Gestionar la instalación de extensiones
   tags: gnome, gnome-extensions
   become: true
   become_user: "{{ remote_regular_user }}"
+  when: not (skip_gnome_tasks | default(false))
   block:
     - name: GNOME Extensions | Construir lista final de extensiones requeridas
       ansible.builtin.set_fact:

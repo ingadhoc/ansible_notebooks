@@ -1,3 +1,11 @@
 ---
+galaxy_info:
+  author: Adhoc
+  description: Developer workstation role for Adhoc laptops
+  license: MIT
+  min_ansible_version: "2.15"
+  namespace: adhoc
+  role_name: developer
+
 dependencies:
   - role: funcional

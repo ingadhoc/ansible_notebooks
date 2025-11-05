@@ -5,33 +5,37 @@
   ansible.builtin.apt:
     name: "{{ developer_python_packages }}"
     state: present
-    update_cache: true
+    cache_valid_time: "{{ apt_cache_valid_time | default(3600) }}"
 
 - name: Python | Gestionar entorno virtual y herramientas de linting
   tags: python
   become: true
   become_user: "{{ remote_regular_user }}"
   block:
+    - name: Python | Verificar si el entorno virtual ya existe
+      ansible.builtin.stat:
+        path: "{{ developer_python_venv_path }}/bin/activate"
+      register: developer_python_venv
+
     - name: Python | Crear directorio padre para entornos virtuales
       ansible.builtin.file:
         path: "/home/{{ remote_regular_user }}/python-venvs"
         state: directory
         mode: "0755"
 
-    - name: Python | Asegurar que cualquier venv anterior corrupto sea eliminado
-      ansible.builtin.file:
-        path: "{{ developer_python_venv_path }}"
-        state: absent
-
     - name: Python | Crear un nuevo y limpio entorno virtual para linters
       ansible.builtin.command: "python3 -m venv {{ developer_python_venv_path }}"
-      changed_when: true
+      args:
+        creates: "{{ developer_python_venv_path }}/bin/activate"
+      register: developer_python_venv_create
+      when: not developer_python_venv.stat.exists
 
     - name: Python | Instalar herramientas de linting en el entorno virtual
       ansible.builtin.pip:
         executable: "{{ developer_python_venv_path }}/bin/pip"
         name: "{{ developer_python_linter_packages }}"
         state: present
+      when: developer_python_venv.stat.exists or (developer_python_venv_create is defined and developer_python_venv_create.rc == 0)
 
 - name: Git Hooks | Configurar pre-commit hooks de OCA globalmente
   tags: lint_hooks

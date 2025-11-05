@@ -1,0 +1,128 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars_files:
+    - ../../vars.yml
+
+  vars:
+    remote_user: "{{ ansible_env.SUDO_USER | default('testuser') }}"
+    docker_group_user: "{{ remote_user }}"
+    required_package_sets:
+      - "{{ developer_packages_base }}"
+      - "{{ developer_docker_packages }}"
+      - ["code", "gh"]
+    venv_path: "{{ developer_python_venv_path }}"
+    git_hooks_path: "{{ developer_git_hooks_path }}"
+    linter_packages: "{{ developer_python_linter_packages }}"
+
+  tasks:
+    - name: Verify | Collect installed packages
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - name: Verify | Assert required packages are installed
+      ansible.builtin.assert:
+        that:
+          - item in ansible_facts.packages
+      loop: "{{ required_package_sets | flatten }}"
+      loop_control:
+        label: "package {{ item }}"
+
+    - name: Verify | Check docker CLI
+      ansible.builtin.command: docker --version
+      register: developer_docker_version
+      changed_when: false
+      failed_when: developer_docker_version.rc != 0
+
+    - name: Verify | Check docker group membership for user
+      ansible.builtin.command: "id -nG {{ docker_group_user }}"
+      register: developer_user_groups
+      changed_when: false
+      failed_when: "'docker' not in developer_user_groups.stdout.split()"
+
+    - name: Verify | Check VS Code binary is available
+      become: true
+      become_user: "{{ remote_user }}"
+      ansible.builtin.command: code --version --no-sandbox
+      register: developer_code_version
+      changed_when: false
+      failed_when: developer_code_version.rc != 0
+
+    - name: Verify | Check GitHub CLI is available
+      ansible.builtin.command: gh --version
+      register: developer_gh_version
+      changed_when: false
+      failed_when: developer_gh_version.rc != 0
+
+    - name: Verify | Check Python virtualenv activation script exists
+      tags: molecule-notest
+      ansible.builtin.stat:
+        path: "{{ venv_path }}/bin/activate"
+      register: developer_venv
+
+    - name: Verify | Assert Python virtualenv was created
+      tags: molecule-notest
+      ansible.builtin.assert:
+        that:
+          - developer_venv.stat.exists
+        fail_msg: "Python venv not created"
+
+    - name: Verify | Check linting tools installed in venv
+      tags: molecule-notest
+      ansible.builtin.command: "{{ venv_path }}/bin/pip show {{ item }}"
+      register: developer_pip_pkg
+      changed_when: false
+      loop: "{{ linter_packages }}"
+
+    - name: Verify | Check git global hooks configuration
+      become_user: "{{ remote_user }}"
+      ansible.builtin.command: git config --global core.hooksPath
+      register: developer_git_hooks
+      changed_when: false
+      failed_when: developer_git_hooks.rc != 0
+
+    - name: Verify | Assert git hooks path configured
+      ansible.builtin.assert:
+        that:
+          - developer_git_hooks.stdout.strip() == "/home/{{ remote_user }}/.git_hooks"
+        fail_msg: "Expected git hooks path '/home/{{ remote_user }}/.git_hooks', but got '{{ developer_git_hooks.stdout.strip() }}'"
+
+    - name: Verify | Check dotfiles copied
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - "/home/{{ remote_user }}/.bash_aliases"
+        - "/home/{{ remote_user }}/.adhoc_bash_ps.sh"
+        - "/home/{{ remote_user }}/.tmux"
+        - "/home/{{ remote_user }}/.prompt_git"
+        - "/home/{{ remote_user }}/.config/yakuakerc"
+      register: developer_dotfiles
+
+    - name: Verify | Assert dotfiles exist
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+        fail_msg: "Missing configuration file {{ item.item }}"
+      loop: "{{ developer_dotfiles.results }}"
+
+    - name: Verify | Check ssh configuration exists
+      ansible.builtin.stat:
+        path: "/home/{{ remote_user }}/.ssh/config"
+      register: developer_ssh_config
+
+    - name: Verify | Assert ssh config created
+      ansible.builtin.assert:
+        that:
+          - developer_ssh_config.stat.exists
+
+    - name: Verify | Summarize developer toolchain versions
+      ansible.builtin.debug:
+        msg:
+          - "Docker version: {{ developer_docker_version.stdout }}"
+          - "VS Code version: {{ developer_code_version.stdout_lines | first }}"
+          - "GitHub CLI version: {{ developer_gh_version.stdout_lines | first }}"
+          - "Python venv path: {{ venv_path }}"
+          - "Git hooks path: {{ git_hooks_path }}"

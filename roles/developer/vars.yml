@@ -1,7 +1,7 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
 remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
-remote_regular_user_uid: "{{ ansible_user_uid }}"
+remote_regular_user_uid: "{{ ansible_env.SUDO_UID | default(ansible_user_uid) }}"
 
 # Lista de paquetes base para el perfil de DEV
 developer_packages_base:
@@ -144,3 +144,31 @@ developer_ssh_config:
   key_type: "rsa"
   key_size: 4096
   config_template_src: "sshconfig.j2"
+
+# Control flags for GUI-dependent tasks
+developer_manage_vscode_extensions: true
+developer_manage_vscode_defaults: true
+developer_skip_docker: false
+developer_skip_docker_service: false
+developer_skip_remote_dev: false
+
+# External repository metadata used across tasks
+developer_external_repos:
+  docker:
+    gpg_url: "https://download.docker.com/linux/debian/gpg"
+    keyring_path: "/etc/apt/keyrings/docker.gpg"
+    repo_url: "https://download.docker.com/linux"
+  vscode:
+    gpg_url: "https://packages.microsoft.com/keys/microsoft.asc"
+    keyring_path: "/etc/apt/keyrings/packages.microsoft.gpg"
+    # Estructura para el template
+    uris: "https://packages.microsoft.com/repos/vscode"
+    suites: "stable"
+    components: "main"
+    architectures: "amd64,arm64,armhf"
+    signed_by: "/etc/apt/keyrings/packages.microsoft.gpg"
+    filename: "vscode"
+  github_cli:
+    gpg_url: "https://cli.github.com/packages/githubcli-archive-keyring.gpg"
+    keyring_path: "/usr/share/keyrings/githubcli-archive-keyring.gpg"
+    repo_url: "https://cli.github.com/packages stable main"

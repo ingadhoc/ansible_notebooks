@@ -1,0 +1,33 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: true
+  become: true
+
+  tasks:
+    - name: Prepare | Ensure systemd is available
+      ansible.builtin.package:
+        name: systemd
+        state: present
+
+    - name: Prepare | Create test user for SUDO_USER simulation
+      ansible.builtin.user:
+        name: testuser
+        uid: 1000
+        groups: sudo
+        append: true
+        shell: /bin/bash
+        create_home: true
+
+    - name: Prepare | Set SUDO_USER environment for testing
+      ansible.builtin.lineinfile:
+        path: /etc/environment
+        line: "SUDO_USER=testuser"
+        create: true
+        mode: '0644'
+
+    - name: Prepare | Ensure /tmp has correct permissions
+      ansible.builtin.file:
+        path: /tmp
+        state: directory
+        mode: '1777'

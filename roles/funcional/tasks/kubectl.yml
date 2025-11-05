@@ -7,7 +7,6 @@
       ansible.builtin.apt:
         name: "{{ funcional_kubectl_prerequisites }}"
         state: present
-        update_cache: true
 
     - name: Kubectl | Eliminar el repositorio antiguo y obsoleto (apt.kubernetes.io)
       ansible.builtin.apt_repository:
@@ -15,25 +14,47 @@
         state: absent
         filename: kubernetes
 
+    - name: Kubectl | Verificar si la clave GPG ya está instalada
+      ansible.builtin.stat:
+        path: "{{ external_repos.kubectl.keyring_path }}"
+      register: kubectl_gpg_key
+
     - name: Kubectl | Añadir la nueva clave GPG de Kubernetes
       ansible.builtin.get_url:
-        url: https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key
+        url: "{{ external_repos.kubectl.gpg_url }}"
         dest: /tmp/kubernetes-release.key
         mode: '0644'
+      when: not kubectl_gpg_key.stat.exists
 
     - name: Kubectl | Convertir y guardar la clave GPG
       ansible.builtin.shell: >
-        gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/kubernetes-release.key
-      args:
-        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-      changed_when: false
+        gpg --dearmor -o {{ external_repos.kubectl.keyring_path }} /tmp/kubernetes-release.key
+      when: not kubectl_gpg_key.stat.exists
+      changed_when: true
+
+    - name: Kubectl | Remover archivo temporal de clave GPG
+      ansible.builtin.file:
+        path: /tmp/kubernetes-release.key
+        state: absent
+      when: not kubectl_gpg_key.stat.exists
+
+    - name: Kubectl | Verificar si el repositorio ya está configurado
+      ansible.builtin.stat:
+        path: /etc/apt/sources.list.d/kubernetes-pkgs.list
+      register: kubectl_repo_file
 
     - name: Kubectl | Añadir el nuevo repositorio de Kubernetes (pkgs.k8s.io)
       ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /"
+        repo: "deb [signed-by={{ external_repos.kubectl.keyring_path }}] {{ external_repos.kubectl.repo_url }} /"
         state: present
         filename: kubernetes-pkgs
+      register: kubectl_repo_added
+      when: not kubectl_repo_file.stat.exists
+
+    - name: Kubectl | Actualizar cache de APT si el repositorio fue agregado
+      ansible.builtin.apt:
         update_cache: true
+      when: kubectl_repo_added.changed
 
     - name: Kubectl | Instalar kubectl
       ansible.builtin.apt:

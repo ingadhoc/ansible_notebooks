@@ -1,0 +1,27 @@
+---
+# yamllint configuration for ansible_notebooks project
+extends: default
+
+rules:
+  line-length:
+    max: 200
+    level: warning
+
+  indentation:
+    spaces: 2
+    indent-sequences: true
+
+  comments:
+    min-spaces-from-content: 1
+
+  comments-indentation: {}
+
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no']
+    check-keys: false
+
+ignore: |
+  .github/
+  venv/
+  .venv/
+  roles/*/molecule/

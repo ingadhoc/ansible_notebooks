@@ -56,6 +56,7 @@
         owner: root
         group: root
         mode: '0755'
+      changed_when: false
 
     - name: SysAdmin | Prevenir que 'sysadmin' sea usado para autenticación gráfica
       ansible.builtin.copy:

@@ -1,0 +1,49 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+
+  vars:
+    ansible_env:
+      SUDO_USER: testuser
+    skip_gnome_tasks: true
+    developer_manage_vscode_extensions: false
+    developer_manage_vscode_defaults: false
+    developer_skip_docker: false
+    developer_skip_docker_service: true
+    developer_skip_remote_dev: true
+    sysadmin_skip_kvm: true
+    sysadmin_skip_kvm_service: true
+    sysadmin_skip_nordvpn_service: true
+
+  pre_tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      changed_when: false
+
+    - name: Install base dependencies for testing
+      ansible.builtin.apt:
+        name:
+          - sudo
+          - python3
+          - python3-apt
+          - systemd
+          - dbus
+          - ca-certificates
+          - gnupg
+        state: present
+
+  roles:
+    - role: sysadmin
+      vars:
+        skip_gnome_tasks: true
+        developer_manage_vscode_extensions: false
+        developer_manage_vscode_defaults: false
+        developer_skip_docker: false
+        developer_skip_docker_service: true
+        developer_skip_remote_dev: true
+        sysadmin_skip_kvm: true
+        sysadmin_skip_kvm_service: true
+        sysadmin_skip_nordvpn_service: true

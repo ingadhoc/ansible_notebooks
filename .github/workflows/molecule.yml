@@ -1,0 +1,296 @@
+---
+name: Molecule CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint Ansible code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache Ansible collections
+        uses: actions/cache@v4
+        with:
+          path: ~/.ansible/collections
+          key: ansible-collections-${{ hashFiles('collections/requirements.yml') }}
+          restore-keys: |
+            ansible-collections-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible ansible-lint yamllint
+
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy install -r collections/requirements.yml
+
+      - name: Run yamllint
+        run: |
+          echo "## 🔍 YAML Lint Results" >> $GITHUB_STEP_SUMMARY
+          if yamllint . 2>&1 | tee yamllint.log; then
+            echo "✅ No YAML linting issues found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ YAML linting warnings found (non-blocking)" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            head -20 yamllint.log >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true
+
+      - name: Run ansible-lint
+        run: |
+          echo "## 🔍 Ansible Lint Results" >> $GITHUB_STEP_SUMMARY
+          if ansible-lint local.yml 2>&1 | tee ansible-lint.log; then
+            echo "✅ No Ansible linting issues found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Ansible linting warnings found (non-blocking)" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            head -20 ansible-lint.log >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true
+
+      - name: Syntax check
+        run: |
+          echo "## ✅ Syntax Check" >> $GITHUB_STEP_SUMMARY
+          if ansible-playbook local.yml --syntax-check; then
+            echo "✅ Playbook syntax is valid" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Playbook syntax check failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  test-funcional:
+    name: Test funcional role
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        distro:
+          - debian12
+          - ubuntu2204
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy install -r collections/requirements.yml
+
+      - name: Run Molecule tests
+        run: |
+          echo "## 🧪 Testing funcional role on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
+          cd roles/funcional
+          if molecule test; then
+            echo "✅ Tests passed for funcional on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Tests failed for funcional on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          MOLECULE_DISTRO: ${{ matrix.distro }}
+
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: molecule-logs-funcional-${{ matrix.distro }}
+          path: |
+            roles/funcional/molecule/default/*.log
+            ~/.cache/molecule/
+
+  test-developer:
+    name: Test developer role
+    runs-on: ubuntu-latest
+    needs: test-funcional
+    strategy:
+      fail-fast: false
+      matrix:
+        distro:
+          - debian12
+          - ubuntu2204
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy install -r collections/requirements.yml
+
+      - name: Run Molecule tests
+        run: |
+          echo "## 🧪 Testing developer role on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
+          cd roles/developer
+          if molecule test; then
+            echo "✅ Tests passed for developer on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Tests failed for developer on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          MOLECULE_DISTRO: ${{ matrix.distro }}
+
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: molecule-logs-developer-${{ matrix.distro }}
+          path: |
+            roles/developer/molecule/default/*.log
+            ~/.cache/molecule/
+
+  test-sysadmin:
+    name: Test sysadmin role
+    runs-on: ubuntu-latest
+    needs: test-developer
+    strategy:
+      fail-fast: false
+      matrix:
+        distro:
+          - debian12
+          - ubuntu2204
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy install -r collections/requirements.yml
+
+      - name: Run Molecule tests
+        run: |
+          echo "## 🧪 Testing sysadmin role on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
+          cd roles/sysadmin
+          if molecule test; then
+            echo "✅ Tests passed for sysadmin on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Tests failed for sysadmin on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          MOLECULE_DISTRO: ${{ matrix.distro }}
+
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: molecule-logs-sysadmin-${{ matrix.distro }}
+          path: |
+            roles/sysadmin/molecule/default/*.log
+            ~/.cache/molecule/
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [test-funcional, test-developer, test-sysadmin]
+    if: always()
+
+    steps:
+      - name: Generate test summary
+        run: |
+          echo "# 🧪 Ansible Notebooks - Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Matrix Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Role | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Funcional
+          if [ "${{ needs.test-funcional.result }}" == "success" ]; then
+            echo "| funcional | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| funcional | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Developer
+          if [ "${{ needs.test-developer.result }}" == "success" ]; then
+            echo "| developer | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| developer | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Sysadmin
+          if [ "${{ needs.test-sysadmin.result }}" == "success" ]; then
+            echo "| sysadmin | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| sysadmin | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Platforms Tested" >> $GITHUB_STEP_SUMMARY
+          echo "- 🐧 Debian 12 (Bookworm)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🐧 Ubuntu 22.04 (Jammy)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Overall status
+          if [ "${{ needs.test-funcional.result }}" == "success" ] && \
+             [ "${{ needs.test-developer.result }}" == "success" ] && \
+             [ "${{ needs.test-sysadmin.result }}" == "success" ]; then
+            echo "## ✅ Overall Status: SUCCESS" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "All tests passed successfully! 🎉" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Overall Status: FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Some tests failed. Check individual job results for details." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

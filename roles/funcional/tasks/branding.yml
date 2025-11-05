@@ -20,3 +20,4 @@
     value: "{{ item.value }}"
     state: present
   loop: "{{ branding_dconf_settings }}"
+  when: not (skip_gnome_tasks | default(false))

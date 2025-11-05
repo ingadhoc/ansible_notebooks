@@ -1,0 +1,92 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars_files:
+    - ../../vars.yml
+
+  vars:
+    remote_user: "{{ ansible_env.SUDO_USER | default('testuser') }}"
+    
+    # Paquetes específicos de sysadmin que deben estar instalados
+    required_sysadmin_packages:
+      - kubecolor
+      - terraform
+    
+    # Paquetes solo en Debian
+    required_debian_packages:
+      - rsync
+      - timeshift
+
+  tasks:
+    - name: Verify | Collect installed packages
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - name: Verify | Assert sysadmin packages are installed
+      ansible.builtin.assert:
+        that:
+          - "item in ansible_facts.packages"
+        fail_msg: "Required package {{ item }} is not installed"
+        success_msg: "Package {{ item }} is installed"
+      loop: "{{ required_sysadmin_packages }}"
+      loop_control:
+        label: "package {{ item }}"
+
+    - name: Verify | Assert Debian-specific packages (when applicable)
+      when: ansible_facts['distribution'] == 'Debian'
+      ansible.builtin.assert:
+        that:
+          - "item in ansible_facts.packages"
+        fail_msg: "Required Debian package {{ item }} is not installed"
+        success_msg: "Package {{ item }} is installed"
+      loop: "{{ required_debian_packages }}"
+      loop_control:
+        label: "package {{ item }}"
+
+    - name: Verify | Check terraform binary
+      ansible.builtin.command: terraform version
+      register: verify_terraform_version
+      changed_when: false
+      failed_when: verify_terraform_version.rc != 0
+
+    - name: Verify | Check helm binary
+      ansible.builtin.command: helm version
+      register: verify_helm_version
+      changed_when: false
+      failed_when: verify_helm_version.rc != 0
+
+    - name: Verify | Check KVM installation (skip if not installed)
+      ansible.builtin.command: virsh version
+      register: verify_kvm_version
+      changed_when: false
+      failed_when: false
+      tags:
+        - molecule-notest
+
+    - name: Verify | Check NordVPN installation (skip if not installed)
+      ansible.builtin.command: nordvpn --version
+      register: verify_nordvpn_version
+      changed_when: false
+      failed_when: false
+      tags:
+        - molecule-notest
+
+    - name: Verify | Check VS Code extensions for sysadmin
+      become_user: "{{ remote_user }}"
+      ansible.builtin.command: code --list-extensions --no-sandbox
+      register: verify_vscode_extensions
+      changed_when: false
+      failed_when: verify_vscode_extensions.rc != 0
+      tags:
+        - molecule-notest
+
+    - name: Verify | Summarize sysadmin toolchain versions
+      ansible.builtin.debug:
+        msg:
+          - "Terraform version: {{ verify_terraform_version.stdout_lines[0] | default('Not available') }}"
+          - "Helm version: {{ verify_helm_version.stdout | default('Not available') }}"
+          - "KVM/Libvirt version: {{ verify_kvm_version.stdout | default('Not installed') }}"
+          - "NordVPN version: {{ verify_nordvpn_version.stdout | default('Not installed') }}"

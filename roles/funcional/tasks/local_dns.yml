@@ -2,7 +2,31 @@
 - name: SysAdmin | Configurar DNS públicos a través de systemd-resolved
   tags: dns
   become: true
+  # TEMPORALMENTE DESHABILITADO EN DEBIAN: Causa problemas de conectividad
+  # TODO: Investigar solución robusta para Debian
+  when: ansible_facts['distribution'] == 'Ubuntu'
   block:
+    
+    # 1. Instala el paquete solo en Debian (Ubuntu ya lo tiene integrado)
+    # NOTA: Este bloque completo está deshabilitado en Debian, esta tarea no se ejecutará
+    - name: DNS | Asegurar que systemd-resolved esté instalado (solo Debian)
+      ansible.builtin.apt:
+        name: systemd-resolved
+        state: present
+        update_cache: true
+      when:
+        - ansible_facts['distribution'] == 'Debian'
+        - not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
+
+    # 2. Habilita el servicio (Garantiza que /run/systemd/resolve/ existe)
+    - name: DNS | Asegurar que systemd-resolved esté habilitado y corriendo
+      ansible.builtin.systemd:
+        name: systemd-resolved.service
+        enabled: true
+        state: started
+      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
+
+    # 3. Configura el servicio
     - name: DNS | Configurar servidores DNS en resolved.conf
       community.general.ini_file:
         path: /etc/systemd/resolved.conf
@@ -15,8 +39,10 @@
         - { option: "DNS", value: "{{ sysadmin_public_dns_servers | join(' ') }}" }
         - { option: "FallbackDNS", value: "" }
         - { option: "DNSOverTLS", value: "yes" }
-      notify: Restart systemd-resolved
+      notify: Restart systemd-resolved # Asumo que tienes este handler definido
+      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
 
+    # 4. Crea el enlace simbólico
     - name: DNS | Asegurar que /etc/resolv.conf sea un enlace a systemd-resolved
       ansible.builtin.file:
         src: /run/systemd/resolve/stub-resolv.conf
@@ -24,3 +50,4 @@
         state: link
         force: true
       notify: Restart systemd-resolved
+      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))

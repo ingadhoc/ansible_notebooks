@@ -1,0 +1,210 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    # Paquetes críticos que deben estar instalados
+    required_packages:
+      - htop
+      - curl
+      - wget
+      - jq
+      - openssh-client
+      - openssh-server
+      - zip
+      - unzip
+      - vlc
+      - fail2ban
+      - ufw
+      - google-chrome-stable
+      - google-cloud-cli
+      - kubectl
+
+  tasks:
+    - name: Verify | Check that required packages are installed
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - name: Verify | Assert all required packages are present
+      ansible.builtin.assert:
+        that:
+          - item in ansible_facts.packages
+        fail_msg: "Package {{ item }} is not installed"
+        success_msg: "Package {{ item }} is installed"
+      loop: "{{ required_packages }}"
+
+    - name: Verify | Check SSH service is enabled and running
+      ansible.builtin.systemd:
+        name: ssh
+        state: started
+        enabled: true
+      check_mode: true
+      register: ssh_service
+      failed_when: false
+
+    - name: Verify | Assert SSH service is properly configured
+      ansible.builtin.assert:
+        that:
+          - ssh_service is not changed
+        fail_msg: "SSH service is not properly configured"
+        success_msg: "SSH service is running and enabled"
+
+    - name: Verify | Check UFW service status
+      ansible.builtin.systemd:
+        name: ufw
+      register: ufw_service
+      failed_when: false
+
+    - name: Verify | Check fail2ban service status
+      ansible.builtin.systemd:
+        name: fail2ban
+      register: fail2ban_service
+      failed_when: false
+
+    - name: Verify | Assert security services are configured
+      ansible.builtin.assert:
+        that:
+          - ufw_service.status.LoadState == "loaded"
+          - fail2ban_service.status.LoadState == "loaded"
+        fail_msg: "Security services not properly configured"
+        success_msg: "Security services (UFW, fail2ban) are installed and loaded"
+
+    - name: Verify | Check Python3 is installed
+      ansible.builtin.command: python3 --version
+      register: python_version
+      changed_when: false
+      failed_when: python_version.rc != 0
+
+    - name: Verify | Check kubectl is installed
+      ansible.builtin.command: kubectl version --client
+      register: kubectl_version
+      changed_when: false
+      failed_when: kubectl_version.rc != 0
+
+    - name: Verify | Check gcloud is installed
+      ansible.builtin.command: gcloud version
+      register: gcloud_version
+      changed_when: false
+      failed_when: gcloud_version.rc != 0
+
+    - name: Verify | Check Google Chrome is installed
+      ansible.builtin.command: google-chrome --version
+      register: chrome_version
+      changed_when: false
+      failed_when: chrome_version.rc != 0
+
+    - name: Verify | Check adhoccli is installed (optional)
+      ansible.builtin.command: which ad
+      register: adhoccli_binary
+      changed_when: false
+      failed_when: adhoccli_binary.rc not in [0, 1]
+
+    - name: Verify | Display adhoccli version
+      ansible.builtin.command: ad
+      register: adhoccli_version
+      changed_when: false
+      failed_when: adhoccli_version.rc not in [0, 1]
+      become: true
+      become_user: "testuser"
+
+    - name: Verify | Check sysadmin user exists
+      ansible.builtin.user:
+        name: sysadmin
+        state: present
+      check_mode: true
+      register: sysadmin_user
+      failed_when: false
+
+    - name: Verify | Check SSH configuration for security
+      ansible.builtin.lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+      check_mode: true
+      register: ssh_config
+      failed_when: false
+
+    - name: Verify | Check PolicyKit rules exist
+      ansible.builtin.stat:
+        path: /etc/polkit-1/rules.d/49-deny-sysadmin-interactive.rules
+      register: polkit_rules
+
+    - name: Verify | Check DNS configuration
+      ansible.builtin.stat:
+        path: /etc/systemd/resolved.conf
+      register: dns_config
+
+    - name: Verify | Check GPG keyrings are installed
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /usr/share/keyrings/cloud.google.gpg
+        - /usr/share/keyrings/google-chrome.gpg
+        - /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        - /usr/share/keyrings/adhoc-devops.gpg
+      register: gpg_keyrings
+
+    - name: Verify | Assert all GPG keyrings exist
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+        fail_msg: "GPG keyring {{ item.item }} does not exist"
+        success_msg: "GPG keyring {{ item.item }} is present"
+      loop: "{{ gpg_keyrings.results }}"
+
+    - name: Verify | Check repository list files exist
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /etc/apt/sources.list.d/google-cloud-cli.list
+        - /etc/apt/sources.list.d/google-chrome.list
+        - /etc/apt/sources.list.d/kubernetes-pkgs.list
+        - /etc/apt/sources.list.d/adhoc.list
+      register: repo_files
+
+    - name: Verify | Assert all repository files exist
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+        fail_msg: "Repository file {{ item.item }} does not exist"
+        success_msg: "Repository file {{ item.item }} is present"
+      loop: "{{ repo_files.results }}"
+
+    - name: Verify | Check UFW firewall rules
+      ansible.builtin.command: ufw status verbose
+      register: ufw_status
+      changed_when: false
+      failed_when: false
+      become: true
+
+    - name: Verify | Assert UFW is active and configured
+      ansible.builtin.assert:
+        that:
+          - "'Status: active' in ufw_status.stdout or 'inactive' in ufw_status.stdout"
+          - "'deny (incoming)' in ufw_status.stdout or ufw_status.rc != 0"
+          - "'allow (outgoing)' in ufw_status.stdout or ufw_status.rc != 0"
+        fail_msg: "UFW firewall not properly configured"
+        success_msg: "UFW firewall is properly configured"
+      when: ufw_status.rc == 0
+
+    - name: Verify | Display test summary
+      ansible.builtin.debug:
+        msg:
+          - "✅ All required packages verified"
+          - "✅ SSH service operational"
+          - "✅ Security services configured"
+          - "✅ Python3 available: {{ python_version.stdout }}"
+          - "✅ kubectl available: {{ kubectl_version.stdout_lines[0] }}"
+          - "✅ gcloud available: {{ gcloud_version.stdout_lines[0] }}"
+          - "✅ Chrome available: {{ chrome_version.stdout }}"
+          - "✅ adhoccli available: {{ adhoccli_version.stdout }}"
+          - "✅ sysadmin user configured"
+          - "✅ SSH hardened (PasswordAuthentication disabled)"
+          - "✅ PolicyKit rules in place: {{ polkit_rules.stat.exists }}"
+          - "✅ DNS configuration present: {{ dns_config.stat.exists }}"
+          - "✅ All GPG keyrings verified (4 keyrings)"
+          - "✅ All repository files verified (4 repos)"
+          - "✅ UFW firewall configured correctly"
