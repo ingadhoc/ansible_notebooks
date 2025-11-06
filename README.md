@@ -1,6 +1,6 @@
 # Proyecto de Aprovisionamiento de Notebooks con Ansible
 
-![Molecule CI](https://github.com/ingadhoc/ansible_notebooks/workflows/Molecule%20CI/badge.svg?branch=main)
+![Molecule CI](https://github.com/ingadhoc/ansible_notebooks/actions/workflows/molecule.yml/badge.svg?branch=main)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Ansible](https://img.shields.io/badge/ansible-%3E%3D2.15-blue.svg)
 ![Platforms](https://img.shields.io/badge/platforms-Debian%2012%20%7C%20Ubuntu%2022.04-blue.svg)
