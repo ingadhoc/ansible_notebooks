@@ -91,6 +91,9 @@ packages_to_remove:
   - gnome-calendar
   - evolution
 
+snaps_to_remove:
+  - thunderbird
+
 python_for_functionals:
   - ipython3
   - python3-setuptools
