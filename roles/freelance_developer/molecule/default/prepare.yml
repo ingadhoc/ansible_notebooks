@@ -1,0 +1,30 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: true
+  become: true
+
+  tasks:
+    - name: Prepare | Ensure systemd is available
+      ansible.builtin.command: systemctl --version
+      changed_when: false
+      register: freelance_systemd_check
+      failed_when: freelance_systemd_check.rc != 0
+
+    - name: Prepare | Create test user for SUDO_USER simulation
+      ansible.builtin.user:
+        name: testuser
+        state: present
+        create_home: true
+        shell: /bin/bash
+
+    - name: Prepare | Set SUDO_USER environment for testing
+      ansible.builtin.set_fact:
+        ansible_env:
+          SUDO_USER: testuser
+
+    - name: Prepare | Ensure /tmp has correct permissions
+      ansible.builtin.file:
+        path: /tmp
+        state: directory
+        mode: '1777'
