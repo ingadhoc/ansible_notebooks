@@ -1,0 +1,99 @@
+---
+- name: Freelance Developer | Include vars from funcional
+  ansible.builtin.include_vars: "{{ role_path | dirname }}/funcional/vars.yml"
+  tags: always
+  no_log: true
+
+- name: Freelance Developer | Include vars from developer
+  ansible.builtin.include_vars: "{{ role_path | dirname }}/developer/vars.yml"
+  tags: always
+  no_log: true
+
+- name: Freelance Developer | Skip developer->funcional dependency
+  ansible.builtin.set_fact:
+    developer_skip_funcional_dependency: true
+  tags: always
+
+- name: Freelance Developer | Update APT cache once
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  tags: always
+
+- name: Freelance Developer | Funcional subset
+  tags: [freelance_developer]
+  block:
+    - name: Funcional | Packages
+      ansible.builtin.import_role:
+        name: funcional
+        tasks_from: packages.yml
+      tags: [funcional, packages]
+
+    - name: Funcional | Gcloud
+      ansible.builtin.import_role:
+        name: funcional
+        tasks_from: gcloud.yml
+      tags: [funcional, gcloud]
+
+    - name: Funcional | Kubectl
+      ansible.builtin.import_role:
+        name: funcional
+        tasks_from: kubectl.yml
+      tags: [funcional, kubectl]
+
+    - name: Funcional | AdhocCli
+      ansible.builtin.import_role:
+        name: funcional
+        tasks_from: adhoccli.yml
+      tags: [funcional, adhoccli]
+
+- name: Freelance Developer | Developer subset
+  tags: [freelance_developer]
+  block:
+    - name: Developer | Packages
+      ansible.builtin.import_role:
+        name: developer
+        tasks_from: packages_dev.yml
+      tags: [developer, packages]
+
+    - name: Developer | Docker
+      ansible.builtin.import_role:
+        name: developer
+        tasks_from: docker.yml
+      tags: [developer, docker]
+
+    - name: Developer | Meld
+      ansible.builtin.import_role:
+        name: developer
+        tasks_from: meld.yml
+      tags: [developer, meld]
+
+    - name: Developer | Code
+      ansible.builtin.import_role:
+        name: developer
+        tasks_from: code.yml
+      tags: [developer, code]
+
+    - name: Developer | Python
+      ansible.builtin.import_role:
+        name: developer
+        tasks_from: python.yml
+      tags: [developer, python]
+
+    - name: Developer | Git
+      ansible.builtin.import_role:
+        name: developer
+        tasks_from: git.yml
+      tags: [developer, git]
+
+    - name: Developer | Prepare RemoteDev
+      ansible.builtin.import_role:
+        name: developer
+        tasks_from: prepare_remote_dev.yml
+      tags: [developer, remote_dev]
+
+    - name: Developer | GH CLI
+      ansible.builtin.import_role:
+        name: developer
+        tasks_from: gh_cli.yml
+      tags: [developer, gh, github]
