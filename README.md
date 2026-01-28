@@ -3,7 +3,7 @@
 ![Molecule CI](https://github.com/ingadhoc/ansible_notebooks/workflows/Molecule%20CI/badge.svg?branch=main)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Ansible](https://img.shields.io/badge/ansible-%3E%3D2.15-blue.svg)
-![Platforms](https://img.shields.io/badge/platforms-Debian%2013%20%7C%20Ubuntu%2022.04-blue.svg)
+![Platforms](https://img.shields.io/badge/platforms-Debian%2012%2B%20%7C%20Ubuntu%2022.04%2B-blue.svg)
 
 ## 🎯 Resumen Ejecutivo
 
@@ -29,7 +29,21 @@ El sistema está organizado en perfiles jerárquicos. Cada perfil incluye la con
 
 * **`funcional` (Base)**: Contiene el software y la configuración esencial para todos los miembros de la empresa (navegadores, herramientas de comunicación, seguridad básica, etc.).
 * **`developer`**: Incluye el perfil `funcional` y añade todas las herramientas de desarrollo (Docker, VS Code, Git, Python, kubectl, etc.).
+* **`freelance_developer`**: Perfil acotado para developers freelance. Reutiliza tareas puntuales de `funcional` y `developer` pero evita configuración corporativa (por ejemplo branding/desktop) y corre solo un subset de herramientas de desarrollo.
 * **`sysadmin`**: Incluye ambos perfiles anteriores y añade herramientas de administración de sistemas e infraestructura (Terraform, gcloud, VirtualBox, etc.).
+
+---
+
+## 🧭 Qué perfil elegir (rápido)
+
+| Perfil | Ideal para | Incluye (alto nivel) | Evita / notas | Ejecutar |
+|---|---|---|---|---|
+| `funcional` | Usuarios generales | Base de workstation | Puede incluir desktop/branding corporativo | `ansible-playbook local.yml -K --verbose` |
+| `developer` | Devs internos | `funcional` + tooling completo de dev (VS Code, Git, Python, Docker, kubectl, etc.) | Incluye desktop/branding corporativo (por herencia de `funcional`) | `ansible-playbook local.yml -e "profile_override=developer" -K --verbose` |
+| `freelance_developer` | Devs freelance/externos | Entorno de dev + cloud/containers (subset controlado) | Evita desktop/branding corporativo | `ansible-playbook local.yml -e "profile_override=freelance_developer" -K --verbose` |
+| `sysadmin` | SRE/infra | `developer` + herramientas extra de infra/SRE | Perfil más amplio (instala más herramientas) | `ansible-playbook local.yml -e "profile_override=sysadmin" -K --verbose` |
+
+Más detalle (qué hace cada perfil y cómo elegirlo): **[docs/PROFILES.md](docs/PROFILES.md)**
 
 ---
 
@@ -40,8 +54,10 @@ Este es el método preferido para configurar una notebook desde cero. Un único 
 1. **Descargar el script de arranque:**
 
    ```bash
-   curl -L -o adhoc-ansible https://raw.githubusercontent.com/ingadhoc/ansible_notebooks/main/adhoc-ansible
+   curl -L -o adhoc-ansible https://raw.githubusercontent.com/ingadhoc/ansible_notebooks/main/launch_project.sh
    ```
+
+   (El comando descarga `launch_project.sh` pero lo guarda como `adhoc-ansible`.)
 
 2. **Darle permisos de ejecución:**
 
@@ -88,12 +104,45 @@ ansible-playbook local.yml -K --verbose
 # Para el rol Developer (ejecutará funcional -> developer)
 ansible-playbook local.yml -e "profile_override=developer" -K --verbose
 
+# Para el rol Freelance Developer (perfil acotado)
+ansible-playbook local.yml -e "profile_override=freelance_developer" -K --verbose
+
 # Para el rol SysAdmin (ejecutará funcional -> developer -> sysadmin)
 ansible-playbook local.yml -e "profile_override=sysadmin" -K --verbose
 
 # Para instalar solo herramientas de deploy rápido (ej. kubectl)
 ansible-playbook local.yml --tags "deploy" -K --verbose
 ```
+
+---
+
+## 👩‍💻 Guía para Developers Freelance (perfil `freelance_developer`)
+
+Este perfil está pensado para developers externos que necesitan un entorno de desarrollo completo, pero sin configuraciones corporativas (por ejemplo branding/desktop) ni tareas que no aportan al trabajo diario.
+
+**Qué hace (resumen):**
+- Instala herramientas de desarrollo y CLI: Git, Python, VS Code, Docker, kubectl, gcloud, GH CLI, etc.
+- Aplica un subconjunto de tareas de `funcional` y `developer` de forma controlada.
+
+**Qué NO hace (intencionalmente):**
+- No aplica branding corporativo.
+- No fuerza configuración de GNOME/extensiones de escritorio.
+
+**Recomendado (bootstrap):**
+```bash
+curl -L -o adhoc-ansible https://raw.githubusercontent.com/ingadhoc/ansible_notebooks/main/launch_project.sh
+chmod +x adhoc-ansible
+sudo ./adhoc-ansible
+```
+Luego elegir `Freelance Developer` en el menú.
+
+**Manual (si ya tiene el repo):**
+```bash
+cd ~/repositorios/ansible_notebooks
+ansible-playbook local.yml -e "profile_override=freelance_developer" -K --verbose
+```
+
+Para una guía lista para copiar/pegar y enviar a externos, ver: **[docs/FREELANCE_DEVELOPER.md](docs/FREELANCE_DEVELOPER.md)**
 
 ---
 
@@ -139,8 +188,15 @@ Este proyecto utiliza **Molecule** con Docker para tests automatizados. Los test
 ### Ejecutar tests localmente
 
 ```bash
+# Crear un entorno virtual (recomendado, evita PEP 668 en Debian/Ubuntu)
+python3 -m venv .venv
+source .venv/bin/activate
+
 # Instalar dependencias de testing
 pip install -r requirements-dev.txt
+
+# Instalar colecciones
+ansible-galaxy install -r collections/requirements.yml
 
 # Ejecutar tests de un rol específico
 ./test-role.sh funcional
@@ -224,54 +280,12 @@ docker search geerlingguy/docker-debian13
 ```
 
 ---
-
-## 🧪 Testing y Desarrollo
-
-Este proyecto incluye tests automatizados con Molecule para validar todos los roles en Debian 12 y Ubuntu 22.04.
-
-### Estado de Tests
-
-| Rol | Tasks | Idempotencia | Debian 12 | Ubuntu 22.04 |
-|-----|-------|--------------|-----------|--------------|
-| funcional | Variable | ✅ | ✅ | ✅ |
-| developer | 123-126 | ✅ | ✅ | ✅ |
-| sysadmin | 109 | ✅ | ✅ | ✅ |
-
-### Ejecutar Tests Localmente
-
-```bash
-# Setup
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements-dev.txt
-ansible-galaxy install -r collections/requirements.yml
-
-# Ejecutar tests completos (50-60 min)
-cd roles/sysadmin
-molecule test
-
-# Workflow iterativo (5 min)
-molecule create    # Una vez
-molecule converge  # Iterar cambios
-molecule test      # Test final
-```
-
-### Documentación de Testing
-
-- **[docs/TESTING.md](docs/TESTING.md)** - Guía completa de Molecule y workflow
-- **[docs/LESSONS_LEARNED.md](docs/LESSONS_LEARNED.md)** - Troubleshooting y lecciones aprendidas
-
-### CI/CD
-
-Los tests se ejecutan automáticamente en GitHub Actions para cada PR y push a `main`/`develop`. Ver [`.github/workflows/molecule.yml`](.github/workflows/molecule.yml).
-
----
-
 ## 📚 Documentación Adicional
 
+- **[docs/FREELANCE_DEVELOPER.md](docs/FREELANCE_DEVELOPER.md)** - Guía rápida para developers freelance (copy/paste)
+- **[docs/PROFILES.md](docs/PROFILES.md)** - Guía para elegir perfil + comandos
 - **[docs/TESTING.md](docs/TESTING.md)** - Guía completa de testing con Molecule
-- **[docs/LESSONS_LEARNED.md](docs/LESSONS_LEARNED.md)** - Troubleshooting y debugging
-- **[docs/TESTING.md](docs/TESTING.md)** - Estrategias de testing
+- **[docs/LESSONS_LEARNED.md](docs/LESSONS_LEARNED.md)** - Troubleshooting y lecciones aprendidas
 - **[docs/molecule-multi-distro-example.yml](docs/molecule-multi-distro-example.yml)** - Ejemplo de configuración
 - **[roles/funcional/README.md](roles/funcional/README.md)** - Documentación del rol funcional
 - **[Makefile](Makefile)** - Todos los comandos disponibles
