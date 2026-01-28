@@ -1,0 +1,17 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  tasks:
+    - name: Verify | Required CLIs exist
+      ansible.builtin.command: bash -lc "command -v {{ item }}"
+      loop:
+        - git
+        - python3
+        - gh
+        - kubectl
+        - gcloud
+        - docker
+      register: cli_checks
+      changed_when: false
+      failed_when: cli_checks.rc != 0

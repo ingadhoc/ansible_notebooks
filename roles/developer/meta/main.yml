@@ -9,3 +9,4 @@ galaxy_info:
 
 dependencies:
   - role: funcional
+    when: not (developer_skip_funcional_dependency | default(false))
