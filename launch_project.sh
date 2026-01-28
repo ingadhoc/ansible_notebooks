@@ -190,7 +190,7 @@ log "└────────────────────────
 echo ""
 
 PS3="Ingresa el número de tu opción: "
-options=("Funcional" "Developer" "SysAdmin" "Salir (ejecutar manualmente después)")
+options=("Funcional" "Developer" "Freelance Developer" "SysAdmin" "Salir (ejecutar manualmente después, IMPORTANTE REINICIAR EL EQUIPO)")
 
 select opt in "${options[@]}"; do
   case $opt in
@@ -202,11 +202,15 @@ select opt in "${options[@]}"; do
       PROFILE_TO_RUN="developer"
       break
       ;;
+    "Freelance Developer")
+      PROFILE_TO_RUN="freelance_developer"
+      break
+      ;;
     "SysAdmin")
       PROFILE_TO_RUN="sysadmin"
       break
       ;;
-    "Salir (ejecutar manualmente después)")
+    "Salir (ejecutar manualmente después, IMPORTANTE REINICIAR EL EQUIPO)")
       echo ""
       success "Instalación base completada exitosamente"
       echo ""
@@ -214,7 +218,7 @@ select opt in "${options[@]}"; do
       echo -e "  ${C_BOLD}cd $REPO_DIR${C_RESET}"
       echo -e "  ${C_BOLD}ansible-playbook local.yml -e 'profile_override=PERFIL' -K${C_RESET}"
       echo ""
-      log "Perfiles disponibles: funcional, developer, sysadmin"
+      log "Perfiles disponibles: funcional, developer, freelance_developer, sysadmin"
       exit 0
       ;;
     *)
