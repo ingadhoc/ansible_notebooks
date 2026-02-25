@@ -1,7 +1,14 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
-remote_regular_user: "{{ ansible_env.SUDO_USER }}"
+remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
 remote_regular_user_uid: "{{ ansible_user_uid }}"
+
+# --- Configuración para Pulumi ---
+# Pulumi se instala como binario en /usr/local/bin/pulumi.
+# Por defecto instala la última release estable. Para pinnear:
+# ansible-playbook local.yml -e "profile_override=sysadmin" -e "sysadmin_pulumi_version=3.x.y" -K
+sysadmin_pulumi_version: "latest"
+sysadmin_pulumi_install_root: "/opt/pulumi"
 
 # Extensiones predefinidas para sysadmin
 vscode_extension_list_sysadmin:

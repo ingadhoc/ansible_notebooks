@@ -7,8 +7,8 @@
   block:
     - name: SysAdmin - Instalación de paquetes y dependencias varias
       ansible.builtin.import_tasks: packages.yml
-    - name: SysAdmin - Terraform
-      ansible.builtin.import_tasks: terraform.yml
+    - name: SysAdmin - Pulumi
+      ansible.builtin.import_tasks: pulumi.yml
     - name: SysAdmin - KVM/QEMU
       ansible.builtin.import_tasks: kvm.yml
     - name: SysAdmin - Helm
