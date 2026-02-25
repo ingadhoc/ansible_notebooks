@@ -9,7 +9,7 @@
       ansible.builtin.import_tasks: ../roles/funcional/tasks/kubectl.yml
     - name: GCloud
       ansible.builtin.import_tasks: ../roles/funcional/tasks/gcloud.yml
-    - name: Terraform
-      ansible.builtin.import_tasks: ../roles/sysadmin/tasks/terraform.yml
+    - name: Pulumi
+      ansible.builtin.import_tasks: ../roles/sysadmin/tasks/pulumi.yml
     - name: Project
       ansible.builtin.import_tasks: project.yml
