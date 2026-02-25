@@ -78,7 +78,7 @@ roles/funcional/molecule/default/
    - Manejar limitaciones de GUI en contenedores
 
 5. **Implementar tests para rol `sysadmin`**:
-   - Terraform, Helm, etc.
+   - Pulumi, Helm, etc.
    - Considerar que VirtualBox no se puede testear en Docker
 
 6. **Optimizar tiempo de ejecución**:

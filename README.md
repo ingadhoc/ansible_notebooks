@@ -30,7 +30,7 @@ El sistema está organizado en perfiles jerárquicos. Cada perfil incluye la con
 * **`funcional` (Base)**: Contiene el software y la configuración esencial para todos los miembros de la empresa (navegadores, herramientas de comunicación, seguridad básica, etc.).
 * **`developer`**: Incluye el perfil `funcional` y añade todas las herramientas de desarrollo (Docker, VS Code, Git, Python, kubectl, etc.).
 * **`freelance_developer`**: Perfil acotado para developers freelance. Reutiliza tareas puntuales de `funcional` y `developer` pero evita configuración corporativa (por ejemplo branding/desktop) y corre solo un subset de herramientas de desarrollo.
-* **`sysadmin`**: Incluye ambos perfiles anteriores y añade herramientas de administración de sistemas e infraestructura (Terraform, gcloud, VirtualBox, etc.).
+* **`sysadmin`**: Incluye ambos perfiles anteriores y añade herramientas de administración de sistemas e infraestructura (pulumi, gcloud, VirtualBox, etc.).
 
 ---
 
