@@ -84,6 +84,9 @@ chown "$SCRIPT_USER:$SCRIPT_USER" "$PIPX_BIN_DIR"
 if apt-cache show pipx > /dev/null 2>&1; then
     log "Instalando pipx vía apt..."
     apt-get install -y pipx > /dev/null 2>&1
+else
+  warn "Paquete pipx no disponible en apt, instalando pipx con pip --user para $SCRIPT_USER..."
+  runuser -u "$SCRIPT_USER" -- python3 -m pip install --user --upgrade pipx > /dev/null 2>&1
 fi
 
 # Verificar que pipx funciona como módulo
@@ -112,9 +115,52 @@ fi
 
 success "Limpieza completa realizada"
 
+# Recuperación robusta de instalación de Ansible vía pipx
+repair_pipx_state() {
+  warn "Detectado fallo de pipx/venv. Intentando reparar estado local de pipx..."
+
+  runuser -u "$SCRIPT_USER" -- python3 -m pipx uninstall ansible-core > /dev/null 2>&1 || true
+  runuser -u "$SCRIPT_USER" -- python3 -m pipx uninstall ansible > /dev/null 2>&1 || true
+
+  runuser -u "$SCRIPT_USER" -- rm -rf "$PIPX_VENVS_DIR/ansible-core" "$PIPX_VENVS_DIR/ansible" || true
+  runuser -u "$SCRIPT_USER" -- rm -rf "$USER_HOME/.cache/pip" "$USER_HOME/.cache/pipx" || true
+
+  runuser -u "$SCRIPT_USER" -- python3 -m pip cache purge > /dev/null 2>&1 || true
+  if runuser -u "$SCRIPT_USER" -- python3 -m pipx --help 2>/dev/null | grep -q "reinstall-all"; then
+    runuser -u "$SCRIPT_USER" -- python3 -m pipx reinstall-all > /dev/null 2>&1 || true
+  fi
+}
+
+install_ansible_core_pipx() {
+  local install_output
+
+  log "Instalando Ansible Core vía pipx (instalación limpia)..."
+
+  if install_output=$(runuser -u "$SCRIPT_USER" -- python3 -m pipx install --force ansible-core 2>&1); then
+    return 0
+  fi
+
+  warn "Falló la instalación inicial de ansible-core con pipx"
+  if echo "$install_output" | grep -Eiq "marshal data too short|EOFError|fatal error from pip"; then
+    warn "Error compatible con caché/bytecode corrupto detectado"
+  fi
+
+  repair_pipx_state
+  log "Reintentando instalación de ansible-core con pipx..."
+
+  if runuser -u "$SCRIPT_USER" -- python3 -m pipx install --force ansible-core; then
+    return 0
+  fi
+
+  error "No se pudo instalar ansible-core con pipx tras reintento y limpieza.
+
+  Para diagnosticar manualmente:
+  sudo -u $SCRIPT_USER python3 -m pipx list
+  sudo -u $SCRIPT_USER python3 -m pipx install --verbose ansible-core"
+}
+
 # 8. Instalar Ansible con pipx (instalación limpia)
-log "Instalando Ansible Core vía pipx (instalación limpia)..."
-runuser -u "$SCRIPT_USER" -- python3 -m pipx install ansible-core
+install_ansible_core_pipx
 
 # Dar tiempo para que se complete la instalación
 sleep 2
