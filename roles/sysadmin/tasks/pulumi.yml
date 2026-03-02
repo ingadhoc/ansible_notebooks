@@ -1,0 +1,104 @@
+---
+- name: SysAdmin - Instalar Pulumi CLI
+  tags: pulumi
+  become: true
+  block:
+    - name: Pulumi | Detect installed version (if any)
+      ansible.builtin.command: pulumi version
+      register: sysadmin_pulumi_version_installed
+      changed_when: false
+      failed_when: false
+
+    - name: Pulumi | Normalize installed version
+      ansible.builtin.set_fact:
+        sysadmin_pulumi_version_installed_normalized: >-
+          {{ (sysadmin_pulumi_version_installed.stdout | default('') | trim) | regex_replace('^v', '') }}
+
+    - name: Pulumi | Resolve desired version
+      when: sysadmin_pulumi_version | lower == 'latest'
+      block:
+        - name: Pulumi | Fetch latest stable release tag from GitHub
+          ansible.builtin.uri:
+            url: https://api.github.com/repos/pulumi/pulumi/releases/latest
+            return_content: true
+          register: sysadmin_pulumi_latest_release
+          changed_when: false
+
+        - name: Pulumi | Set resolved version
+          ansible.builtin.set_fact:
+            sysadmin_pulumi_version_resolved: >-
+              {{ (sysadmin_pulumi_latest_release.json.tag_name | default('') | regex_replace('^v', '')) }}
+
+    - name: Pulumi | Set resolved version (pinned)
+      when: sysadmin_pulumi_version | lower != 'latest'
+      ansible.builtin.set_fact:
+        sysadmin_pulumi_version_resolved: "{{ sysadmin_pulumi_version }}"
+
+    - name: Pulumi | Fail if resolved version is empty
+      ansible.builtin.fail:
+        msg: "Could not resolve Pulumi version (sysadmin_pulumi_version={{ sysadmin_pulumi_version }})"
+      when: (sysadmin_pulumi_version_resolved | default('') | trim) == ''
+
+    - name: Pulumi | Map architecture
+      ansible.builtin.set_fact:
+        sysadmin_pulumi_arch: >-
+          {{
+            'linux-x64' if ansible_facts['architecture'] in ['x86_64', 'amd64'] else
+            'linux-arm64' if ansible_facts['architecture'] in ['aarch64', 'arm64'] else
+            'linux-x64'
+          }}
+
+    - name: Pulumi | Ensure install root exists
+      ansible.builtin.file:
+        path: "{{ sysadmin_pulumi_install_root }}"
+        state: directory
+        mode: '0755'
+
+    - name: Pulumi | Download release tarball
+      when: sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved
+      ansible.builtin.get_url:
+        url: "https://get.pulumi.com/releases/sdk/pulumi-v{{ sysadmin_pulumi_version_resolved }}-{{ sysadmin_pulumi_arch }}.tar.gz"
+        dest: "/tmp/pulumi-v{{ sysadmin_pulumi_version_resolved }}-{{ sysadmin_pulumi_arch }}.tar.gz"
+        mode: '0644'
+
+    - name: Pulumi | Create version directory
+      when: sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved
+      ansible.builtin.file:
+        path: "{{ sysadmin_pulumi_install_root }}/{{ sysadmin_pulumi_version_resolved }}"
+        state: directory
+        mode: '0755'
+
+    - name: Pulumi | Extract tarball
+      when: sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved
+      ansible.builtin.unarchive:
+        src: "/tmp/pulumi-v{{ sysadmin_pulumi_version_resolved }}-{{ sysadmin_pulumi_arch }}.tar.gz"
+        dest: "{{ sysadmin_pulumi_install_root }}/{{ sysadmin_pulumi_version_resolved }}"
+        remote_src: true
+
+    - name: Pulumi | Find pulumi binary
+      ansible.builtin.find:
+        paths:
+          - "{{ sysadmin_pulumi_install_root }}/{{ sysadmin_pulumi_version_resolved }}"
+        patterns:
+          - pulumi
+        file_type: file
+        recurse: true
+      register: sysadmin_pulumi_find
+
+    - name: Pulumi | Fail if pulumi binary not found
+      ansible.builtin.fail:
+        msg: "Pulumi binary not found after extraction under {{ sysadmin_pulumi_install_root }}/{{ sysadmin_pulumi_version_resolved }}"
+      when: (sysadmin_pulumi_find.matched | int) < 1
+
+    - name: Pulumi | Symlink pulumi into /usr/local/bin
+      ansible.builtin.file:
+        src: "{{ (sysadmin_pulumi_find.files | map(attribute='path') | list | first) }}"
+        dest: /usr/local/bin/pulumi
+        state: link
+        force: true
+
+    - name: Pulumi | Verify pulumi works
+      ansible.builtin.command: pulumi version
+      register: sysadmin_pulumi_version_verify
+      changed_when: false
+      failed_when: sysadmin_pulumi_version_verify.rc != 0

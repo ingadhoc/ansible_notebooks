@@ -77,7 +77,7 @@ Test de idempotencia fallando después de converge exitoso:
 
 ```
 ERROR    Idempotence test failed because of the following tasks:
-*  => sysadmin : Terraform | Descargar la clave GPG de HashiCorp
+*  => sysadmin : Pulumi | Fetch latest stable release tag from GitHub
 *  => sysadmin : Helm | Descargar script de instalación
 *  => sysadmin : NordVPN | Descargar la clave GPG del repositorio
 ```

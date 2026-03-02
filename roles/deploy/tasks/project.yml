@@ -1,6 +1,6 @@
 ---
 # Requiere login previo con github
-- name: Infra - Clonar projecto terraform
+- name: Infraestructura - Clonar proyecto principal
   become: false
   ansible.builtin.git:
     repo: git@github.com:adhoc-dev/InfraR2.git

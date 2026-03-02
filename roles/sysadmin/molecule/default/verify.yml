@@ -13,7 +13,6 @@
     # Paquetes específicos de sysadmin que deben estar instalados
     required_sysadmin_packages:
       - kubecolor
-      - terraform
     
     # Paquetes solo en Debian
     required_debian_packages:
@@ -46,11 +45,11 @@
       loop_control:
         label: "package {{ item }}"
 
-    - name: Verify | Check terraform binary
-      ansible.builtin.command: terraform version
-      register: verify_terraform_version
+    - name: Verify | Check pulumi binary
+      ansible.builtin.command: pulumi version
+      register: verify_pulumi_version
       changed_when: false
-      failed_when: verify_terraform_version.rc != 0
+      failed_when: verify_pulumi_version.rc != 0
 
     - name: Verify | Check helm binary
       ansible.builtin.command: helm version
@@ -86,7 +85,7 @@
     - name: Verify | Summarize sysadmin toolchain versions
       ansible.builtin.debug:
         msg:
-          - "Terraform version: {{ verify_terraform_version.stdout_lines[0] | default('Not available') }}"
+          - "Pulumi version: {{ verify_pulumi_version.stdout | default('Not available') }}"
           - "Helm version: {{ verify_helm_version.stdout | default('Not available') }}"
           - "KVM/Libvirt version: {{ verify_kvm_version.stdout | default('Not installed') }}"
           - "NordVPN version: {{ verify_nordvpn_version.stdout | default('Not installed') }}"

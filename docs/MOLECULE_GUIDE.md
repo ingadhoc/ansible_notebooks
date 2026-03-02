@@ -138,9 +138,9 @@ Para el rol **developer**, verificar:
 Para el rol **sysadmin**, agregar verificaciones de:
 
 ```yaml
-    # Terraform
-    - name: Verify | Check Terraform installed
-      ansible.builtin.command: terraform version
+    # Pulumi
+    - name: Verify | Check Pulumi installed
+      ansible.builtin.command: pulumi version
       changed_when: false
 
     # Helm

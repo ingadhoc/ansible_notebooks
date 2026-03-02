@@ -10,8 +10,8 @@ The project uses **role inheritance through Ansible's `meta/main.yml` dependenci
 
 - `funcional` (base layer): Core apps and configurations for all Adhoc employees - browsers, basic security, GNOME desktop config
 - `developer` → inherits `funcional` + development tools and apps specifically for Adhoc developers (Docker, VS Code, Git, Python, kubectl)
-- `sysadmin` → inherits `funcional` + `developer` + additional tools and configurations for Adhoc sysadmins and SRE teams (Terraform, VirtualBox, Helm, NordVPN)
-- `deploy` (standalone/fast): Quick installation role with only deployment-essential tools (kubectl, gcloud, terraform) - activated with `--tags deploy` only, designed for deployment-only machines
+- `sysadmin` → inherits `funcional` + `developer` + additional tools and configurations for Adhoc sysadmins and SRE teams (Pulumi, VirtualBox, Helm, NordVPN)
+- `deploy` (standalone/fast): Quick installation role with only deployment-essential tools (kubectl, gcloud, pulumi) - activated with `--tags deploy` only, designed for deployment-only machines
 
 **Key dependency files:**
 - `roles/developer/meta/main.yml` declares `dependencies: [funcional]`

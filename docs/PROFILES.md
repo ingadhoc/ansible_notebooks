@@ -16,7 +16,7 @@ La idea central es simple:
 
 ## Árbol de decisión (rápido)
 
-1) ¿Necesitás herramientas de **infra/SRE** (ej. Terraform/Helm/VPN/KVM/etc.)?
+1) ¿Necesitás herramientas de **infra/SRE** (ej. Pulumi/Helm/VPN/KVM/etc.)?
 - Sí → `sysadmin`
 - No → seguir
 
