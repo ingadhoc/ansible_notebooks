@@ -27,6 +27,20 @@
         update: true
         force: true
 
+    - name: Odoo Dev | Verificar si el directorio 16 existe
+      ansible.builtin.stat:
+        path: "{{ developer_odoo_base_path }}/16"
+      register: developer_16_dir
+
+    - name: Odoo Dev | Clonar/actualizar repositorio docker-compose-odoo a '16'
+      ansible.builtin.git:
+        repo: "{{ developer_odoo_main_repo }}"
+        dest: "{{ developer_odoo_base_path }}/16"
+        version: main
+        accept_hostkey: true
+        update: true
+        force: true
+
     - name: Odoo Dev | Verificar si el directorio 18 existe
       ansible.builtin.stat:
         path: "{{ developer_odoo_base_path }}/18"
@@ -36,6 +50,20 @@
       ansible.builtin.git:
         repo: "{{ developer_odoo_main_repo }}"
         dest: "{{ developer_odoo_base_path }}/18"
+        version: main
+        accept_hostkey: true
+        update: true
+        force: true
+
+    - name: Odoo Dev | Verificar si el directorio 19 existe
+      ansible.builtin.stat:
+        path: "{{ developer_odoo_base_path }}/19"
+      register: developer_19_dir
+
+    - name: Odoo Dev | Clonar/actualizar repositorio docker-compose-odoo a '19'
+      ansible.builtin.git:
+        repo: "{{ developer_odoo_main_repo }}"
+        dest: "{{ developer_odoo_base_path }}/19"
         version: main
         accept_hostkey: true
         update: true
