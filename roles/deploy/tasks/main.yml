@@ -11,5 +11,8 @@
       ansible.builtin.import_tasks: ../roles/funcional/tasks/gcloud.yml
     - name: Pulumi
       ansible.builtin.import_tasks: ../roles/sysadmin/tasks/pulumi.yml
+      vars:
+        sysadmin_pulumi_version: "{{ deploy_pulumi_version }}"
+        sysadmin_pulumi_install_root: "{{ deploy_pulumi_install_root }}"
     - name: Project
       ansible.builtin.import_tasks: project.yml
