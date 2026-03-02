@@ -119,6 +119,7 @@ success "Limpieza completa realizada"
 repair_pipx_state() {
   warn "Detectado fallo de pipx/venv. Intentando reparar estado local de pipx..."
 
+  runuser -u "$SCRIPT_USER" -- rm -rf "$USER_HOME/.local/state/pipx" || true
   runuser -u "$SCRIPT_USER" -- python3 -m pipx uninstall ansible-core > /dev/null 2>&1 || true
   runuser -u "$SCRIPT_USER" -- python3 -m pipx uninstall ansible > /dev/null 2>&1 || true
 
