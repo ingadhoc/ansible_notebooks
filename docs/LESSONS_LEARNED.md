@@ -33,7 +33,7 @@ FAILED! => {"changed": false, "msg": "non-zero return code", "rc": 126,
 Docker monta `/tmp` con flag `noexec` por seguridad:
 
 ```bash
-$ docker exec debian12-sysadmin mount | grep '/tmp'
+$ docker exec debian13-sysadmin mount | grep '/tmp'
 tmpfs on /tmp type tmpfs (rw,nosuid,nodev,noexec,relatime,inode64)
                                         ^^^^^^^^
 ```

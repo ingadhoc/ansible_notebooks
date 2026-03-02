@@ -23,8 +23,8 @@ Cambiar los nombres de las plataformas:
 
 ```yaml
 platforms:
-  - name: debian12-developer  # Cambiar 'funcional' por el nombre del rol
-    image: geerlingguy/docker-debian12-ansible:latest
+  - name: debian13-developer  # Cambiar 'funcional' por el nombre del rol
+    image: geerlingguy/docker-debian13-ansible:latest
     # ... resto igual
   
   - name: ubuntu2204-developer  # Cambiar 'funcional' por el nombre del rol
@@ -169,7 +169,7 @@ Solución en `molecule.yml`:
 
 ```yaml
 platforms:
-  - name: debian12-developer
+  - name: debian13-developer
     # ... resto de config
     privileged: true  # IMPORTANTE
     command: ""  # Dejar vacío para usar systemd
@@ -210,7 +210,7 @@ Para testear Docker dentro del contenedor de test:
 
 ```yaml
 platforms:
-  - name: debian12-developer
+  - name: debian13-developer
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Socket del host
     privileged: true
@@ -276,8 +276,8 @@ Para testing puntual, edita `roles/ROLNAME/molecule/default/molecule.yml`:
 ```yaml
 platforms:
   # Plataformas existentes
-  - name: debian12-ROLNAME
-    image: geerlingguy/docker-debian12-ansible:latest
+  - name: debian13-ROLNAME
+    image: geerlingguy/docker-debian13-ansible:latest
     command: ""
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -329,7 +329,7 @@ platforms:
 **Ejecutar test con 4 distribuciones**:
 ```bash
 molecule test
-# Ejecutará en: debian12, ubuntu2204, debian13, ubuntu2404
+# Ejecutará en: debian13, ubuntu2204, debian13, ubuntu2404
 ```
 
 #### Opción 2: Testing selectivo por plataforma
@@ -418,7 +418,7 @@ Para GitHub Actions, edita `.github/workflows/molecule.yml`:
 strategy:
   matrix:
     distro:
-      - debian12
+      - debian13
       - ubuntu2204
       # Agregar según necesidad:
       # - debian13      # Solo si la imagen está disponible
@@ -435,7 +435,7 @@ strategy:
 ```
 
 **Recomendación de estrategia**:
-1. **Desarrollo diario**: Solo Debian 12 + Ubuntu 22.04
+1. **Desarrollo diario**: Solo Debian 13 + Ubuntu 22.04
 2. **Pull Requests**: Agregar Ubuntu 24.04
 3. **Releases/Quarterly**: Full matrix con las 4 distros (si Debian 13 está disponible)
 
@@ -449,7 +449,6 @@ molecule list
 molecule create
 
 # Converge solo en Debian
-molecule converge --platform-name debian12-funcional
 molecule converge --platform-name debian13-funcional
 
 # Converge solo en Ubuntu

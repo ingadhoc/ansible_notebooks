@@ -70,7 +70,7 @@ Para testear solo una distribución específica:
 
 ```bash
 # Solo Debian 12
-MOLECULE_DISTRO=debian12 molecule test
+MOLECULE_DISTRO=debian13 molecule test
 
 # Solo Ubuntu 22.04
 MOLECULE_DISTRO=ubuntu2204 molecule test

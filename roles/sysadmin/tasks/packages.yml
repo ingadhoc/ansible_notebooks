@@ -19,3 +19,4 @@
         packages:
           - rsync
           - timeshift
+          - ripgrep

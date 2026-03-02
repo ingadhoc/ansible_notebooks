@@ -211,14 +211,12 @@ def test_firewall_configured(host):
 **Beneficio**: Tests más robustos y expresivos
 
 #### 8. Matrix Testing de Distros
-**Problema**: Solo testea Debian 12 y Ubuntu 22.04  
+**Problema**: Solo testea Debian 13 y Ubuntu 22.04  
 **Solución**: Agregar más combinaciones
 
 ```yaml
 # molecule/default/molecule.yml
 platforms:
-  - name: debian12-funcional
-    image: geerlingguy/docker-debian12-ansible:latest
   - name: debian13-funcional
     image: geerlingguy/docker-debian13-ansible:latest
   - name: ubuntu2204-funcional

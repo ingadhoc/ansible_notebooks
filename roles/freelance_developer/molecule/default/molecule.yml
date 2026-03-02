@@ -9,8 +9,8 @@ driver:
   name: docker
 
 platforms:
-  - name: debian12-freelance-developer
-    image: geerlingguy/docker-debian12-ansible:latest
+  - name: debian13-freelance-developer
+    image: geerlingguy/docker-debian13-ansible:latest
     command: ""
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -42,7 +42,7 @@ provisioner:
       roles_path: ../../../../roles
   inventory:
     host_vars:
-      debian12-freelance-developer:
+      debian13-freelance-developer:
         ansible_user: root
       ubuntu2204-freelance-developer:
         ansible_user: root

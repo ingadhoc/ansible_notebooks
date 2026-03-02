@@ -87,7 +87,7 @@ jobs:
       fail-fast: false
       matrix:
         distro:
-          - debian12
+          - debian13
           - ubuntu2204
     
     steps:
@@ -140,7 +140,7 @@ jobs:
       fail-fast: false
       matrix:
         distro:
-          - debian12
+          - debian13
           - ubuntu2204
     
     steps:
@@ -193,7 +193,7 @@ jobs:
       fail-fast: false
       matrix:
         distro:
-          - debian12
+          - debian13
           - ubuntu2204
     
     steps:
@@ -277,7 +277,7 @@ jobs:
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Platforms Tested" >> $GITHUB_STEP_SUMMARY
-          echo "- 🐧 Debian 12 (Bookworm)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🐧 Debian 13 (Trixie)" >> $GITHUB_STEP_SUMMARY
           echo "- 🐧 Ubuntu 22.04 (Jammy)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           

@@ -14,7 +14,7 @@ Rol base para estaciones de trabajo de Adhoc. Instala y configura las aplicacion
 - Configuración de DNS con DoT
 
 ## Requisitos
-- Debian 12+ o Ubuntu 22.04+
+- Debian 13 o Ubuntu 22.04+
 - Python 3.10+
 - Conexión a internet para descargar paquetes
 
@@ -106,8 +106,8 @@ Para probar con más distribuciones, puedes agregar plataformas temporalmente a 
 ```yaml
 platforms:
   # Existentes
-  - name: debian12-funcional
-    image: geerlingguy/docker-debian12-ansible:latest
+  - name: debian13-funcional
+    image: geerlingguy/docker-debian13-ansible:latest
     # ... configuración ...
   
   - name: ubuntu2204-funcional
@@ -170,8 +170,7 @@ Para GitHub Actions, edita `.github/workflows/molecule.yml`:
 strategy:
   matrix:
     distro:
-      - debian12
-      - debian13      # ⬅️ Agregar
+      - debian13
       - ubuntu2204
       - ubuntu2404    # ⬅️ Agregar
 ```

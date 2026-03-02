@@ -27,8 +27,8 @@ Ejemplo rápido (ver archivo completo en `docs/molecule-multi-distro-example.yml
 
 ```yaml
 platforms:
-  - name: debian12-funcional
-    image: geerlingguy/docker-debian12-ansible:latest
+  - name: debian13-funcional
+    image: geerlingguy/docker-debian13-ansible:latest
     # ...configuración...
 
   - name: ubuntu2204-funcional

@@ -387,13 +387,13 @@ sysadmin_skip_nordvpn_service: true         # Servicio no inicia
 docker ps -a | grep molecule
 
 # Entrar a contenedor
-docker exec -it debian12-sysadmin bash
+docker exec -it debian13-sysadmin bash
 
 # Ver logs
-docker logs debian12-sysadmin
+docker logs debian13-sysadmin
 
 # Inspeccionar mount /tmp
-docker exec debian12-sysadmin mount | grep '/tmp'
+docker exec debian13-sysadmin mount | grep '/tmp'
 ```
 
 ### Logs de Molecule

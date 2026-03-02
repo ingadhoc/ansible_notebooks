@@ -83,7 +83,7 @@ list-platforms: ## Listar todas las plataformas configuradas en Molecule
 
 docker-pull-images: ## Descargar todas las imágenes Docker necesarias
 	@echo "📦 Descargando imágenes Docker..."
-	docker pull geerlingguy/docker-debian12-ansible:latest
+	docker pull geerlingguy/docker-debian13-ansible:latest
 	docker pull geerlingguy/docker-ubuntu2204-ansible:latest
 	@echo "📦 Descargando imágenes adicionales (pueden no existir aún)..."
 	docker pull geerlingguy/docker-debian13-ansible:latest || echo "⚠️  Debian 13 image no disponible aún"
