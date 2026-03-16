@@ -10,7 +10,6 @@ developer_packages_base:
   - tmuxp
   - xclip
   - bash-completion
-  - yakuake
   - vim
   - gnupg
   - meld
@@ -131,7 +130,7 @@ developer_git_generic_hook_list:
 
 # Lista de aplicaciones favoritas para el perfil de Developer
 developer_gnome_favorite_apps: >
-  ['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.kde.yakuake.desktop',
+  ['google-chrome.desktop', 'org.gnome.Nautilus.desktop',
    'org.gnome.Terminal.desktop', 'code.desktop']
 
 # --- Configuración del Entorno de Desarrollo Odoo ---

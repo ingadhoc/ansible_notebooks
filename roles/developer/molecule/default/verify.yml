@@ -98,7 +98,6 @@
         - "/home/{{ remote_user }}/.adhoc_bash_ps.sh"
         - "/home/{{ remote_user }}/.tmux"
         - "/home/{{ remote_user }}/.prompt_git"
-        - "/home/{{ remote_user }}/.config/yakuakerc"
       register: developer_dotfiles
 
     - name: Verify | Assert dotfiles exist
