@@ -20,3 +20,6 @@
           - rsync
           - timeshift
           - ripgrep
+          - fzf
+          - mtr
+          - speedtest-cli
