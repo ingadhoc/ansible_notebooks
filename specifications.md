@@ -66,7 +66,7 @@ El código debe estar preparado para correr dentro de contenedores Docker durant
 
 ## 4. Testing Strategy (Molecule)
 
-- **Driver:** Docker (`geerlingguy/docker-debian13-ansible` y `ubuntu2204`).
+- **Driver:** Docker (`geerlingguy/docker-debian13-ansible` y `ubuntu2404`).
 - **Plataformas por defecto:** Debian 12/13 y Ubuntu 22.04 LTS. (Ubuntu 24.04 LTS para validaciones extendidas).
 - **Fases críticas:** El CI exige que la fase `idempotence` pase estrictamente (0 changes en el segundo run) y que la fase `verify` valide aserciones mediante `ansible.builtin.assert` o `package_facts`.
 
