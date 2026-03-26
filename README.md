@@ -21,6 +21,10 @@ Este playbook está diseñado para funcionar sobre instalaciones limpias de **De
 
 Priorizamos el uso de Debian para mantener un sistema base limpio, estable y libre de las decisiones comerciales de Canonical (como la imposición de `snap`). Sin embargo, el playbook es totalmente compatible con las versiones LTS de Ubuntu.
 
+> ⚠️ **Entorno de escritorio requerido: GNOME**
+> Los perfiles `funcional`, `developer` y `sysadmin` configuran extensiones, ajustes visuales y comportamientos específicos de **GNOME**. El playbook asume que GNOME está instalado y activo como entorno de escritorio. Instalar sobre KDE u otro entorno producirá errores en las tareas de configuración de escritorio.
+> El perfil `freelance_developer` omite intencionalmente estas configuraciones de escritorio.
+
 ---
 
 ## Cómo Funciona: Perfiles de Provisión
@@ -213,7 +217,7 @@ ansible-galaxy install -r collections/requirements.yml
 
 ### Testing con múltiples distribuciones
 
-Por defecto, los tests ejecutan en **Debian 12** y **Ubuntu 22.04**. Para probar con distribuciones adicionales:
+Por defecto, los tests ejecutan en **Debian 13** y **Ubuntu 24.04**. Para probar con distribuciones adicionales:
 
 ```bash
 # Usar el Makefile para comandos específicos
@@ -229,10 +233,10 @@ make docker-pull-images
 ```
 
 **Distribuciones soportadas:**
-- ✅ **Debian 12 (Bookworm)** - Producción, por defecto
-- ✅ **Ubuntu 22.04 LTS (Jammy)** - Producción, por defecto
-- 🟡 **Debian 13 (Trixie)** - Testing (algunas limitaciones)
-- ✅ **Ubuntu 24.04 LTS (Noble)** - Producción, estable
+- ✅ **Debian 13 (Trixie)** - Producción, por defecto
+- ✅ **Ubuntu 24.04 LTS (Noble)** - Producción, por defecto
+- ✅ **Debian 12 (Bookworm)** - Producción, soportado (legacy)
+- ✅ **Ubuntu 22.04 LTS (Jammy)** - Producción, soportado (legacy)
 
 Para agregar más distribuciones a tus tests, consulta:
 - [docs/MOLECULE_GUIDE.md](docs/MOLECULE_GUIDE.md) - Sección "Testing con Múltiples Distribuciones"
@@ -277,6 +281,23 @@ packages_exclude_debian_13:
 docker search geerlingguy/docker-debian13
 
 # Si no existe, comentar esa plataforma en molecule.yml
+```
+
+### Errores relacionados a GNOME (dconf, extensiones, GDM)
+
+Si el playbook falla con errores como `dconf error`, `gnome-shell not found` o similares, la causa es que el entorno de escritorio GNOME no está instalado. Este proyecto **requiere GNOME** para los perfiles `funcional`, `developer` y `sysadmin`.
+
+**Solución**: Reinstalar el sistema operativo seleccionando GNOME como entorno de escritorio.
+
+```bash
+# En Debian, si ya tenés el sistema base podés instalar GNOME:
+sudo apt install task-gnome-desktop
+```
+
+Si necesitás correr el playbook en un entorno sin GNOME (por ejemplo, un servidor headless), podés saltear las tareas de escritorio:
+
+```bash
+ansible-playbook local.yml -K -e "skip_gnome_tasks=true"
 ```
 
 ---
