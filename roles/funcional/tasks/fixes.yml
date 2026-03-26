@@ -14,12 +14,12 @@
     - ansible_facts['distribution'] == 'Ubuntu'
     - not (skip_gnome_tasks | default(false))
 
-- name: Arreglos | Forzar Xorg y reinstalar (Solo para Ubuntu 22.04)
+- name: Arreglos | Forzar Xorg y reinstalar (Ubuntu 22.04+ y Debian 13+)
   tags: xorg_fixes
   become: true
-  when:
-    - ansible_facts['distribution'] == 'Ubuntu'
-    - ansible_facts['distribution_version'] == '22.04'
+  when: >
+    (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] is version('22.04', '>=')) or
+    (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_version'] | int >= 13)
   block:
     - name: Arreglos | Reinstalar Xorg (controlado por variable)
       ansible.builtin.apt:
@@ -27,6 +27,20 @@
         state: present
         force: true
       when: force_xorg_reinstall | bool
+
+    - name: Arreglos | Asegurar que existe el directorio /etc/gdm3
+      ansible.builtin.file:
+        path: /etc/gdm3
+        state: directory
+        mode: '0755'
+
+    - name: Arreglos | Asegurar que custom.conf existe con sección [daemon]
+      ansible.builtin.copy:
+        dest: /etc/gdm3/custom.conf
+        content: |
+          [daemon]
+        force: false
+        mode: '0644'
 
     - name: Arreglos | Configurar GDM3 para forzar el uso de Xorg
       ansible.builtin.blockinfile:
