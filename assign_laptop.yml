@@ -1,0 +1,56 @@
+# ansible-playbook assign_laptop.yml -i <ip>, \
+#   -e "old_user=adhoc new_user=fba full_name='Fausto Apellido'" \
+#   --private-key ~/.ssh/infra_key -u _infra
+
+- hosts: all
+  become: yes
+
+  vars:
+    old_user: adhoc
+    # new_user y full_name se pasan por CLI
+
+  tasks:
+    - name: Kill processes owned by old user (permite usermod)
+      command: pkill -u {{ old_user }}
+      ignore_errors: yes  # OK si no hay procesos activos
+
+    - name: Wait for processes to die
+      pause:
+        seconds: 2
+
+    - name: Rename user
+      command: >
+        usermod -l {{ new_user }}
+                -d /home/{{ new_user }}
+                -m
+                -c "{{ full_name }}"
+                {{ old_user }}
+
+    - name: Rename primary group
+      command: groupmod -n {{ new_user }} {{ old_user }}
+
+    - name: Update primary group assignment
+      command: usermod -g {{ new_user }} {{ new_user }}
+
+    - name: Rename sudoers file if exists
+      command: mv /etc/sudoers.d/{{ old_user }} /etc/sudoers.d/{{ new_user }}
+      args:
+        creates: /etc/sudoers.d/{{ new_user }}
+      ignore_errors: yes
+
+    - name: Update sudoers content
+      replace:
+        path: /etc/sudoers.d/{{ new_user }}
+        regexp: "{{ old_user }}"
+        replace: "{{ new_user }}"
+      ignore_errors: yes
+
+    - name: Set git config for new user
+      become_user: "{{ new_user }}"
+      git_config:
+        name: "{{ item.key }}"
+        value: "{{ item.value }}"
+        scope: global
+      loop:
+        - { key: "user.name", value: "{{ full_name }}" }
+      ignore_errors: yes  # git puede no estar instalado
