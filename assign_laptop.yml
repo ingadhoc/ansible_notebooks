@@ -1,22 +1,17 @@
-# ansible-playbook assign_laptop.yml -i <ip>, \
-#   -e "old_user=adhoc new_user=fba full_name='Fausto Apellido'" \
-#   --private-key ~/.ssh/infra_key -u _infra
-
 - hosts: all
   become: yes
 
   vars:
     old_user: adhoc
-    # new_user y full_name se pasan por CLI
 
   tasks:
-    - name: Kill processes owned by old user (permite usermod)
-      command: pkill -u {{ old_user }}
-      ignore_errors: yes  # OK si no hay procesos activos
+    - name: Terminate user session
+      command: loginctl terminate-user {{ old_user }}
+      ignore_errors: yes
 
     - name: Wait for processes to die
       pause:
-        seconds: 2
+        seconds: 3
 
     - name: Rename user
       command: >
@@ -53,7 +48,7 @@
         scope: global
       loop:
         - { key: "user.name", value: "{{ full_name }}" }
-      ignore_errors: yes  # git puede no estar instalado
+      ignore_errors: yes
 
     - name: Set hostname
       ansible.builtin.hostname:
