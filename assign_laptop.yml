@@ -40,6 +40,25 @@
         replace: "{{ new_user }}"
       ignore_errors: yes
 
+    - name: Update GTK bookmarks
+      ansible.builtin.replace:
+        path: /home/{{ new_user }}/.config/gtk-3.0/bookmarks
+        regexp: "/home/{{ old_user }}"
+        replace: "/home/{{ new_user }}"
+      ignore_errors: yes
+
+    - name: Set wallpaper URI
+      command: >
+        sudo -u {{ new_user }} dbus-run-session
+        dconf write /org/gnome/desktop/background/picture-uri
+        "'file:///home/{{ new_user }}/.wallpaper.png'"
+
+    - name: Set wallpaper URI dark
+      command: >
+        sudo -u {{ new_user }} dbus-run-session
+        dconf write /org/gnome/desktop/background/picture-uri-dark
+        "'file:///home/{{ new_user }}/.wallpaper.png'"
+
     - name: Set git config for new user
       become_user: "{{ new_user }}"
       git_config:
@@ -49,6 +68,12 @@
       loop:
         - { key: "user.name", value: "{{ full_name }}" }
       ignore_errors: yes
+
+    - name: Update /etc/hosts hostname
+      ansible.builtin.replace:
+        path: /etc/hosts
+        regexp: "adhoc-adhoc-nb"
+        replace: "{{ hostname }}"
 
     - name: Set hostname
       ansible.builtin.hostname:
