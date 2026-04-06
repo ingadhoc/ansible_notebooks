@@ -185,6 +185,33 @@ Después de que Ansible termine, hay algunas acciones que requieren tu intervenc
 
 ---
 
+## 🔄 Reasignación de Laptop
+
+Cuando una notebook con el usuario genérico `adhoc` se asigna a un empleado nuevo, el playbook `assign_laptop.yml` renombra el usuario (y su grupo, home y sudoers) de forma remota, sin necesidad de reinstalar el sistema.
+
+**Prerrequisitos:**
+- Acceso SSH a la máquina via el usuario `_infra` con la clave `~/.ssh/infra_key`.
+- La notebook debe estar encendida y accesible en la red.
+
+**Comando:**
+
+```bash
+ansible-playbook assign_laptop.yml -i <ip>, \
+  -e "old_user=adhoc new_user=fba full_name='Fausto Apellido'" \
+  --private-key ~/.ssh/infra_key -u _infra
+```
+
+> ⚠️ Nota la **coma** después de `<ip>` — es requerida por Ansible para inventarios inline.
+
+**Qué hace:**
+1. Mata los procesos del usuario anterior (`pkill`).
+2. Renombra el usuario y mueve su home (`usermod`).
+3. Renombra el grupo primario (`groupmod`).
+4. Actualiza el archivo sudoers si existe.
+5. Configura el `user.name` de Git globalmente.
+
+---
+
 ## 🧪 Testing y Desarrollo
 
 Este proyecto utiliza **Molecule** con Docker para tests automatizados. Los tests se ejecutan automáticamente en GitHub Actions para cada push y pull request.

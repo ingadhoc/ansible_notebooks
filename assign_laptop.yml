@@ -54,3 +54,7 @@
       loop:
         - { key: "user.name", value: "{{ full_name }}" }
       ignore_errors: yes  # git puede no estar instalado
+
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: "{{ hostname }}"
