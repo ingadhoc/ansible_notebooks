@@ -190,15 +190,17 @@ Después de que Ansible termine, hay algunas acciones que requieren tu intervenc
 Cuando una notebook con el usuario genérico `adhoc` se asigna a un empleado nuevo, el playbook `assign_laptop.yml` renombra el usuario (y su grupo, home y sudoers) de forma remota, sin necesidad de reinstalar el sistema.
 
 **Prerrequisitos:**
-- Acceso SSH a la máquina via el usuario `_infra` con la clave `~/.ssh/infra_key`.
+- Acceso SSH a la máquina via el usuario `_sysadmin` con la clave `~/.ssh/sysadmin_key`.
 - La notebook debe estar encendida y accesible en la red.
 
 **Comando:**
 
 ```bash
-ansible-playbook assign_laptop.yml -i <ip>, \
-  -e "old_user=adhoc new_user=fba full_name='Fausto Apellido'" \
-  --private-key ~/.ssh/infra_key -u _infra
+ansible-playbook assign_laptop.yml \
+  -i 192.168.1.170, \
+  -e "old_user=adhoc new_user=user full_name='Nombre Apellido' hostname=user-adhoc-nb" \
+  --private-key ~/.ssh/sysadmin.txt \
+  -u sysadmin
 ```
 
 > ⚠️ Nota la **coma** después de `<ip>` — es requerida por Ansible para inventarios inline.
