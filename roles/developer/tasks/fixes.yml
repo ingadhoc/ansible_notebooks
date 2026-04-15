@@ -7,6 +7,7 @@
     key: "/org/gnome/shell/favorite-apps"
     value: "{{ developer_gnome_favorite_apps }}"
   when:
+    - ansible_facts['distribution'] in ['Ubuntu', 'Debian']
     - not (skip_gnome_tasks | default(false))
 
 - name: Arreglos Dev | Copiar archivos de configuración del shell (dotfiles)

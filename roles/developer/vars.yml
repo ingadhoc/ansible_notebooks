@@ -131,7 +131,7 @@ developer_git_generic_hook_list:
 # Lista de aplicaciones favoritas para el perfil de Developer
 developer_gnome_favorite_apps: >
   ['google-chrome.desktop', 'org.gnome.Nautilus.desktop',
-   'org.gnome.Terminal.desktop', 'code.desktop']
+   'org.gnome.Terminal.desktop', 'code.desktop', 'streamsnap.desktop']
 
 # --- Configuración del Entorno de Desarrollo Odoo ---
 developer_odoo_base_path: "/home/{{ remote_regular_user }}/odoo"
