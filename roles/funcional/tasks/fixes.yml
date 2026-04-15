@@ -1,15 +1,24 @@
 ---
-- name: Arreglos | Aplicar personalizaciones de GNOME y del dock
+- name: Arreglos | Aplicar aplicaciones favoritas del dock (todas las distros)
   tags: funcional_fixes, gnome
   become: true
   become_user: "{{ remote_regular_user }}"
   community.general.dconf:
-    key: "{{ item.key }}"
-    value: "{{ item.value }}"
+    key: "/org/gnome/shell/favorite-apps"
+    value: "{{ gnome_functional_favorite_apps }}"
     state: present
-  loop:
-    - { key: "/org/gnome/shell/favorite-apps", value: "{{ gnome_functional_favorite_apps }}" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/click-action", value: "'minimize'" }
+  when:
+    - ansible_facts['distribution'] in ['Ubuntu', 'Debian']
+    - not (skip_gnome_tasks | default(false))
+
+- name: Arreglos | Configurar comportamiento del dock (dash-to-dock, solo Ubuntu)
+  tags: funcional_fixes, gnome
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  community.general.dconf:
+    key: "/org/gnome/shell/extensions/dash-to-dock/click-action"
+    value: "'minimize'"
+    state: present
   when:
     - ansible_facts['distribution'] == 'Ubuntu'
     - not (skip_gnome_tasks | default(false))
