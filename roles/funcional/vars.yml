@@ -204,7 +204,7 @@ ui_performance_dconf_settings:
   - { key: "/org/gnome/mutter/workspaces-only-on-primary", value: "true" }
 
 # Lista de aplicaciones favoritas para el dock de GNOME
-gnome_functional_favorite_apps: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Terminal.desktop', 'flameshot.desktop']"
+gnome_functional_favorite_apps: "['google-chrome.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Terminal.desktop', 'flameshot.desktop', 'streamsnap.desktop']"
 
 # Variable para controlar la reinstalación de Xorg
 force_xorg_reinstall: true # Cambiar a 'true' solo si es necesario depurar
