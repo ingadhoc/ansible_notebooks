@@ -9,6 +9,10 @@
       vars:
         packages:
           - kubecolor
+          - yq
+          - speedtest-cli
+          - fzf
+          - mtr
 
     - name: Timeshift - Paquetes y dependencias
       when: ansible_facts['distribution'] == 'Debian'
@@ -20,6 +24,3 @@
           - rsync
           - timeshift
           - ripgrep
-          - fzf
-          - mtr
-          - speedtest-cli
