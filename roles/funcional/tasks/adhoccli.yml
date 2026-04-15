@@ -41,7 +41,9 @@
         update_cache: true
       when: adhoccli_repo_added.changed
 
-    - name: Adhoccli - Instalar la herramienta 'adhoccli'
+    - name: Adhoccli - Instalar herramientas del repositorio Adhoc
       ansible.builtin.apt:
-        name: adhoccli
+        name:
+          - adhoccli
+          - streamsnap
         state: present
