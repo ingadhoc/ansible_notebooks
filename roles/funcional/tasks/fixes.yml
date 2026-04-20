@@ -57,6 +57,6 @@
         marker: "# {mark} ANSIBLE XORG FIX"
         block: |
           WaylandEnable=false
-          DefaultSession=gnome-xorg.desktop
         insertafter: '^\[daemon\]'
         state: present
+      notify: Restart GDM
