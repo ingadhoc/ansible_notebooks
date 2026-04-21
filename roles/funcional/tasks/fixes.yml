@@ -43,20 +43,23 @@
         state: directory
         mode: '0755'
 
-    - name: Arreglos | Asegurar que custom.conf existe con sección [daemon]
-      ansible.builtin.copy:
-        dest: /etc/gdm3/custom.conf
-        content: |
-          [daemon]
-        force: false
+    - name: Arreglos | Asegurar que custom.conf tiene sección [daemon]
+      ansible.builtin.lineinfile:
+        path: /etc/gdm3/custom.conf
+        line: '[daemon]'
+        create: true
         mode: '0644'
 
-    - name: Arreglos | Configurar GDM3 para forzar el uso de Xorg
-      ansible.builtin.blockinfile:
+    - name: Arreglos | Configurar GDM3 para deshabilitar Wayland (WaylandEnable=false)
+      ansible.builtin.lineinfile:
         path: /etc/gdm3/custom.conf
-        marker: "# {mark} ANSIBLE XORG FIX"
-        block: |
-          WaylandEnable=false
+        regexp: '^#?\s*WaylandEnable='
+        line: 'WaylandEnable=false'
         insertafter: '^\[daemon\]'
         state: present
-      notify: Restart GDM
+      register: xorg_fix_result
+
+    - name: Arreglos | Informar que se requiere reinicio para aplicar cambio a Xorg
+      ansible.builtin.debug:
+        msg: "WaylandEnable=false configurado en /etc/gdm3/custom.conf. Reiniciá el equipo para que tome efecto."
+      when: xorg_fix_result.changed
