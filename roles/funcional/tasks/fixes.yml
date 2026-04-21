@@ -55,6 +55,7 @@
         section: daemon
         option: WaylandEnable
         value: "false"
+        no_extra_spaces: true
         mode: '0644'
         create: true
       register: xorg_fix_wayland
@@ -65,6 +66,7 @@
         section: daemon
         option: DefaultSession
         value: "gnome-xorg.desktop"
+        no_extra_spaces: true
         mode: '0644'
         create: true
       register: xorg_fix_session
