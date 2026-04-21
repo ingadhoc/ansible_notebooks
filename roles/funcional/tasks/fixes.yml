@@ -71,7 +71,15 @@
         create: true
       register: xorg_fix_session
 
+    - name: Arreglos | Enmascarar reglas udev que re-habilitan Wayland según GPU
+      ansible.builtin.file:
+        src: /dev/null
+        dest: /etc/udev/rules.d/61-gdm.rules
+        state: link
+        force: true
+      register: xorg_fix_udev
+
     - name: Arreglos | Informar que se requiere reinicio para aplicar cambio a Xorg
       ansible.builtin.debug:
         msg: "GDM3 configurado para Xorg en /etc/gdm3/custom.conf. Reiniciá el equipo para que tome efecto."
-      when: xorg_fix_wayland.changed or xorg_fix_session.changed
+      when: xorg_fix_wayland.changed or xorg_fix_session.changed or xorg_fix_udev.changed
