@@ -37,29 +37,39 @@
         force: true
       when: force_xorg_reinstall | bool
 
+    - name: Arreglos | Verificar si gdm3 está instalado
+      ansible.builtin.stat:
+        path: /etc/gdm3
+      register: gdm3_dir
+
     - name: Arreglos | Asegurar que existe el directorio /etc/gdm3
       ansible.builtin.file:
         path: /etc/gdm3
         state: directory
         mode: '0755'
-
-    - name: Arreglos | Asegurar que custom.conf tiene sección [daemon]
-      ansible.builtin.lineinfile:
-        path: /etc/gdm3/custom.conf
-        line: '[daemon]'
-        create: true
-        mode: '0644'
+      when: not gdm3_dir.stat.exists
 
     - name: Arreglos | Configurar GDM3 para deshabilitar Wayland (WaylandEnable=false)
-      ansible.builtin.lineinfile:
+      community.general.ini_file:
         path: /etc/gdm3/custom.conf
-        regexp: '^#?\s*WaylandEnable='
-        line: 'WaylandEnable=false'
-        insertafter: '^\[daemon\]'
-        state: present
-      register: xorg_fix_result
+        section: daemon
+        option: WaylandEnable
+        value: "false"
+        mode: '0644'
+        create: true
+      register: xorg_fix_wayland
+
+    - name: Arreglos | Configurar GDM3 para forzar sesión Xorg (DefaultSession)
+      community.general.ini_file:
+        path: /etc/gdm3/custom.conf
+        section: daemon
+        option: DefaultSession
+        value: "gnome-xorg.desktop"
+        mode: '0644'
+        create: true
+      register: xorg_fix_session
 
     - name: Arreglos | Informar que se requiere reinicio para aplicar cambio a Xorg
       ansible.builtin.debug:
-        msg: "WaylandEnable=false configurado en /etc/gdm3/custom.conf. Reiniciá el equipo para que tome efecto."
-      when: xorg_fix_result.changed
+        msg: "GDM3 configurado para Xorg en /etc/gdm3/custom.conf. Reiniciá el equipo para que tome efecto."
+      when: xorg_fix_wayland.changed or xorg_fix_session.changed
