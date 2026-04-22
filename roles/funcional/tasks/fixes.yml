@@ -30,12 +30,25 @@
     (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] is version('22.04', '>=')) or
     (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_version'] | int >= 13)
   block:
-    - name: Arreglos | Reinstalar Xorg (controlado por variable)
+    - name: Arreglos | Instalar paquetes necesarios para sesiones Xorg
       ansible.builtin.apt:
-        name: xorg
+        name:
+          - xserver-xorg
+          - gnome-session
+          - xorg
         state: present
-        force: true
-      when: force_xorg_reinstall | bool
+
+    - name: Arreglos | Buscar archivo de sesión Xorg disponible
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /usr/share/xsessions/gnome-xorg.desktop
+        - /usr/share/xsessions/gnome.desktop
+      register: xorg_session_files
+
+    - name: Arreglos | Establecer nombre de sesión Xorg encontrada
+      ansible.builtin.set_fact:
+        xorg_session_name: "{{ (xorg_session_files.results | selectattr('stat.exists') | first).item | basename | replace('.desktop', '') }}"
 
     - name: Arreglos | Verificar si gdm3 está instalado
       ansible.builtin.stat:
@@ -65,7 +78,7 @@
         path: /etc/gdm3/custom.conf
         section: daemon
         option: DefaultSession
-        value: "gnome-xorg.desktop"
+        value: "{{ xorg_session_name }}.desktop"
         no_extra_spaces: true
         mode: '0644'
         create: true
@@ -79,18 +92,6 @@
         force: true
       register: xorg_fix_udev
 
-    - name: Arreglos | Buscar archivo de sesión Xorg disponible
-      ansible.builtin.stat:
-        path: "{{ item }}"
-      loop:
-        - /usr/share/xsessions/gnome-xorg.desktop
-        - /usr/share/xsessions/gnome.desktop
-      register: xorg_session_files
-
-    - name: Arreglos | Establecer nombre de sesión Xorg encontrada
-      ansible.builtin.set_fact:
-        xorg_session_name: "{{ (xorg_session_files.results | selectattr('stat.exists') | first).item | basename | replace('.desktop', '') }}"
-
     - name: Arreglos | Forzar sesión Xorg en AccountsService (anula preferencia guardada por GDM)
       community.general.ini_file:
         path: "/var/lib/AccountsService/users/{{ remote_regular_user }}"
@@ -103,6 +104,7 @@
       loop:
         - { key: XSession, value: "{{ xorg_session_name }}" }
         - { key: Session, value: "" }
+        - { key: SessionType, value: "x11" }
       register: xorg_fix_accounts
 
     - name: Arreglos | Informar que se requiere reinicio para aplicar cambio a Xorg
