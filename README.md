@@ -114,8 +114,8 @@ ansible-playbook local.yml -e "profile_override=freelance_developer" -K --verbos
 # Para el rol SysAdmin (ejecutará funcional -> developer -> sysadmin)
 ansible-playbook local.yml -e "profile_override=sysadmin" -K --verbose
 
-# Para instalar solo herramientas de deploy rápido (ej. kubectl)
-ansible-playbook local.yml --tags "deploy" -K --verbose
+# Para instalar solo herramientas de deploy rápido (ej. kvm)
+ansible-playbook local.yml -e "profile_override=sysadmin" --tags "kvm" -K --verbose
 ```
 
 ---
