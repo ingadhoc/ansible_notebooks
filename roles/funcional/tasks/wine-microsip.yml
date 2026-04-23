@@ -68,40 +68,36 @@
         HOME: "/home/{{ remote_regular_user }}"
         WINEARCH: win64
 
-    # ===== 10. Crear directorio de descargas =====
-    - name: Wine & MicroSIP | Ensure Downloads directory exists
-      become: true
-      become_user: "{{ remote_regular_user }}"
-      ansible.builtin.file:
-        path: "/home/{{ remote_regular_user }}/Descargas"
-        state: directory
-        mode: '0755'
-
-    # ===== 11. Descargar MicroSIP =====
+    # ===== 10. Descargar MicroSIP =====
     - name: Wine & MicroSIP | Download MicroSIP installer
-      become: true
-      become_user: "{{ remote_regular_user }}"
       ansible.builtin.get_url:
-        url: "{{ microsip_download_url | default('https://www.microsip.org/downloads/MicroSIP-3.22.3.exe') }}"
-        dest: "/home/{{ remote_regular_user }}/Descargas/MicroSIP-3.22.3.exe"
+        url: "https://www.microsip.org/download/MicroSIP-3.22.3.exe"
+        dest: /tmp/MicroSIP-3.22.3.exe
         mode: '0755'
+        validate_certs: false
+        force: true
+        headers:
+          User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
-    # ===== 12. Instalar MicroSIP con Wine (headless) =====
+    # ===== 11. Instalar MicroSIP con Wine (headless, silenciosa) =====
     - name: Wine & MicroSIP | Install MicroSIP via Wine
       become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.shell: |
         set -e
         export HOME="/home/{{ remote_regular_user }}"
-        cd /home/{{ remote_regular_user }}/Descargas
-        xvfb-run wine MicroSIP-3.22.3.exe /S
+        cd /tmp
+        timeout 120 xvfb-run -a wine MicroSIP-3.22.3.exe /S /D="$HOME/.wine/drive_c/Program Files/MicroSIP" >/dev/null 2>&1 || true
+        sleep 3
       args:
         executable: /bin/bash
-        creates: "/home/{{ remote_regular_user }}/.wine/drive_c/users/{{ remote_regular_user }}/AppData/Local/MicroSIP/MicroSIP.exe"
+        creates: "/home/{{ remote_regular_user }}/.wine/drive_c/Program Files/MicroSIP/MicroSIP.exe"
       environment:
         HOME: "/home/{{ remote_regular_user }}"
+        WINEDEBUG: "-all"
+        DISPLAY: ":99"
 
-    # ===== 13. Crear directorio de aplicaciones de escritorio =====
+    # ===== 12. Crear directorio de aplicaciones de escritorio =====
     - name: Wine & MicroSIP | Create applications directory
       ansible.builtin.file:
         path: "/home/{{ remote_regular_user }}/.local/share/applications"
@@ -110,13 +106,13 @@
         group: "{{ remote_regular_user }}"
         mode: '0755'
 
-    # ===== 14. Crear acceso directo de escritorio =====
+    # ===== 13. Crear acceso directo de escritorio =====
     - name: Wine & MicroSIP | Create MicroSIP desktop entry
       ansible.builtin.copy:
         content: |
           [Desktop Entry]
           Name=MicroSIP
-          Exec=wine "/home/{{ remote_regular_user }}/.wine/drive_c/users/{{ remote_regular_user }}/AppData/Local/MicroSIP/MicroSIP.exe"
+          Exec=wine "/home/{{ remote_regular_user }}/.wine/drive_c/Program Files/MicroSIP/MicroSIP.exe"
           Type=Application
           Categories=Network;Telephony;
         dest: "/home/{{ remote_regular_user }}/.local/share/applications/microsip.desktop"
@@ -124,7 +120,7 @@
         group: "{{ remote_regular_user }}"
         mode: '0644'
 
-    # ===== 15. Actualizar base de datos de aplicaciones =====
+    # ===== 14. Actualizar base de datos de aplicaciones =====
     - name: Wine & MicroSIP | Update desktop database
       become: true
       become_user: "{{ remote_regular_user }}"
