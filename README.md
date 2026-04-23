@@ -119,6 +119,8 @@ ansible-playbook local.yml -e "asistencia=true" -K --verbose
 
 # Para instalar solo herramientas de deploy rápido (ej. kubectl)
 ansible-playbook local.yml --tags "deploy" -K --verbose
+# Para instalar solo herramientas de deploy rápido (ej. kvm)
+ansible-playbook local.yml -e "profile_override=sysadmin" --tags "kvm" -K --verbose
 ```
 
 > ℹ️ **Nota sobre Asistencia**: Agregar `-e "asistencia=true"` a cualquier perfil instala Wine + MicroSIP automáticamente. Ejemplo:
