@@ -44,4 +44,4 @@
       ansible.builtin.import_tasks: local_dns.yml
     - name: Wine & MicroSIP (Asistencia)
       ansible.builtin.import_tasks: wine-microsip.yml
-      when: asistencia | default(false)
+      when: asistencia | default(false) | bool
