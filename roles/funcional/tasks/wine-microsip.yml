@@ -1,0 +1,129 @@
+---
+# Instalación de Wine + MicroSIP para asistencia telefónica (Debian Trixie)
+- name: Wine & MicroSIP | Setup Wine and MicroSIP for assistance
+  tags: asistencia
+  block:
+    # ===== 1. Habilitar arquitectura 32-bit (MicroSIP lo requiere) =====
+    - name: Wine & MicroSIP | Enable 32-bit architecture support
+      ansible.builtin.command: dpkg --add-architecture i386
+      register: add_arch_result
+      changed_when: true
+
+    # ===== 2. Actualizar cache APT tras habilitar i386 =====
+    - name: Wine & MicroSIP | Update APT cache after enabling i386
+      ansible.builtin.apt:
+        update_cache: true
+
+    # ===== 3. Crear directorio de keyrings =====
+    - name: Wine & MicroSIP | Create keyring directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    # ===== 4. Descargar clave GPG WineHQ =====
+    - name: Wine & MicroSIP | Download WineHQ GPG key
+      ansible.builtin.get_url:
+        url: https://dl.winehq.org/wine-builds/winehq.key
+        dest: /etc/apt/keyrings/winehq-archive.key
+        mode: '0644'
+
+    # ===== 5. Descargar archivo .sources de WineHQ para Trixie =====
+    - name: Wine & MicroSIP | Download WineHQ Trixie sources file
+      ansible.builtin.get_url:
+        url: https://dl.winehq.org/wine-builds/debian/dists/trixie/winehq-trixie.sources
+        dest: /etc/apt/sources.list.d/winehq-trixie.sources
+        mode: '0644'
+
+    # ===== 6. Actualizar cache APT con repo WineHQ =====
+    - name: Wine & MicroSIP | Update APT cache after adding WineHQ repo
+      ansible.builtin.apt:
+        update_cache: true
+
+    # ===== 7. Instalar Wine estable =====
+    - name: Wine & MicroSIP | Install Wine stable with recommends
+      ansible.builtin.apt:
+        name: winehq-stable
+        install_recommends: true
+        state: present
+
+    # ===== 8. Instalar xvfb para instalaciones headless =====
+    - name: Wine & MicroSIP | Install xvfb for headless Wine operations
+      ansible.builtin.apt:
+        name: xvfb
+        state: present
+
+    # ===== 9. Inicializar Wine prefix (headless, sin GUI) =====
+    - name: Wine & MicroSIP | Initialize Wine prefix
+      become: true
+      become_user: "{{ remote_regular_user }}"
+      ansible.builtin.shell: |
+        set -e
+        export HOME="/home/{{ remote_regular_user }}"
+        WINEDEBUG=-all wineboot -u 2>/dev/null || true
+      args:
+        executable: /bin/bash
+        creates: "/home/{{ remote_regular_user }}/.wine"
+      environment:
+        HOME: "/home/{{ remote_regular_user }}"
+        WINEARCH: win64
+
+    # ===== 10. Descargar MicroSIP =====
+    - name: Wine & MicroSIP | Download MicroSIP installer
+      ansible.builtin.get_url:
+        url: "https://www.microsip.org/download/MicroSIP-3.22.3.exe"
+        dest: /tmp/MicroSIP-3.22.3.exe
+        mode: '0755'
+        validate_certs: false
+        force: true
+        headers:
+          User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+    # ===== 11. Instalar MicroSIP con Wine (headless, silenciosa) =====
+    - name: Wine & MicroSIP | Install MicroSIP via Wine
+      become: true
+      become_user: "{{ remote_regular_user }}"
+      ansible.builtin.shell: |
+        set -e
+        export HOME="/home/{{ remote_regular_user }}"
+        cd /tmp
+        timeout 120 xvfb-run -a wine MicroSIP-3.22.3.exe /S /D="$HOME/.wine/drive_c/Program Files/MicroSIP" >/dev/null 2>&1 || true
+        sleep 3
+      args:
+        executable: /bin/bash
+        creates: "/home/{{ remote_regular_user }}/.wine/drive_c/Program Files/MicroSIP/MicroSIP.exe"
+      environment:
+        HOME: "/home/{{ remote_regular_user }}"
+        WINEDEBUG: "-all"
+        DISPLAY: ":99"
+
+    # ===== 12. Crear directorio de aplicaciones de escritorio =====
+    - name: Wine & MicroSIP | Create applications directory
+      ansible.builtin.file:
+        path: "/home/{{ remote_regular_user }}/.local/share/applications"
+        state: directory
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: '0755'
+
+    # ===== 13. Crear acceso directo de escritorio =====
+    - name: Wine & MicroSIP | Create MicroSIP desktop entry
+      ansible.builtin.copy:
+        content: |
+          [Desktop Entry]
+          Name=MicroSIP
+          Exec=wine "/home/{{ remote_regular_user }}/.wine/drive_c/Program Files/MicroSIP/MicroSIP.exe"
+          Type=Application
+          Categories=Network;Telephony;
+        dest: "/home/{{ remote_regular_user }}/.local/share/applications/microsip.desktop"
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: '0644'
+
+    # ===== 14. Actualizar base de datos de aplicaciones =====
+    - name: Wine & MicroSIP | Update desktop database
+      become: true
+      become_user: "{{ remote_regular_user }}"
+      ansible.builtin.command: >
+        update-desktop-database /home/{{ remote_regular_user }}/.local/share/applications/
+      changed_when: true

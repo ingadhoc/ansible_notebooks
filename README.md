@@ -114,8 +114,20 @@ ansible-playbook local.yml -e "profile_override=freelance_developer" -K --verbos
 # Para el rol SysAdmin (ejecutará funcional -> developer -> sysadmin)
 ansible-playbook local.yml -e "profile_override=sysadmin" -K --verbose
 
+# Para instalar Funcional + Wine + MicroSIP (asistencia telefónica)
+ansible-playbook local.yml -e "asistencia=true" -K --verbose
+
+# Para instalar solo herramientas de deploy rápido (ej. kubectl)
+ansible-playbook local.yml --tags "deploy" -K --verbose
 # Para instalar solo herramientas de deploy rápido (ej. kvm)
 ansible-playbook local.yml -e "profile_override=sysadmin" --tags "kvm" -K --verbose
+```
+
+> ℹ️ **Nota sobre Asistencia**: Agregar `-e "asistencia=true"` a cualquier perfil instala Wine + MicroSIP automáticamente. Ejemplo:
+> ```bash
+> # Developer + asistencia  
+> ansible-playbook local.yml -e "profile_override=developer" -e "asistencia=true" -K --verbose
+> ```
 ```
 
 ---
