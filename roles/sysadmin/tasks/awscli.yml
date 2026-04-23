@@ -1,0 +1,74 @@
+---
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+
+- name: SysAdmin - Instalar AWS CLI v2
+  tags: awscli
+  become: true
+  block:
+
+    - name: AWS CLI | Detectar instalación existente
+      ansible.builtin.command: aws --version
+      register: sysadmin_awscli_installed
+      changed_when: false
+      failed_when: false
+
+    - name: AWS CLI | Mapear arquitectura del sistema
+      ansible.builtin.set_fact:
+        sysadmin_awscli_arch: >-
+          {{
+            'x86_64' if ansible_facts['architecture'] in ['x86_64', 'amd64'] else
+            'aarch64' if ansible_facts['architecture'] in ['aarch64', 'arm64'] else
+            'x86_64'
+          }}
+
+    - name: AWS CLI | Descargar instalador
+      when: sysadmin_awscli_installed.rc != 0 or (sysadmin_awscli_force_update | default(false) | bool)
+      ansible.builtin.get_url:
+        url: "https://awscli.amazonaws.com/awscli-exe-linux-{{ sysadmin_awscli_arch }}.zip"
+        dest: /tmp/awscliv2.zip
+        mode: '0644'
+        force: true
+
+    - name: AWS CLI | Descomprimir instalador
+      when: sysadmin_awscli_installed.rc != 0 or (sysadmin_awscli_force_update | default(false) | bool)
+      ansible.builtin.unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: true
+
+    - name: AWS CLI | Instalar (primera vez)
+      when: sysadmin_awscli_installed.rc != 0
+      ansible.builtin.command:
+        cmd: >-
+          /tmp/aws/install
+          --install-dir {{ sysadmin_awscli_install_dir }}
+          --bin-dir {{ sysadmin_awscli_bin_dir }}
+        creates: "{{ sysadmin_awscli_bin_dir }}/aws"
+
+    - name: AWS CLI | Actualizar versión existente
+      when: sysadmin_awscli_installed.rc == 0 and (sysadmin_awscli_force_update | default(false) | bool)
+      ansible.builtin.command:
+        cmd: >-
+          /tmp/aws/install
+          --install-dir {{ sysadmin_awscli_install_dir }}
+          --bin-dir {{ sysadmin_awscli_bin_dir }}
+          --update
+
+    - name: AWS CLI | Limpiar archivos temporales
+      when: sysadmin_awscli_installed.rc != 0 or (sysadmin_awscli_force_update | default(false) | bool)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/awscliv2.zip
+        - /tmp/aws
+
+    - name: AWS CLI | Configurar autocompletado de bash para el usuario
+      become_user: "{{ remote_regular_user }}"
+      ansible.builtin.blockinfile:
+        path: "/home/{{ remote_regular_user }}/.bashrc"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - aws cli completion"
+        block: |
+          # AWS CLI autocompletado
+          complete -C '{{ sysadmin_awscli_bin_dir }}/aws_completer' aws
+        create: false

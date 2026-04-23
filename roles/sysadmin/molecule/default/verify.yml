@@ -73,6 +73,18 @@
       tags:
         - molecule-notest
 
+    - name: Verify | Check AWS CLI binary
+      ansible.builtin.command: aws --version
+      register: verify_awscli_version
+      changed_when: false
+      failed_when: verify_awscli_version.rc != 0
+
+    - name: Verify | Check aws_completer binary exists
+      ansible.builtin.stat:
+        path: /usr/local/bin/aws_completer
+      register: verify_awscli_completer
+      failed_when: not verify_awscli_completer.stat.exists
+
     - name: Verify | Check VS Code extensions for sysadmin
       become_user: "{{ remote_user }}"
       ansible.builtin.command: code --list-extensions --no-sandbox
@@ -89,3 +101,4 @@
           - "Helm version: {{ verify_helm_version.stdout | default('Not available') }}"
           - "KVM/Libvirt version: {{ verify_kvm_version.stdout | default('Not installed') }}"
           - "NordVPN version: {{ verify_nordvpn_version.stdout | default('Not installed') }}"
+          - "AWS CLI version: {{ verify_awscli_version.stdout | default('Not available') }}"

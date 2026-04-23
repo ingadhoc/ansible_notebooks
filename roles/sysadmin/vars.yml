@@ -62,6 +62,15 @@ sysadmin_nordvpn_gpg_path: "/usr/share/keyrings/nordvpn-archive-keyring.gpg"
 sysadmin_nordvpn_repo_line: "deb [signed-by={{ sysadmin_nordvpn_gpg_path }}] https://repo.nordvpn.com/deb/nordvpn/debian stable main"
 sysadmin_nordvpn_package: "nordvpn"
 
+# --- Configuración para AWS CLI ---
+# Directorio de instalación de los binarios de AWS CLI
+sysadmin_awscli_install_dir: /usr/local/aws-cli
+# Directorio donde se crean los symlinks (aws, aws_completer)
+sysadmin_awscli_bin_dir: /usr/local/bin
+# Forzar actualización aunque ya esté instalado:
+#   ansible-playbook local.yml -e "profile_override=sysadmin" -e "sysadmin_awscli_force_update=true" -K
+sysadmin_awscli_force_update: false
+
 # --- Configuración del Tema de Iconos Numix ---
 sysadmin_icon_packages:
   - numix-icon-theme-circle
