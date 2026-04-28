@@ -103,7 +103,7 @@
         create: true
       loop:
         - { key: XSession, value: "{{ xorg_session_name }}" }
-        - { key: Session, value: "" }
+        - { key: Session, value: "{{ xorg_session_name }}" }
         - { key: SessionType, value: "x11" }
       register: xorg_fix_accounts
 
