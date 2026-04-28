@@ -42,3 +42,6 @@
       ansible.builtin.import_tasks: fixes.yml
     - name: Local DNS
       ansible.builtin.import_tasks: local_dns.yml
+    - name: Wine & MicroSIP (Asistencia)
+      ansible.builtin.import_tasks: wine-microsip.yml
+      when: asistencia | default(false) | bool
