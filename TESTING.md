@@ -64,17 +64,9 @@ Molecule ejecuta el playbook dos veces para verificar idempotencia. En la segund
 molecule test --scenario-name default
 ```
 
-### Tests por Distribución
+### Distribución de Test
 
-Para testear solo una distribución específica:
-
-```bash
-# Solo Debian 12
-MOLECULE_DISTRO=debian13 molecule test
-
-# Solo Ubuntu 22.04
-MOLECULE_DISTRO=ubuntu2204 molecule test
-```
+Los escenarios de Molecule testean Debian 13. Ubuntu ya no forma parte del CI.
 
 ## Estructura de Tests
 
@@ -91,9 +83,9 @@ roles/funcional/molecule/default/
 El workflow `.github/workflows/molecule.yml` ejecuta:
 
 1. **Lint**: Validación de sintaxis YAML y Ansible
-2. **Test funcional**: Tests del rol base (matriz: Debian 12 + Ubuntu 22.04)
-3. **Test developer**: Tests del rol developer (pendiente de implementar)
-4. **Test sysadmin**: Tests del rol sysadmin (pendiente de implementar)
+2. **Test funcional**: Tests del rol base en Debian 13
+3. **Test developer**: Tests del rol developer en Debian 13
+4. **Test sysadmin**: Tests del rol sysadmin en Debian 13
 
 ### Triggers del CI
 
@@ -118,10 +110,8 @@ Los logs se suben como artifacts cuando fallan los tests. Puedes descargarlos de
 
 ## Próximos Pasos
 
-1. Implementar tests para rol `developer`
-2. Implementar tests para rol `sysadmin`
-3. Agregar tests de configuraciones específicas (GNOME, SSH, Git)
-4. Validar herencia de roles en tests
+1. Agregar tests de configuraciones específicas (GNOME, SSH, Git)
+2. Validar herencia de roles en tests
 
 ## Troubleshooting
 
