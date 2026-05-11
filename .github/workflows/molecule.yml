@@ -112,7 +112,7 @@ jobs:
         run: |
           echo "## 🧪 Testing funcional role on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
           cd roles/funcional
-          if molecule test; then
+          if molecule test --platform-name "${{ matrix.distro }}-funcional"; then
             echo "✅ Tests passed for funcional on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Tests failed for funcional on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
@@ -165,7 +165,7 @@ jobs:
         run: |
           echo "## 🧪 Testing developer role on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
           cd roles/developer
-          if molecule test; then
+          if molecule test --platform-name "${{ matrix.distro }}-developer"; then
             echo "✅ Tests passed for developer on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Tests failed for developer on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
@@ -218,7 +218,7 @@ jobs:
         run: |
           echo "## 🧪 Testing sysadmin role on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
           cd roles/sysadmin
-          if molecule test; then
+          if molecule test --platform-name "${{ matrix.distro }}-sysadmin"; then
             echo "✅ Tests passed for sysadmin on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ Tests failed for sysadmin on ${{ matrix.distro }}" >> $GITHUB_STEP_SUMMARY
