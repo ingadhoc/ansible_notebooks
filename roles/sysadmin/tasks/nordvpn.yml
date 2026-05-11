@@ -3,6 +3,7 @@
 - name: SysAdmin | Instalar y configurar NordVPN
   tags: nordvpn
   become: true
+  when: not (sysadmin_skip_nordvpn | default(false))
   block:
     - name: NordVPN | Descargar la clave GPG del repositorio de NordVPN
       ansible.builtin.get_url:
