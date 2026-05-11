@@ -9,6 +9,7 @@
     skip_gnome_tasks: true
     developer_manage_vscode_extensions: false
     developer_manage_vscode_defaults: false
+    sysadmin_manage_vscode_extensions: false
     developer_skip_docker: false
     developer_skip_docker_service: true
     developer_skip_remote_dev: true
@@ -42,6 +43,7 @@
         skip_gnome_tasks: true
         developer_manage_vscode_extensions: false
         developer_manage_vscode_defaults: false
+        sysadmin_manage_vscode_extensions: false
         developer_skip_docker: false
         developer_skip_docker_service: true
         developer_skip_remote_dev: true
