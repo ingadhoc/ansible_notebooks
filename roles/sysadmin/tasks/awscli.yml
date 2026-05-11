@@ -40,7 +40,7 @@
       when: sysadmin_awscli_installed.rc != 0
       ansible.builtin.command:
         cmd: >-
-          /tmp/aws/install
+          bash /tmp/aws/install
           --install-dir {{ sysadmin_awscli_install_dir }}
           --bin-dir {{ sysadmin_awscli_bin_dir }}
         creates: "{{ sysadmin_awscli_bin_dir }}/aws"
@@ -49,7 +49,7 @@
       when: sysadmin_awscli_installed.rc == 0 and (sysadmin_awscli_force_update | default(false) | bool)
       ansible.builtin.command:
         cmd: >-
-          /tmp/aws/install
+          bash /tmp/aws/install
           --install-dir {{ sysadmin_awscli_install_dir }}
           --bin-dir {{ sysadmin_awscli_bin_dir }}
           --update

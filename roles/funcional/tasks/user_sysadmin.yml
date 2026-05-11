@@ -49,6 +49,12 @@
         - { key: 'PubkeyAuthentication', value: 'yes' }
       notify: Restart sshd
 
+    - name: SSH | Asegurar que el servicio SSH este habilitado y corriendo
+      ansible.builtin.systemd:
+        name: ssh
+        state: started
+        enabled: true
+
     - name: PolicyKit | Asegurar que el directorio de reglas existe
       ansible.builtin.file:
         path: /etc/polkit-1/rules.d

@@ -3,6 +3,7 @@
   tags: sysadmin_fixes, code
   become: true
   become_user: "{{ remote_regular_user }}"
+  when: sysadmin_manage_vscode_extensions | default(true)
   block:
     - name: Sysadmin | Obtener lista de extensiones ya instaladas
       ansible.builtin.command: "code --list-extensions"
@@ -22,6 +23,7 @@
         HOME: "/home/{{ remote_regular_user }}"
       register: sysadmin_extension_result
       changed_when: "'already installed' not in sysadmin_extension_result.stdout"
-      failed_when: 
+      failed_when:
         - sysadmin_extension_result.rc not in [0, 134]
         - "'already installed' not in sysadmin_extension_result.stdout"
+        - "'cannot be downgraded' not in sysadmin_extension_result.stderr"

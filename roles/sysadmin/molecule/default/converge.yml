@@ -9,11 +9,13 @@
     skip_gnome_tasks: true
     developer_manage_vscode_extensions: false
     developer_manage_vscode_defaults: false
+    sysadmin_manage_vscode_extensions: false
     developer_skip_docker: false
     developer_skip_docker_service: true
     developer_skip_remote_dev: true
     sysadmin_skip_kvm: true
     sysadmin_skip_kvm_service: true
+    sysadmin_skip_nordvpn: true
     sysadmin_skip_nordvpn_service: true
 
   pre_tasks:
@@ -41,9 +43,11 @@
         skip_gnome_tasks: true
         developer_manage_vscode_extensions: false
         developer_manage_vscode_defaults: false
+        sysadmin_manage_vscode_extensions: false
         developer_skip_docker: false
         developer_skip_docker_service: true
         developer_skip_remote_dev: true
         sysadmin_skip_kvm: true
         sysadmin_skip_kvm_service: true
+        sysadmin_skip_nordvpn: true
         sysadmin_skip_nordvpn_service: true

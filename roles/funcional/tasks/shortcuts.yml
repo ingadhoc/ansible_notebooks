@@ -1,6 +1,6 @@
 ---
 - name: GNOME | Aplicar atajos de teclado para espacios de trabajo
-  tags: shortcuts, gnome
+  tags: shortcuts, gnome, dconf
   become: true
   become_user: "{{ remote_regular_user }}"
   community.general.dconf:
@@ -9,3 +9,55 @@
     state: present
   loop: "{{ gnome_keybindings | from_yaml }}"
   when: not (skip_gnome_tasks | default(false))
+
+- name: GNOME | Configurar atajo personalizado de Flameshot
+  tags: shortcuts, gnome, dconf, flameshot
+  when:
+    - ansible_facts['distribution'] == 'Debian'
+    - ansible_facts['distribution_major_version'] == '13'
+    - not (skip_gnome_tasks | default(false))
+  block:
+    - name: GNOME | Asegurar Flameshot instalado para el atajo de captura
+      become: true
+      ansible.builtin.apt:
+        name: flameshot
+        state: present
+
+    - name: GNOME | Leer atajos personalizados existentes
+      become: true
+      become_user: "{{ remote_regular_user }}"
+      ansible.builtin.command:
+        cmd: "dconf read {{ gnome_custom_keybindings_base_path }}"
+      register: gnome_custom_keybindings_read
+      changed_when: false
+      failed_when: false
+
+    - name: GNOME | Preparar lista de atajos personalizados
+      ansible.builtin.set_fact:
+        gnome_custom_keybinding_paths: >-
+          {{
+            []
+            if (gnome_custom_keybindings_read.rc != 0
+                or (gnome_custom_keybindings_read.stdout | default('') | trim) in ['', '@as []'])
+            else (gnome_custom_keybindings_read.stdout | from_yaml)
+          }}
+
+    - name: GNOME | Registrar la lista de atajos personalizados
+      become: true
+      become_user: "{{ remote_regular_user }}"
+      community.general.dconf:
+        key: "{{ gnome_custom_keybindings_base_path }}"
+        value: "{{ (gnome_custom_keybinding_paths + [gnome_flameshot_shortcut_path]) | unique | list }}"
+        state: present
+
+    - name: GNOME | Configurar claves del atajo personalizado de Flameshot
+      become: true
+      become_user: "{{ remote_regular_user }}"
+      community.general.dconf:
+        key: "{{ gnome_flameshot_shortcut_path }}{{ item.key }}"
+        value: "{{ item.value }}"
+        state: present
+      loop:
+        - { key: "name", value: "'{{ gnome_flameshot_shortcut_name }}'" }
+        - { key: "command", value: "'{{ gnome_flameshot_shortcut_command }}'" }
+        - { key: "binding", value: "'{{ gnome_flameshot_shortcut_binding }}'" }
