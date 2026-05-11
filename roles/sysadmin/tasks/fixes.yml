@@ -3,6 +3,7 @@
   tags: sysadmin_fixes, code
   become: true
   become_user: "{{ remote_regular_user }}"
+  when: developer_manage_vscode_extensions | default(true)
   block:
     - name: Sysadmin | Obtener lista de extensiones ya instaladas
       ansible.builtin.command: "code --list-extensions"
