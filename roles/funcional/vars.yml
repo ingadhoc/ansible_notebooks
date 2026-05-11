@@ -1,7 +1,6 @@
 ---
 # Usuario genérico para ejecutar algunas tareas (con valor por defecto)
 remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
-remote_regular_user_uid: "{{ ansible_env.SUDO_UID | default(ansible_user_uid) }}"
 
 # INTERRUPTOR PRINCIPAL PARA EL ESTILO DE ESCRITORIOS VIRTUALES
 # Opciones válidas: 'dynamic' o 'fixed'
