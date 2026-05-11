@@ -1,6 +1,7 @@
 ---
 # Usuario genérico para ejecutar algunas tareas (con valor por defecto)
 remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
+remote_regular_user_uid: "{{ ansible_env.SUDO_UID | default(ansible_user_uid) }}"
 
 # INTERRUPTOR PRINCIPAL PARA EL ESTILO DE ESCRITORIOS VIRTUALES
 # Opciones válidas: 'dynamic' o 'fixed'
@@ -180,6 +181,13 @@ gnome_keybindings: >-
   {% else %}
   []
   {% endif %}
+
+# Atajo personalizado de GNOME para capturas con Flameshot
+gnome_custom_keybindings_base_path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
+gnome_flameshot_shortcut_path: "{{ gnome_custom_keybindings_base_path }}/custom-flameshot/"
+gnome_flameshot_shortcut_name: "captura"
+gnome_flameshot_shortcut_command: "/usr/bin/flameshot gui"
+gnome_flameshot_shortcut_binding: "<Ctrl><Alt>s"
 
 # --- Configuración de Branding ---
 branding_wallpaper_light: ".wallpaper.png"
