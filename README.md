@@ -204,6 +204,7 @@ Cuando una notebook con el usuario genérico `adhoc` se asigna a un empleado nue
 **Prerrequisitos:**
 - Acceso SSH a la máquina via el usuario `_sysadmin` con la clave `~/.ssh/sysadmin_key`.
 - La notebook debe estar encendida y accesible en la red.
+- Solicitar IP con el comando `hostname -I`
 
 **Comando:**
 
