@@ -13,6 +13,7 @@
           - speedtest-cli
           - fzf
           - mtr
+          - nmap
 
     - name: Timeshift - Paquetes y dependencias
       when: ansible_facts['distribution'] == 'Debian'
