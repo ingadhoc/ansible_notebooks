@@ -88,7 +88,7 @@ jobs:
       matrix:
         distro:
           - debian13
-          - ubuntu2204
+          - ubuntu2404
     
     steps:
       - name: Checkout code
@@ -141,7 +141,7 @@ jobs:
       matrix:
         distro:
           - debian13
-          - ubuntu2204
+          - ubuntu2404
     
     steps:
       - name: Checkout code
@@ -194,7 +194,7 @@ jobs:
       matrix:
         distro:
           - debian13
-          - ubuntu2204
+          - ubuntu2404
     
     steps:
       - name: Checkout code
@@ -278,7 +278,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Platforms Tested" >> $GITHUB_STEP_SUMMARY
           echo "- 🐧 Debian 13 (Trixie)" >> $GITHUB_STEP_SUMMARY
-          echo "- 🐧 Ubuntu 22.04 (Jammy)" >> $GITHUB_STEP_SUMMARY
+          echo "- 🐧 Ubuntu 24.04 (Noble)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Overall status

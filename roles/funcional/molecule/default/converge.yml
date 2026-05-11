@@ -19,12 +19,15 @@
 
     - name: Install basic dependencies for testing
       ansible.builtin.apt:
-        name:
-          - sudo
-          - gnupg
-          - lsb-release
-          - software-properties-common
-          - dbus
+        name: >-
+          {{
+            ['sudo', 'gnupg', 'lsb-release', 'dbus']
+            + (
+              ['software-properties-common']
+              if ansible_facts['distribution'] == 'Ubuntu'
+              else []
+            )
+          }}
         state: present
 
   roles:

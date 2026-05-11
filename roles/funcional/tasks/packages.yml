@@ -31,6 +31,16 @@
     state: absent
     purge: true
 
+- name: Paquetes | Verificar si snap esta instalado
+  tags: packages_funcional
+  ansible.builtin.command: which snap
+  register: snap_binary
+  changed_when: false
+  failed_when: false
+  when:
+    - ansible_facts['distribution'] == 'Ubuntu'
+    - ansible_facts['distribution_version'] is version('24.04', '>=')
+
 - name: Paquetes | Eliminar programas snap no deseados
   tags: packages_funcional
   community.general.snap:
@@ -39,3 +49,4 @@
   when:
     - ansible_facts['distribution'] == 'Ubuntu'
     - ansible_facts['distribution_version'] is version('24.04', '>=')
+    - snap_binary.rc | default(1) == 0
