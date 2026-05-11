@@ -26,10 +26,10 @@
     - name: GNOME | Leer atajos personalizados existentes
       become: true
       become_user: "{{ remote_regular_user }}"
-      community.general.dconf:
-        key: "{{ gnome_custom_keybindings_base_path }}"
-        state: read
+      ansible.builtin.command:
+        cmd: "dconf read {{ gnome_custom_keybindings_base_path }}"
       register: gnome_custom_keybindings_read
+      changed_when: false
       failed_when: false
 
     - name: GNOME | Preparar lista de atajos personalizados
@@ -37,8 +37,9 @@
         gnome_custom_keybinding_paths: >-
           {{
             []
-            if (gnome_custom_keybindings_read.value | default('') | trim) in ['', '@as []']
-            else (gnome_custom_keybindings_read.value | from_yaml)
+            if (gnome_custom_keybindings_read.rc != 0
+                or (gnome_custom_keybindings_read.stdout | default('') | trim) in ['', '@as []'])
+            else (gnome_custom_keybindings_read.stdout | from_yaml)
           }}
 
     - name: GNOME | Registrar la lista de atajos personalizados
