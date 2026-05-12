@@ -6,6 +6,9 @@ remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
 # Opciones válidas: 'dynamic' o 'fixed'
 gnome_workspace_style: 'dynamic'
 
+# Red interna permitida para SSH (ajustar según entorno)
+internal_network: "192.168.0.0/24"
+
 # --- Configuración de DNS Públicos ---
 # DNS Primarios: Google
 # DNS Secundarios: Cloudflare
