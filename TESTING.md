@@ -66,7 +66,7 @@ molecule test --scenario-name default
 
 ### Distribución de Test
 
-Los escenarios de Molecule testean Debian 13. Ubuntu ya no forma parte del CI.
+Los escenarios de Molecule testean Debian 13 (Trixie).
 
 ## Estructura de Tests
 

@@ -4,7 +4,7 @@
 Este repositorio contiene la automatización oficial de Adhoc para aprovisionar estaciones de trabajo (notebooks). Utiliza Ansible para configurar sistemas operativos desde cero, garantizando entornos consistentes, seguros y auditables.
 
 **Filosofía Core:**
-- **Debian-First:** Prioridad en Debian (12+) para sistemas base limpios. Compatibilidad completa con Ubuntu LTS (22.04, 24.04).
+- **Debian-Only:** Soporte exclusivo para Debian 13 (Trixie). Sistema base limpio, estable y libre de decisiones comerciales de Canonical.
 - **Idempotencia estricta:** Ejecutar el playbook múltiples veces sobre el mismo equipo debe resultar en `changed=0`.
 - **Testing Continuo:** Todo rol debe ser testeable en entornos aislados vía Molecule + Docker.
 - **Automatización sobre intervención manual:** Evitar pasos manuales post-instalación siempre que sea posible.
@@ -66,8 +66,8 @@ El código debe estar preparado para correr dentro de contenedores Docker durant
 
 ## 4. Testing Strategy (Molecule)
 
-- **Driver:** Docker (`geerlingguy/docker-debian13-ansible` y `ubuntu2404`).
-- **Plataformas por defecto:** Debian 12/13 y Ubuntu 22.04 LTS. (Ubuntu 24.04 LTS para validaciones extendidas).
+- **Driver:** Docker (`geerlingguy/docker-debian13-ansible`).
+- **Plataforma:** Debian 13 (Trixie).
 - **Fases críticas:** El CI exige que la fase `idempotence` pase estrictamente (0 changes en el segundo run) y que la fase `verify` valide aserciones mediante `ansible.builtin.assert` o `package_facts`.
 
 **Workflow de Desarrollo Iterativo para la IA/Dev:**

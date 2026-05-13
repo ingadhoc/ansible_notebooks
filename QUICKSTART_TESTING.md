@@ -20,7 +20,7 @@ source .venv/bin/activate
 ### 3. Ejecutar tu primer test
 
 ```bash
-# Test del rol funcional en Debian 12 y Ubuntu 22.04
+# Test del rol funcional en Debian 13
 ./test-role.sh funcional
 ```
 

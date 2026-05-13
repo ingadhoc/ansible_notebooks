@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is an Ansible-based laptop provisioning system for Adhoc, designed for clean Debian 12+ and Ubuntu 22.04+ installations. It automates complete workstation setup through hierarchical profile-based roles.
+This is an Ansible-based laptop provisioning system for Adhoc, designed for clean Debian 13 installations. It automates complete workstation setup through hierarchical profile-based roles.
 
 ## Architecture: Hierarchical Role System
 
@@ -89,7 +89,7 @@ ansible-playbook local.yml --tags "deploy" -K --verbose
 
 ### Variable patterns
 - **User detection**: `remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"` - critical for running tasks as the actual user when using `sudo`
-- **Distribution-specific logic**: Use `ansible_facts['distribution']` and `ansible_facts['distribution_version']` for Debian vs Ubuntu differences
+- **Distribution version logic**: Use `ansible_facts['distribution_version']` for Debian version-specific behavior
 - **Package exclusions**: `packages_exclude_debian_13` pattern for distro-specific package availability
 - Variables prefixed with role name: `developer_*`, `funcional_*`, `sysadmin_*`
 
@@ -139,7 +139,7 @@ Use "check-then-install" pattern (see `roles/developer/tasks/code.yml`):
 ## Testing Strategy (Progressive Approach)
 
 ### Current state
-Manual testing in VirtualBox VMs with clean Debian/Ubuntu installations.
+Manual testing in VirtualBox VMs with clean Debian 13 installations.
 
 ### Planned automated testing with Molecule
 **Goal**: Systematize testing to avoid exclusive reliance on manual VirtualBox testing.
@@ -148,7 +148,7 @@ Manual testing in VirtualBox VMs with clean Debian/Ubuntu installations.
 1. **Phase 1 - Basic Molecule setup**:
    - Install Molecule: `pip install molecule molecule-plugins[docker]`
    - Create initial scenario for `funcional` role: `molecule init scenario -r funcional`
-   - Configure `molecule/default/molecule.yml` with Debian 12 and Ubuntu 22.04 containers
+   - Configure `molecule/default/molecule.yml` with Debian 13 containers
    - Write basic verification tests in `molecule/default/verify.yml` (check key packages installed)
 
 2. **Phase 2 - Expand coverage**:
@@ -158,7 +158,7 @@ Manual testing in VirtualBox VMs with clean Debian/Ubuntu installations.
      - Service states (Docker, SSH)
      - File/directory presence and permissions
      - User configurations (Git, VS Code extensions)
-   - Test distribution-specific logic (Debian vs Ubuntu differences)
+   - Test Debian version-specific behavior
 
 3. **Phase 3 - CI/CD integration**:
    - Set up GitHub Actions workflow (`.github/workflows/molecule.yml`)
