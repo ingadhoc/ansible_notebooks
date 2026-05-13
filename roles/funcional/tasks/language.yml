@@ -3,17 +3,10 @@
   tags: language
   become: true
   block:
-    - name: Idiomas | Instalar paquetes de idioma para Ubuntu
-      ansible.builtin.apt:
-        name: "{{ language_packs_ubuntu }}"
-        state: present
-      when: ansible_facts['distribution'] == 'Ubuntu'
-
-    - name: Idiomas | Instalar paquetes de idioma para Debian
+    - name: Idiomas | Instalar paquetes de idioma
       ansible.builtin.apt:
         name: "{{ language_packs_debian }}"
         state: present
-      when: ansible_facts['distribution'] == 'Debian'
 
     - name: Idiomas | Asegurar que el locale 'es_ES.UTF-8' esté generado
       community.general.locale_gen:

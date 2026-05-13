@@ -7,28 +7,14 @@
     key: "/org/gnome/shell/favorite-apps"
     value: "{{ gnome_functional_favorite_apps }}"
     state: present
-  when:
-    - ansible_facts['distribution'] in ['Ubuntu', 'Debian']
-    - not (skip_gnome_tasks | default(false))
+  when: not (skip_gnome_tasks | default(false))
 
-- name: Arreglos | Configurar comportamiento del dock (dash-to-dock, solo Ubuntu)
-  tags: funcional_fixes, gnome
-  become: true
-  become_user: "{{ remote_regular_user }}"
-  community.general.dconf:
-    key: "/org/gnome/shell/extensions/dash-to-dock/click-action"
-    value: "'minimize'"
-    state: present
-  when:
-    - ansible_facts['distribution'] == 'Ubuntu'
-    - not (skip_gnome_tasks | default(false))
-
-- name: Arreglos | Forzar Xorg y reinstalar (Ubuntu 22.04+ y Debian 13+)
+- name: Arreglos | Instalar paquetes Xorg y forzar sesión (Debian 13+)
   tags: xorg_fixes
   become: true
   when: >
-    (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_version'] is version('22.04', '>=')) or
-    (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_version'] | int >= 13)
+    ansible_facts['distribution'] == 'Debian' and
+    ansible_facts['distribution_version'] | int >= 13
   block:
     - name: Arreglos | Instalar paquetes necesarios para sesiones Xorg
       ansible.builtin.apt:

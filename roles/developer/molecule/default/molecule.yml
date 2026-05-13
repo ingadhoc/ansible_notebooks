@@ -26,7 +26,8 @@ provisioner:
   config_options:
     defaults:
       callbacks_enabled: timer, profile_tasks
-      stdout_callback: yaml
+      stdout_callback: default
+      result_format: yaml
       roles_path: ../../../../roles
   inventory:
     host_vars:
