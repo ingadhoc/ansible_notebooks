@@ -1,6 +1,6 @@
 # Perfiles de provisión (guía de elección)
 
-Este proyecto instala un entorno de trabajo completo en **Debian 12+** y **Ubuntu 22.04+** usando Ansible.
+Este proyecto instala un entorno de trabajo completo en **Debian 13** usando Ansible.
 
 La idea central es simple:
 - Elegís un **perfil** (rol) según tu tipo de trabajo.

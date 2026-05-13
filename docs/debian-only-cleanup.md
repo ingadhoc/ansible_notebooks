@@ -11,21 +11,29 @@ o se elimina la condición si solo queda Debian.
 
 ## 📊 Estado actual
 
-**Completado** (commit `bd34ddf` + posteriores):
-- ✅ Grupos 1-5, 7, 8 — código activo de los roles `funcional` y `developer`
-- ✅ Grupo 9 — Molecule converge.yml en 3 roles
-- ✅ Grupo 12 — copilot-instructions.md
-- ✅ Grupo 13 — Docs raíz (README, specifications, TESTING, QUICKSTART, funcional/README)
+**Completado en el branch `chore/debian-only-cleanup`:**
+- ✅ Grupos 1-5, 7, 8 — código activo de los roles `funcional` y `developer` (commit `bd34ddf`)
+- ✅ Grupo 9 — Molecule converge.yml en 3 roles (commit `bd34ddf`)
+- ✅ Grupo 10 — `Makefile`: eliminados `test-ubuntu2404` y `test-all-distros` (ya estaba roto
+  tras `bd34ddf`), `docker-pull-images` simplificado a solo Debian 13
+- ✅ Grupo 12 — copilot-instructions.md (commit `901a144`)
+- ✅ Grupo 13 — Docs raíz: README, specifications, TESTING, QUICKSTART, funcional/README (commit `901a144`)
+- ✅ Grupo 14 — Docs en `docs/`: borrados `MULTI_DISTRO_TESTING.md` y `molecule-multi-distro-example.yml`;
+  editados `MOLECULE_GUIDE.md` (reescrita sección multi-distro), `TESTING.md`, `FREELANCE_DEVELOPER.md`,
+  `PROFILES.md`, `TEST_RUN_NOTES.md`
 - ✅ **Bonus:** fix del callback `community.general.yaml` (removido en 12.0.0) en los 4 molecule.yml
 - ✅ Test `make test-funcional` pasa verde
 
-**Pendiente:**
-- ⏳ Grupo 10 — `Makefile` (sacar targets `test-ubuntu*`, limpiar `docker-pull-images`)
-- ⏳ Grupo 11 — `.github/workflows/molecule.yml` (sacar matriz Ubuntu del CI)
-- ⏳ Grupo 14 — Docs en `docs/`:
-  - Borrar 2 obsoletos (`MULTI_DISTRO_TESTING.md`, `molecule-multi-distro-example.yml`)
-  - Editar 5 activos (`MOLECULE_GUIDE.md`, `TESTING.md`, `FREELANCE_DEVELOPER.md`, `PROFILES.md`, `TEST_RUN_NOTES.md`)
-- ⏳ Grupo 6 — `local_dns.yml` (decisión pendiente, dejado a propósito por ahora)
+**Completado antes de este branch (encontrado en el análisis):**
+- ✅ Grupo 11 — `.github/workflows/molecule.yml` ya estaba simplificado a Debian-only por
+  el commit `3f31a1e` ("Simplify Molecule CI to Debian"). El workflow tiene jobs separados
+  por rol (`test-funcional`, `test-developer`, `test-sysadmin`) que corren solo en `debian13`.
+  Las 5 ocurrencias de `ubuntu` que quedan son `runs-on: ubuntu-latest` (runner de GitHub
+  Actions, no la distro testeada — explícitamente NO se debe tocar).
+
+**Pendiente — no bloquea el PR:**
+- ⏳ Grupo 6 — `local_dns.yml`: decisión funcional pendiente. El bloque entero sigue con
+  `when: distribution == 'Ubuntu'` → no corre en Debian. Hay que decidir si se habilita o se elimina.
 - ⏳ Validación CI: `make test-developer` y `make test-sysadmin`
 - ⏳ **Validación end-to-end en PC física o VM con Debian 13 limpio**
   - Molecule (Docker) NO testea GNOME, dconf, branding visual, sessions Xorg, GDM, ni componentes con GUI
@@ -120,22 +128,26 @@ when: ansible_facts['distribution'] == 'Ubuntu'   ← bloque entero saltea en De
 
 ---
 
-## GRUPO 10 — `Makefile`
+## GRUPO 10 — `Makefile` ✅
 **Tipo:** Eliminar targets que corren tests contra Ubuntu.
 
-- [ ] Borrar targets `test-ubuntu2404` y `test-ubuntu2204`
-- [ ] Limpiar referencias a `docker pull geerlingguy/docker-ubuntu*-ansible`
-- [ ] Limpiar comentarios y mensajes `echo` que mencionan Ubuntu
-- [ ] Verificar que `make test` solo dispare Debian
+- [x] Borrar target `test-ubuntu2404`
+- [x] Borrar target `test-all-distros` (ya estaba roto tras `bd34ddf` — esperaba 4 plataformas que ya no existían)
+- [x] Limpiar referencias a `docker pull geerlingguy/docker-ubuntu*-ansible` en `docker-pull-images`
+- [x] Limpiar comentarios y mensajes `echo` que mencionan Ubuntu
+- [x] `make test`, `make test-debian13`, `make ci`, `make docker-pull-images` siguen funcionando (sin dependencias rotas)
 
 ---
 
-## GRUPO 11 — `.github/workflows/molecule.yml`
+## GRUPO 11 — `.github/workflows/molecule.yml` ✅ (hecho antes de este branch)
 **Tipo:** Limpiar matriz CI para que solo corra contra Debian.
 
-- [ ] Eliminar las distros Ubuntu de la matriz de testing
-- [ ] **NO TOCAR:** `runs-on: ubuntu-latest` → ese es el runner OS de GitHub Actions,
-  no la distro que se testea. Es Ubuntu por la infra de GitHub, no por nuestro proyecto.
+Resuelto por el commit `3f31a1e` ("Simplify Molecule CI to Debian") antes de que se
+abriera `chore/debian-only-cleanup`. El workflow ya tiene 3 jobs separados (`test-funcional`,
+`test-developer`, `test-sysadmin`) que corren solo en `debian13`. No hay matriz Ubuntu.
+
+- [x] Matriz Ubuntu eliminada del CI
+- [x] `runs-on: ubuntu-latest` conservado (es el runner OS de GitHub Actions, no la distro testeada)
 
 ---
 
@@ -161,19 +173,19 @@ when: ansible_facts['distribution'] == 'Ubuntu'   ← bloque entero saltea en De
 
 ---
 
-## GRUPO 14 — Documentación en `docs/`
+## GRUPO 14 — Documentación en `docs/` ✅
 **Tipo:** Limpiar/borrar docs según relevancia.
 
-### Para borrar (obsoletos)
-- [ ] `docs/MULTI_DISTRO_TESTING.md` (16 refs) — guía completa multi-distro, ya no aplica
-- [ ] `docs/molecule-multi-distro-example.yml` (16 refs) — ejemplo YAML multi-distro
+### Borrados (obsoletos)
+- [x] `docs/MULTI_DISTRO_TESTING.md` — guía completa multi-distro, ya no aplica
+- [x] `docs/molecule-multi-distro-example.yml` — ejemplo YAML multi-distro
 
-### Para editar (docs activos)
-- [ ] `docs/MOLECULE_GUIDE.md` (26 refs) — guía de Molecule
-- [ ] `docs/TESTING.md` (4 refs)
-- [ ] `docs/FREELANCE_DEVELOPER.md` (2 refs)
-- [ ] `docs/PROFILES.md` (1 ref)
-- [ ] `docs/TEST_RUN_NOTES.md` (1 ref)
+### Editados (docs activos)
+- [x] `docs/MOLECULE_GUIDE.md` — sección "Testing con Múltiples Distribuciones" reescrita a "Distribución soportada" (Debian 13 únicamente); Paso 3 simplificado
+- [x] `docs/TESTING.md` — refs a Debian 12/Ubuntu 22.04 actualizadas a Debian 13; mantenida `runs-on: ubuntu-latest` (runner OS)
+- [x] `docs/FREELANCE_DEVELOPER.md` — título y requisitos actualizados a Debian 13
+- [x] `docs/PROFILES.md` — intro actualizada a Debian 13
+- [x] `docs/TEST_RUN_NOTES.md` — nota histórica de "Debian y Ubuntu en paralelo" cambiada a "Roles en paralelo"
 
 ### Dejar como historia (NO tocar — historial del proyecto)
 - `docs/CHANGELOG_MEJORAS_FUNCIONAL.md` (5 refs)
@@ -220,13 +232,13 @@ when: ansible_facts['distribution'] == 'Ubuntu'   ← bloque entero saltea en De
 ✅ GRUPO 5   → gnome.yml funcional     (simplificar set_fact)
 ✅ GRUPO 7   → fixes.yml developer     (simplificar condición)
 ✅ GRUPO 8   → vars.yml developer      (simplificar python venv)
-⏳ GRUPO 6   → local_dns.yml           (requiere decisión primero)
+⏳ GRUPO 6   → local_dns.yml           (requiere decisión funcional)
 ✅ GRUPO 9   → Molecule converge.yml   (3 archivos de test)
-⏳ GRUPO 10  → Makefile                (sacar targets Ubuntu)
-⏳ GRUPO 11  → workflows/molecule.yml  (sacar matriz Ubuntu)
+✅ GRUPO 10  → Makefile                (sacar targets Ubuntu)
+✅ GRUPO 11  → workflows/molecule.yml  (hecho antes del branch, commit 3f31a1e)
 ✅ GRUPO 12  → copilot-instructions    (actualizar contexto IA)
 ✅ GRUPO 13  → Docs raíz               (README, specs, testing)
-⏳ GRUPO 14  → Docs en docs/           (borrar 2 obsoletos + editar 5 activos)
+✅ GRUPO 14  → Docs en docs/           (borrar 2 obsoletos + editar 5 activos)
 ```
 
 Después de cada grupo de código: correr `molecule test` del rol afectado.
@@ -234,53 +246,38 @@ Los grupos 12-14 son solo documentación y no requieren validación CI.
 
 ---
 
-## 🚀 Próximos pasos sugeridos
+## 🚀 Próximos pasos
 
-**Orden recomendado para terminar la limpieza:**
+**Lo que queda para cerrar el PR:**
 
-1. **Commit de lo hecho ahora** (Grupos 12 + 13) — chunk coherente "docs cleanup raíz + copilot"
-   ```bash
-   git add .github/copilot-instructions.md README.md specifications.md TESTING.md QUICKSTART_TESTING.md roles/funcional/README.md docs/debian-only-cleanup.md
-   git commit -m "docs: remove Ubuntu references from root docs and copilot instructions"
-   ```
-
-2. **Grupo 14 — Docs en `docs/`** (también solo texto, sin riesgo)
-   - Borrar 2 obsoletos con `git rm`
-   - Editar 5 activos
-   - Commit aparte: `docs: clean Ubuntu references in docs/ directory`
-
-3. **Grupo 10 — Makefile** (sacar targets Ubuntu)
-   - Commit: `chore: remove Ubuntu targets from Makefile`
-
-4. **Grupo 11 — workflows/molecule.yml** (sacar matriz Ubuntu del CI de GitHub Actions)
-   - ⚠️ **NO TOCAR** `runs-on: ubuntu-latest` (es el runner OS, no la distro testada)
-   - Commit: `ci: remove Ubuntu from molecule test matrix`
-
-5. **Tests Molecule** (Docker, sin GUI)
+1. **Tests Molecule** (Docker, sin GUI)
    ```bash
    make test-developer   # ~10 min
    make test-sysadmin    # ~10 min
    ```
 
-6. **Validación end-to-end en PC física o VM** ⚠️ **IMPRESCINDIBLE**
+2. **Validación end-to-end en PC física o VM** ⚠️ **IMPRESCINDIBLE antes de mergear**
    - Levantar una VM (VirtualBox/KVM) con **Debian 13 limpio** o usar una notebook formateada
    - Correr el bootstrap completo:
      ```bash
-     curl -L -o adhoc-ansible https://raw.githubusercontent.com/ingadhoc/ansible_notebooks/<branch>/launch_project.sh
+     curl -L -o adhoc-ansible https://raw.githubusercontent.com/ingadhoc/ansible_notebooks/chore/debian-only-cleanup/launch_project.sh
      chmod +x adhoc-ansible
      sudo ./adhoc-ansible
      ```
    - Probar cada perfil (`funcional`, `developer`, `sysadmin`) y verificar:
      - Sin errores Ansible al correr
-     - Idempotencia: segunda corrida con `changed=0`
+     - Idempotencia: segunda corrida con `changed=0` (excluyendo tareas time/random)
      - GNOME: extensiones instaladas, atajos funcionando, branding aplicado
      - Sesión Xorg activa después de reiniciar
      - VS Code, Chrome, Docker funcionando
 
-7. **Push de la rama y abrir PR**
+3. **Abrir PR**
    ```bash
-   git push -u origin chore/debian-only-cleanup
    gh pr create --title "Migrate to Debian-only support" --body "..."
    ```
+   La rama ya está pusheada a `origin/chore/debian-only-cleanup`.
 
-8. **Grupo 6 — `local_dns.yml`** — pendiente de decisión funcional (NO bloquea el PR)
+**Fuera del PR (post-merge o branch aparte):**
+
+- **Grupo 6 — `local_dns.yml`**: decidir si se habilita DNS configurable en Debian
+  o se elimina el bloque. Hoy queda inerte (no corre por el `when: Ubuntu`) y eso es seguro.

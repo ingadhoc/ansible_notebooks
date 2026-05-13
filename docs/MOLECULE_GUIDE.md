@@ -19,16 +19,12 @@ cp roles/funcional/molecule/default/prepare.yml roles/developer/molecule/default
 
 ## Paso 3: Editar molecule.yml
 
-Cambiar los nombres de las plataformas:
+Cambiar el nombre de la plataforma:
 
 ```yaml
 platforms:
-  - name: debian13-developer  # Cambiar 'funcional' por el nombre del rol
+  - name: debian13-developer  # Cambiar 'developer' por el nombre del rol
     image: geerlingguy/docker-debian13-ansible:latest
-    # ... resto igual
-  
-  - name: ubuntu2204-developer  # Cambiar 'funcional' por el nombre del rol
-    image: geerlingguy/docker-ubuntu2204-ansible:latest
     # ... resto igual
 ```
 
@@ -255,27 +251,13 @@ molecule test --destroy=never
 
 ---
 
-## Testing con Múltiples Distribuciones
+## Distribución soportada
 
-### Distribuciones Soportadas
-
-**Oficialmente soportadas** (tests por defecto):
-- ✅ Debian 12 (Bookworm)
-- ✅ Ubuntu 22.04 LTS (Jammy)
-
-**Compatibles** (agregar según necesidad):
-- 🟡 Debian 13 (Trixie) - En desarrollo, puede tener limitaciones
-- ✅ Ubuntu 24.04 LTS (Noble)
-
-### Agregar Debian 13 y Ubuntu 24.04 a los Tests
-
-#### Opción 1: Edición temporal de molecule.yml
-
-Para testing puntual, edita `roles/ROLNAME/molecule/default/molecule.yml`:
+El proyecto se testea únicamente contra **Debian 13 (Trixie)**. La plataforma estándar
+definida en `molecule.yml` de cada rol es:
 
 ```yaml
 platforms:
-  # Plataformas existentes
   - name: debian13-ROLNAME
     image: geerlingguy/docker-debian13-ansible:latest
     command: ""
@@ -287,207 +269,48 @@ platforms:
     tmpfs:
       - /run
       - /tmp
-
-  - name: ubuntu2204-ROLNAME
-    image: geerlingguy/docker-ubuntu2204-ansible:latest
-    command: ""
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    tmpfs:
-      - /run
-      - /tmp
-
-  # ⬇️ AGREGAR ESTAS PLATAFORMAS
-  - name: debian13-ROLNAME
-    image: geerlingguy/docker-debian13-ansible:latest
-    command: ""
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    tmpfs:
-      - /run
-      - /tmp
-
-  - name: ubuntu2404-ROLNAME
-    image: geerlingguy/docker-ubuntu2404-ansible:latest
-    command: ""
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    tmpfs:
-      - /run
-      - /tmp
 ```
 
-**Ejecutar test con 4 distribuciones**:
-```bash
-molecule test
-# Ejecutará en: debian13, ubuntu2204, debian13, ubuntu2404
-```
-
-#### Opción 2: Testing selectivo por plataforma
+### Comandos útiles
 
 ```bash
-# Verificar qué imágenes Docker están disponibles
-docker search geerlingguy/docker-debian
-docker search geerlingguy/docker-ubuntu
-
-# Crear solo un contenedor específico
-molecule create --platform-name ubuntu2404-funcional
-
-# Converge en esa plataforma
-molecule converge --platform-name ubuntu2404-funcional
-
-# Verificar idempotencia
-molecule converge --platform-name ubuntu2404-funcional
-
-# Verificar tests
-molecule verify --platform-name ubuntu2404-funcional
-
-# Limpiar
-molecule destroy --platform-name ubuntu2404-funcional
-```
-
-#### Opción 3: Crear scenarios separados
-
-Para testing permanente sin afectar el workflow por defecto:
-
-```bash
-cd roles/funcional
-
-# Crear scenario para testing extendido
-molecule init scenario extended --driver-name docker
-
-# Editar molecule/extended/molecule.yml con las 4 distros
-```
-
-**Ejecutar scenarios específicos**:
-```bash
-molecule test --scenario-name default   # Solo Debian 12 + Ubuntu 22.04
-molecule test --scenario-name extended  # Todas las distros
-```
-
-### Consideraciones por Distribución
-
-#### Debian 13 (Trixie)
-
-**Estado**: Testing/Unstable (a Noviembre 2025)
-
-**Limitaciones conocidas**:
-- 🟡 Algunos paquetes pueden no estar disponibles
-- 🟡 Puede requerir ajustes en `packages_exclude_debian_13`
-- 🟡 La imagen Docker puede no estar actualizada
-
-**Paquetes problemáticos en Debian 13**:
-```yaml
-# En vars.yml - ya configurado
-packages_exclude_debian_13:
-  - stacer
-  - tldr
-```
-
-**Verificar disponibilidad de imagen**:
-```bash
-docker pull geerlingguy/docker-debian13-ansible:latest
-# Si falla, la imagen aún no existe
-```
-
-#### Ubuntu 24.04 LTS (Noble)
-
-**Estado**: Stable (LTS lanzado en Abril 2024)
-
-**Ventajas**:
-- ✅ Totalmente estable y soportado hasta 2029
-- ✅ Todas las imágenes Docker disponibles
-- ✅ Repositories y paquetes actualizados
-
-**Sin limitaciones conocidas** en los roles actuales.
-
-### Matrix Testing en CI/CD
-
-Para GitHub Actions, edita `.github/workflows/molecule.yml`:
-
-```yaml
-strategy:
-  matrix:
-    distro:
-      - debian13
-      - ubuntu2204
-      # Agregar según necesidad:
-      # - debian13      # Solo si la imagen está disponible
-      # - ubuntu2404    # Recomendado para validación LTS
-    python-version:
-      - '3.11'
-```
-
-**Impacto en tiempo de CI**:
-```
-2 distros: ~15-20 minutos
-3 distros: ~22-30 minutos
-4 distros: ~30-40 minutos
-```
-
-**Recomendación de estrategia**:
-1. **Desarrollo diario**: Solo Debian 13 + Ubuntu 22.04
-2. **Pull Requests**: Agregar Ubuntu 24.04
-3. **Releases/Quarterly**: Full matrix con las 4 distros (si Debian 13 está disponible)
-
-### Comandos útiles para testing multi-distro
-
-```bash
-# Ver todas las plataformas configuradas
+# Ver plataformas configuradas
 molecule list
 
-# Crear todas las plataformas
+# Crear el contenedor
 molecule create
 
-# Converge solo en Debian
+# Converge en la plataforma
 molecule converge --platform-name debian13-funcional
 
-# Converge solo en Ubuntu
-molecule converge --platform-name ubuntu2204-funcional
-molecule converge --platform-name ubuntu2404-funcional
+# Verificar idempotencia (segunda corrida debe ser changed=0)
+molecule converge --platform-name debian13-funcional
 
-# Test paralelo (requiere molecule-parallel)
-pip install molecule-parallel
-molecule test --parallel
+# Verificar tests
+molecule verify --platform-name debian13-funcional
 
-# Ver logs de un contenedor específico
+# Limpiar
+molecule destroy
+
+# Ver logs del contenedor
 docker logs debian13-funcional
 
-# Ejecutar comando en un contenedor específico
+# Ejecutar comando dentro del contenedor
 docker exec -it debian13-funcional bash
 ```
 
-### Troubleshooting por distro
+### Troubleshooting
 
-#### Debian 13 - Paquete no encontrado
+#### Paquete no encontrado en Debian 13
 
 ```yaml
-# Solución: Agregar a packages_exclude_debian_13 en vars.yml
+# Solución: agregar a packages_exclude_debian_13 en vars.yml
 - name: Excluir paquetes problemáticos
   ansible.builtin.set_fact:
-    packages_filtered: "{{ packages_system | 
+    packages_filtered: "{{ packages_system |
       difference(packages_exclude_debian_13) }}"
-  when: ansible_facts['distribution'] == 'Debian' and 
+  when: ansible_facts['distribution'] == 'Debian' and
         ansible_facts['distribution_major_version'] == '13'
-```
-
-#### Ubuntu 24.04 - Repository key cambió
-
-```yaml
-# Las URLs modernas ya usan el formato correcto
-- name: Agregar repo con GPG moderno
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/key.gpg] https://..."
-    state: present
 ```
 
 ---

@@ -62,31 +62,18 @@ dev-destroy: ## Destruir contenedores
 dev-test-tags: ## Ejecutar test con tags específicos (uso: make dev-test-tags TAGS=chrome,gcloud)
 	cd roles/funcional && $(MOLECULE) converge -- --tags $(TAGS)
 
-# Testing con múltiples distribuciones
+# Testing por plataforma
 test-debian13: ## Test solo con Debian 13 (requiere imagen Docker disponible)
 	@echo "🧪 Testing con Debian 13..."
 	cd roles/funcional && $(MOLECULE) converge --platform-name debian13-funcional
 	cd roles/funcional && $(MOLECULE) verify --platform-name debian13-funcional
 
-test-ubuntu2404: ## Test solo con Ubuntu 24.04
-	@echo "🧪 Testing con Ubuntu 24.04..."
-	cd roles/funcional && $(MOLECULE) converge --platform-name ubuntu2404-funcional
-	cd roles/funcional && $(MOLECULE) verify --platform-name ubuntu2404-funcional
-
-test-all-distros: ## Test completo con todas las distros (Debian 12/13 + Ubuntu 22.04/24.04)
-	@echo "🧪 Testing con todas las distribuciones..."
-	@echo "⚠️  Asegúrate de tener las 4 plataformas en molecule.yml"
-	cd roles/funcional && $(MOLECULE) test
-
 list-platforms: ## Listar todas las plataformas configuradas en Molecule
 	cd roles/funcional && $(MOLECULE) list
 
-docker-pull-images: ## Descargar todas las imágenes Docker necesarias
+docker-pull-images: ## Descargar imágenes Docker necesarias
 	@echo "📦 Descargando imágenes Docker..."
 	docker pull geerlingguy/docker-debian13-ansible:latest
-	docker pull geerlingguy/docker-ubuntu2404-ansible:latest
-	@echo "📦 Descargando imágenes adicionales (opcional)..."
-	docker pull geerlingguy/docker-ubuntu2204-ansible:latest || echo "ℹ️  Ubuntu 22.04 (legacy)"
 
 # Ejecución del playbook principal
 run: ## Ejecutar playbook local (perfil funcional)

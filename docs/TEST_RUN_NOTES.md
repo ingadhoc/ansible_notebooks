@@ -79,4 +79,4 @@ vars:
 1. **Cachear paquetes** para acelerar tests
 2. **Split tests**: Separar tests de packages vs tests de configuración
 3. **Mock repositories**: Usar repositorios locales mock para tests más rápidos
-4. **Parallel execution**: Debian y Ubuntu en paralelo verdadero
+4. **Parallel execution**: Roles en paralelo verdadero
