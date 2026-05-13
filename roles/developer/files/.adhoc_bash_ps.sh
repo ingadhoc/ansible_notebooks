@@ -93,30 +93,6 @@ adhoc_promp_k8s(){
     echo -en "${ps1_style} ⎈:$current_context ${reset}"
 }
 
-adhoc_promp_rancher(){
-    local config_path="$HOME/.rancher/cli2.json"
-    if [[ ! -f "$config_path" ]]; then
-        return
-    fi
-    local current_cluster=$(jq '.CurrentServer' $config_path)
-    local current_cluster_id=\"$(jq -c ".Servers.${current_cluster}.project" $config_path | tr -d \" | cut -d':' -f1)\"
-    local current_context=$(jq ".Servers.${current_cluster}.kubeConfigs // {} | to_entries[] | select(.key | contains("$current_cluster_id")) | .value.\"current-context\"" $config_path 2>/dev/null | tr -d \")
-    if [ ! -n "$current_context" ]; then
-        return
-    fi
-    local ps1_style="";
-    local reset='\e(B\e[0m'
-    case $current_context in
-        adhocprod|europe-cluster )
-            ps1_style='\e[0;33m\e[0;41m'
-        ;;
-        * )
-            ps1_style='\e[0;93m'
-        ;;
-    esac
-    echo -en "${ps1_style} R:$current_context ${reset}"
-}
-
 adhoc_promp_path(){
     local pathColor='\e[1;30m\e[1;106m'
     local reset='\e(B\e[m'
@@ -131,10 +107,6 @@ fi
 
 if command -v kubectl &> /dev/null; then
     PS1=$PS1"\$(adhoc_promp_k8s)"
-fi
-
-if command -v rancher2 &> /dev/null; then
-    PS1=$PS1"\$(adhoc_promp_rancher)"
 fi
 
 PS1=$PS1"$(adhoc_promp_path)"
