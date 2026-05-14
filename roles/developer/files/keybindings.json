@@ -100,5 +100,14 @@
     "key": "ctrl+k",
     "command": "workbench.action.quickOpenSelectPrevious",
     "when": "vim.active && inQuickOpen"
+  },
+  {
+    "key": "ctrl+shift+v",
+    "command": "-markdown.showPreview"
+  },
+  {
+    "key": "ctrl+shift+v",
+    "command": "workbench.action.terminal.paste",
+    "when": "terminalFocus"
   }
 ]
