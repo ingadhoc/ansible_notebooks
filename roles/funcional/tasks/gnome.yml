@@ -33,14 +33,7 @@
     - name: GNOME Extensions | Construir lista final de extensiones requeridas
       ansible.builtin.set_fact:
         funcional_extensions_required: >
-          {{ funcional_gnome_extensions_common +
-            (funcional_gnome_extensions_debian if ansible_facts['distribution'] == 'Debian' else []) +
-            (funcional_gnome_extensions_ubuntu_2204
-             if (ansible_facts['distribution'] == 'Ubuntu'
-                 and ansible_facts['distribution_version'] == '22.04') else []) +
-            (funcional_gnome_extensions_ubuntu_2404
-             if (ansible_facts['distribution'] == 'Ubuntu'
-                 and ansible_facts['distribution_version'] == '24.04') else []) }}
+          {{ funcional_gnome_extensions_common + funcional_gnome_extensions_debian }}
 
     - name: GNOME Extensions | Verificar qué extensiones ya están instaladas
       ansible.builtin.stat:

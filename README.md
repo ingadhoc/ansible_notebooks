@@ -3,7 +3,7 @@
 ![Molecule CI](https://github.com/ingadhoc/ansible_notebooks/workflows/Molecule%20CI/badge.svg?branch=main)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Ansible](https://img.shields.io/badge/ansible-%3E%3D2.15-blue.svg)
-![Platforms](https://img.shields.io/badge/platforms-Debian%2012%2B%20%7C%20Ubuntu%2022.04%2B-blue.svg)
+![Platforms](https://img.shields.io/badge/platforms-Debian%2013-blue.svg)
 
 ## 🎯 Resumen Ejecutivo
 
@@ -15,11 +15,11 @@ Para información interna más detallada sobre los objetivos, procedimientos y p
 
 ---
 
-## Filosofía y Distribuciones Soportadas
+## Filosofía y Distribución Soportada
 
-Este playbook está diseñado para funcionar sobre instalaciones limpias de **Debian (12+)** y **Ubuntu (22.04+)**.
+Este playbook está diseñado para funcionar sobre instalaciones limpias de **Debian 13 (Trixie)**.
 
-Priorizamos el uso de Debian para mantener un sistema base limpio, estable y libre de las decisiones comerciales de Canonical (como la imposición de `snap`). Sin embargo, el playbook es totalmente compatible con las versiones LTS de Ubuntu.
+Priorizamos el uso de Debian para mantener un sistema base limpio, estable y libre de las decisiones comerciales de Canonical (como la imposición de `snap`).
 
 > ⚠️ **Entorno de escritorio requerido: GNOME**
 > Los perfiles `funcional`, `developer` y `sysadmin` configuran extensiones, ajustes visuales y comportamientos específicos de **GNOME**. El playbook asume que GNOME está instalado y activo como entorno de escritorio. Instalar sobre KDE u otro entorno producirá errores en las tareas de configuración de escritorio.
@@ -234,7 +234,7 @@ Este proyecto utiliza **Molecule** con Docker para tests automatizados. Los test
 ### Ejecutar tests localmente
 
 ```bash
-# Crear un entorno virtual (recomendado, evita PEP 668 en Debian/Ubuntu)
+# Crear un entorno virtual (recomendado, evita PEP 668 en Debian)
 python3 -m venv .venv
 source .venv/bin/activate
 
@@ -257,15 +257,13 @@ ansible-galaxy install -r collections/requirements.yml
 ./test-role.sh --lint
 ```
 
-### Testing con múltiples distribuciones
+### Distribución soportada
 
-Por defecto, los tests ejecutan en **Debian 13** y **Ubuntu 24.04**. Para probar con distribuciones adicionales:
+Los tests ejecutan en **Debian 13 (Trixie)**.
 
 ```bash
-# Usar el Makefile para comandos específicos
-make test-ubuntu2404      # Test solo Ubuntu 24.04 LTS
-make test-debian13        # Test solo Debian 13 (si disponible)
-make test-all-distros     # Test todas las distros configuradas
+# Test solo Debian 13
+make test-debian13
 
 # Ver plataformas disponibles
 make list-platforms
@@ -274,19 +272,10 @@ make list-platforms
 make docker-pull-images
 ```
 
-**Distribuciones soportadas:**
-- ✅ **Debian 13 (Trixie)** - Producción, por defecto
-- ✅ **Ubuntu 24.04 LTS (Noble)** - Producción, por defecto
-- ✅ **Debian 12 (Bookworm)** - Producción, soportado (legacy)
-- ✅ **Ubuntu 22.04 LTS (Jammy)** - Producción, soportado (legacy)
-
-Para agregar más distribuciones a tus tests, consulta:
-- [docs/MOLECULE_GUIDE.md](docs/MOLECULE_GUIDE.md) - Sección "Testing con Múltiples Distribuciones"
-- [docs/MULTI_DISTRO_TESTING.md](docs/MULTI_DISTRO_TESTING.md) - Guía completa multi-distro
-- [docs/molecule-multi-distro-example.yml](docs/molecule-multi-distro-example.yml) - Configuración de ejemplo
+Para más información sobre testing, consulta:
+- [docs/TESTING.md](docs/TESTING.md) - Guía completa de testing con Molecule
+- [docs/MOLECULE_GUIDE.md](docs/MOLECULE_GUIDE.md) - Guía detallada de Molecule
 - [roles/funcional/README.md](roles/funcional/README.md) - Testing específico del rol
-
-Para más información sobre testing, consulta [docs/TESTING.md](docs/TESTING.md).
 
 ---
 

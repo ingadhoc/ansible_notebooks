@@ -16,7 +16,7 @@ Este documento describe el sistema de testing automatizado con Molecule para el 
 
 ## Resumen
 
-El proyecto utiliza **Molecule** con **Docker** para testing automatizado de roles Ansible. Los tests se ejecutan en contenedores Debian 12 y Ubuntu 22.04, validando:
+El proyecto utiliza **Molecule** con **Docker** para testing automatizado de roles Ansible. Los tests se ejecutan en contenedores Debian 13, validando:
 
 - ✅ Sintaxis de playbooks
 - ✅ Instalación correcta de paquetes
@@ -48,7 +48,7 @@ pip install molecule molecule-plugins[docker] ansible-core
 ### Docker
 
 ```bash
-# Debian/Ubuntu
+# Debian
 sudo apt install docker.io
 sudo usermod -aG docker $USER
 # Logout/login para aplicar cambios
@@ -373,8 +373,7 @@ sysadmin_skip_nordvpn_service: true         # Servicio no inicia
 - **Idempotencia**: 0 changed en segunda ejecución
 
 **Plataformas testeadas:**
-- ✅ Debian 12 (Bookworm)
-- ✅ Ubuntu 22.04 (Jammy)
+- ✅ Debian 13 (Trixie)
 
 ---
 

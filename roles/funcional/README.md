@@ -14,7 +14,7 @@ Rol base para estaciones de trabajo de Adhoc. Instala y configura las aplicacion
 - Configuración de DNS con DoT
 
 ## Requisitos
-- Debian 13 o Ubuntu 22.04+
+- Debian 13 (Trixie)
 - Python 3.10+
 - Conexión a internet para descargar paquetes
 
@@ -68,7 +68,7 @@ tasks/
 
 ## Testing
 
-### Tests por defecto (Debian 12 + Ubuntu 22.04)
+Los tests se ejecutan sobre **Debian 13 (Trixie)** usando Molecule + Docker.
 
 #### Ejecutar tests completos
 ```bash
@@ -98,91 +98,6 @@ molecule destroy
 molecule converge -- --tags chrome
 molecule converge -- --tags gcloud,kubectl
 ```
-
-### Testing con distribuciones adicionales (Debian 13, Ubuntu 24.04)
-
-Para probar con más distribuciones, puedes agregar plataformas temporalmente a `molecule.yml`:
-
-```yaml
-platforms:
-  # Existentes
-  - name: debian13-funcional
-    image: geerlingguy/docker-debian13-ansible:latest
-    # ... configuración ...
-  
-  - name: ubuntu2204-funcional
-    image: geerlingguy/docker-ubuntu2204-ansible:latest
-    # ... configuración ...
-  
-  # ⬇️ NUEVAS - Agregar según necesidad
-  - name: debian13-funcional
-    image: geerlingguy/docker-debian13-ansible:latest
-    command: ""
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    tmpfs:
-      - /run
-      - /tmp
-  
-  - name: ubuntu2404-funcional
-    image: geerlingguy/docker-ubuntu2404-ansible:latest
-    command: ""
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:rw
-    cgroupns_mode: host
-    privileged: true
-    pre_build_image: true
-    tmpfs:
-      - /run
-      - /tmp
-```
-
-**Notas importantes**:
-- ⚠️ Debian 13 puede no tener todas las imágenes Docker listas
-- ⚠️ Algunos paquetes pueden no estar disponibles (ver `packages_exclude_debian_13` en vars.yml)
-- 💡 Ubuntu 24.04 LTS es estable y bien soportado
-- 💡 Verifica disponibilidad de imágenes en [Docker Hub - geerlingguy](https://hub.docker.com/u/geerlingguy)
-
-#### Testing rápido con una distro específica
-
-```bash
-# Crear solo un contenedor específico
-molecule create --platform-name debian13-funcional
-
-# Converge en esa plataforma
-molecule converge --platform-name debian13-funcional
-
-# Verificar
-molecule verify --platform-name debian13-funcional
-
-# Destruir
-molecule destroy --platform-name debian13-funcional
-```
-
-#### Matrix testing en CI/CD
-
-Para GitHub Actions, edita `.github/workflows/molecule.yml`:
-
-```yaml
-strategy:
-  matrix:
-    distro:
-      - debian13
-      - ubuntu2204
-      - ubuntu2404    # ⬅️ Agregar
-```
-
-**Tiempo estimado de testing**:
-- 2 distros (actual): ~15-20 minutos
-- 4 distros (matriz completa): ~30-40 minutos
-
-**Recomendación**: Mantener 2 distros por defecto (Debian 12 + Ubuntu 22.04) para desarrollo rápido. Ejecutar matriz completa solo en:
-- Pull Requests importantes
-- Releases
-- Validación trimestral
 
 ## Optimizaciones Aplicadas
 

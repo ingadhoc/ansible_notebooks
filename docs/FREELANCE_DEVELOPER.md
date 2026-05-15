@@ -1,10 +1,10 @@
-# Guía rápida para Developers Freelance (Debian/Ubuntu)
+# Guía rápida para Developers Freelance (Debian)
 
 Esta guía es para developers externos que van a aplicar el perfil `freelance_developer` del playbook de aprovisionamiento.
 
 ## Requisitos
 
-- Sistema operativo: **Debian 12+** o **Ubuntu 22.04+**.
+- Sistema operativo: **Debian 13**.
 - Usuario con permisos de **sudo**.
 - Conexión a internet estable.
 
