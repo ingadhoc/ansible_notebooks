@@ -31,9 +31,14 @@ o se elimina la condición si solo queda Debian.
   Las 5 ocurrencias de `ubuntu` que quedan son `runs-on: ubuntu-latest` (runner de GitHub
   Actions, no la distro testeada — explícitamente NO se debe tocar).
 
+**Decidido — queda fuera del PR (no se toca para no romper nada):**
+- 🟡 Grupo 6 — `local_dns.yml`: se deja **inerte como está** (bloque entero con
+  `when: distribution == 'Ubuntu'`, nunca corre en Debian). Razón: el intento de habilitarlo
+  con `systemd-resolved` rompía la resolución DNS (`Temporary failure resolving deb.debian.org`,
+  commit `10615da`). Tocarlo ahora arriesga la conectividad de apt. Si en el futuro se quiere
+  DNS configurable en Debian, se aborda en branch aparte con validación end-to-end real.
+
 **Pendiente — no bloquea el PR:**
-- ⏳ Grupo 6 — `local_dns.yml`: decisión funcional pendiente. El bloque entero sigue con
-  `when: distribution == 'Ubuntu'` → no corre en Debian. Hay que decidir si se habilita o se elimina.
 - ⏳ Validación CI: `make test-developer` y `make test-sysadmin`
 - ⏳ **Validación end-to-end en PC física o VM con Debian 13 limpio**
   - Molecule (Docker) NO testea GNOME, dconf, branding visual, sessions Xorg, GDM, ni componentes con GUI
@@ -90,7 +95,7 @@ o se elimina la condición si solo queda Debian.
 ---
 
 ## GRUPO 6 — `roles/funcional/tasks/local_dns.yml`
-**Tipo:** Decisión pendiente — el bloque está deshabilitado en Debian por problemas de conectividad.
+**Tipo:** Decidido — **se deja inerte tal como está**, fuera del PR.
 
 El archivo tiene este estado actual:
 ```yaml
@@ -99,9 +104,16 @@ El archivo tiene este estado actual:
 when: ansible_facts['distribution'] == 'Ubuntu'   ← bloque entero saltea en Debian
 ```
 
-- [ ] **Decidir:** ¿se quiere habilitar DNS para Debian en el futuro o se borra el bloque?
-  - Si se habilita: resolver el problema de conectividad y cambiar la condición a Debian
-  - Si se descarta: borrar el archivo o dejarlo vacío con un comentario explicativo
+**Decisión:** se mantiene como está. El bloque entero está envuelto en `when: distribution == 'Ubuntu'`
+así que en Debian no corre nada — es seguro. El intento previo de habilitar `systemd-resolved` en
+Debian rompía la resolución de DNS (`Temporary failure resolving deb.debian.org`, ver commit
+`10615da`). Tocar este archivo ahora arriesga romper la conectividad de apt durante el bootstrap.
+
+- [x] No se elimina el archivo (preserva la intención por si alguien retoma el feature)
+- [x] No se elimina la variable `sysadmin_public_dns_servers` en `roles/funcional/vars.yml`
+- [ ] **Post-PR (branch aparte):** si se decide habilitar DNS configurable en Debian, hay que
+  resolver primero el bug de conectividad y validar end-to-end en una VM antes de cambiar
+  la condición a Debian.
 
 ---
 
@@ -232,7 +244,7 @@ abriera `chore/debian-only-cleanup`. El workflow ya tiene 3 jobs separados (`tes
 ✅ GRUPO 5   → gnome.yml funcional     (simplificar set_fact)
 ✅ GRUPO 7   → fixes.yml developer     (simplificar condición)
 ✅ GRUPO 8   → vars.yml developer      (simplificar python venv)
-⏳ GRUPO 6   → local_dns.yml           (requiere decisión funcional)
+🟡 GRUPO 6   → local_dns.yml           (decidido: dejar inerte, fuera del PR)
 ✅ GRUPO 9   → Molecule converge.yml   (3 archivos de test)
 ✅ GRUPO 10  → Makefile                (sacar targets Ubuntu)
 ✅ GRUPO 11  → workflows/molecule.yml  (hecho antes del branch, commit 3f31a1e)
