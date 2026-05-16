@@ -10,17 +10,35 @@
                     "*.yml": "ansible"
                 },
                 "editor.defaultFormatter": "redhat.ansible",
-                "editor.formatOnSave": true
+                "editor.formatOnSave": true,
+                "files.trimTrailingWhitespace": true,
+                "files.insertFinalNewline": true,
+                "ansible.python.interpreterPath": "/home/appuser/ansible-venv/bin/python3",
+                "ansible.validation.enabled": true,
+                "ansible.completion.provideRedirectModules": true,
+                "ansible.completion.provideModuleOptionAliases": true
             },
             "extensions": [
                 "redhat.vscode-yaml",
-                "redhat.ansible"
+                "redhat.ansible",
+                "anthropic.claude-code",
+                "timonwong.shellcheck",
+                "DavidAnson.vscode-markdownlint",
+                "ms-python.python"
             ]
         }
     },
-    // El 'postCreateCommand' ahora encontrará 'ansible-galaxy' en el PATH.
-    "postCreateCommand": "ansible-galaxy install -r collections/requirements.yml",
-
+    "postCreateCommand": "pip install --quiet -r /app/requirements-dev.txt && ansible-galaxy install -r collections/requirements.yml && pre-commit install",
+    "containerEnv": {
+        "ANSIBLE_FORCE_COLOR": "1",
+        "ANSIBLE_NOCOLOR": "0"
+    },
+    "mounts": [
+        "source=${localEnv:SSH_AUTH_SOCK},target=/run/host-ssh-agent.sock,type=bind,consistency=cached"
+    ],
+    "remoteEnv": {
+        "SSH_AUTH_SOCK": "/run/host-ssh-agent.sock"
+    },
     "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind",
     "workspaceFolder": "/app",
     "remoteUser": "appuser"
