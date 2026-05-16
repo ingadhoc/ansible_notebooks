@@ -82,6 +82,7 @@ En lugar de correr el ciclo completo, para desarrollo se exige el flujo:
 2. **Linting estricto:** El proyecto usa pre-commit hooks (`yamllint`, `ansible-lint`). Escribe YAML canónico (sin abreviaturas raras de diccionarios, usando FQCN como `ansible.builtin.apt`).
 3. **Variables:** Las URLs de repositorios, GPG keys y listas de paquetes deben centralizarse en `vars.yml` del rol correspondiente, NUNCA hardcodeadas en los `tasks/main.yml`.
 4. **Verificación:** Si agregas una herramienta (ej. `terraform`), DEBES agregar su correspondiente check de instalación y versión en `molecule/default/verify.yml`.
+5. **Changelog:** Todo cambio relevante al proyecto debe registrarse en `CHANGELOG.md` (raíz del repo) bajo la fecha del día. Se considera relevante cualquier cambio de comportamiento, nueva herramienta, decisión de arquitectura, o modificación de infraestructura de desarrollo (devcontainer, CI, tooling). No se registran correcciones de typos ni refactors internos sin impacto funcional.
 
 ---
 *Última actualización: Marzo 2026. Documento "Spec-Anchored" para el proyecto Ansible Notebooks de Adhoc.*
