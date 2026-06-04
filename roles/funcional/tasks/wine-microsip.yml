@@ -36,16 +36,34 @@
         mode: '0644'
 
     # ===== 6. Actualizar cache APT con repo WineHQ =====
+    # cache_valid_time: 0 fuerza el refresco real del índice (evita que APT
+    # considere válida una caché previa y deje el repo WineHQ sin indexar).
+    # Reintentos por si el mirror de WineHQ responde lento/intermitente.
     - name: Wine & MicroSIP | Update APT cache after adding WineHQ repo
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: 0
+      register: winehq_cache_update
+      until: winehq_cache_update is succeeded
+      retries: 3
+      delay: 5
 
     # ===== 7. Instalar Wine estable =====
+    # update_cache: true dentro de la misma tarea garantiza que el índice se
+    # refresque inmediatamente antes de resolver el paquete (cierra la ventana
+    # de carrera donde winehq-stable aún no era visible). until/retries cubre
+    # el caso en que el primer intento corra antes de que el índice termine.
     - name: Wine & MicroSIP | Install Wine stable with recommends
       ansible.builtin.apt:
         name: winehq-stable
         install_recommends: true
         state: present
+        update_cache: true
+        cache_valid_time: 0
+      register: winehq_install
+      until: winehq_install is succeeded
+      retries: 3
+      delay: 10
 
     # ===== 8. Instalar xvfb para instalaciones headless =====
     - name: Wine & MicroSIP | Install xvfb for headless Wine operations
