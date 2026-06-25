@@ -168,4 +168,8 @@ developer_external_repos:
   github_cli:
     gpg_url: "https://cli.github.com/packages/githubcli-archive-keyring.gpg"
     keyring_path: "/usr/share/keyrings/githubcli-archive-keyring.gpg"
-    repo_url: "https://cli.github.com/packages stable main"
+    # Campos estructurados para el repositorio en formato deb822
+    uris: "https://cli.github.com/packages"
+    suites: "stable"
+    components: "main"
+    architectures: "amd64"

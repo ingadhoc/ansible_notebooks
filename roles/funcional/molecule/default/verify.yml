@@ -155,14 +155,14 @@
         success_msg: "GPG keyring {{ item.item }} is present"
       loop: "{{ gpg_keyrings.results }}"
 
-    - name: Verify | Check repository list files exist
+    - name: Verify | Check repository source files exist
       ansible.builtin.stat:
         path: "{{ item }}"
       loop:
-        - /etc/apt/sources.list.d/google-cloud-cli.list
-        - /etc/apt/sources.list.d/google-chrome.list
-        - /etc/apt/sources.list.d/kubernetes-pkgs.list
-        - /etc/apt/sources.list.d/adhoc.list
+        - /etc/apt/sources.list.d/google-cloud-cli.sources
+        - /etc/apt/sources.list.d/google-chrome.sources
+        - /etc/apt/sources.list.d/kubernetes-pkgs.sources
+        - /etc/apt/sources.list.d/adhoc.sources
       register: repo_files
 
     - name: Verify | Assert all repository files exist

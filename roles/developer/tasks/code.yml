@@ -33,14 +33,41 @@
         state: absent
       when: not vscode_gpg_key.stat.exists
 
-    - name: Code | Añadir el repositorio de VS Code
-      ansible.builtin.apt_repository:
-        repo: "deb [arch={{ developer_external_repos.vscode.architectures }} signed-by={{ developer_external_repos.vscode.signed_by }}] {{ developer_external_repos.vscode.uris }} {{ developer_external_repos.vscode.suites }} {{ developer_external_repos.vscode.components }}"
-        state: present
-        filename: "{{ developer_external_repos.vscode.filename }}"
+    # El paquete 'code' de Microsoft autogestiona su propio archivo de repo
+    # (postinst reescribe vscode.sources). Configuramos el repo solo como
+    # bootstrap cuando VS Code aún no está instalado; luego lo maneja el
+    # paquete. Así evitamos pisarnos con su postinst (idempotencia).
+    - name: Code | Verificar si VS Code ya está instalado
+      ansible.builtin.stat:
+        path: /usr/bin/code
+      register: vscode_installed
+
+    - name: Code | Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/{{ developer_external_repos.vscode.filename }}.list"
+        state: absent
+      when: not vscode_installed.stat.exists
+
+    - name: Code | Añadir el repositorio de VS Code (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: "/etc/apt/sources.list.d/{{ developer_external_repos.vscode.filename }}.sources"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ developer_external_repos.vscode.uris }}
+          Suites: {{ developer_external_repos.vscode.suites }}
+          Components: {{ developer_external_repos.vscode.components }}
+          Architectures: {{ developer_external_repos.vscode.architectures | replace(',', ' ') }}
+          Signed-By: {{ developer_external_repos.vscode.signed_by }}
+      register: vscode_repo_added
+      when: not vscode_installed.stat.exists
+
+    - name: Code | Actualizar cache de APT si el repositorio fue agregado
+      ansible.builtin.apt:
         update_cache: true
-      tags:
-        - molecule-idempotence-notest
+      when: vscode_repo_added.changed | default(false)
 
 - name: Code | Instalar el paquete 'code'
   ansible.builtin.apt:

@@ -25,14 +25,40 @@
         state: absent
       changed_when: false
 
-    - name: NordVPN | Añadir el repositorio de APT de NordVPN
-      ansible.builtin.apt_repository:
-        repo: "{{ sysadmin_nordvpn_repo_line }}"
-        state: present
-        filename: nordvpn
+    # El paquete nordvpn autogestiona su propio archivo de repo vía postinst.
+    # Configuramos el repo solo como bootstrap cuando aún no está instalado;
+    # luego lo maneja el paquete. Así evitamos pisarnos con su postinst
+    # (idempotencia), igual que con Chrome y VS Code.
+    - name: NordVPN | Verificar si NordVPN ya está instalado
+      ansible.builtin.stat:
+        path: /usr/bin/nordvpn
+      register: nordvpn_installed
+
+    - name: NordVPN | Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/nordvpn.list
+        state: absent
+      when: not nordvpn_installed.stat.exists
+
+    - name: NordVPN | Añadir el repositorio de APT de NordVPN (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/nordvpn.sources
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: https://repo.nordvpn.com/deb/nordvpn/debian
+          Suites: stable
+          Components: main
+          Signed-By: {{ sysadmin_nordvpn_gpg_path }}
+      register: nordvpn_repo_added
+      when: not nordvpn_installed.stat.exists
+
+    - name: NordVPN | Actualizar cache de APT si el repositorio fue agregado
+      ansible.builtin.apt:
         update_cache: true
-      tags:
-        - molecule-idempotence-notest
+      when: nordvpn_repo_added.changed | default(false)
 
     - name: NordVPN | Instalar el paquete de NordVPN
       ansible.builtin.apt:

@@ -32,23 +32,41 @@
         state: absent
       when: not chrome_gpg_key.stat.exists
 
-    - name: Browsers - Verificar si el repositorio ya está configurado
+    # El paquete google-chrome-stable autogestiona su propio archivo de repo
+    # (postinst reescribe google-chrome.sources). Por eso solo configuramos el
+    # repo como bootstrap cuando Chrome aún no está instalado; luego lo maneja
+    # el paquete. Así evitamos pisarnos con su postinst (idempotencia).
+    - name: Browsers - Verificar si Google Chrome ya está instalado
       ansible.builtin.stat:
-        path: /etc/apt/sources.list.d/google-chrome.list
-      register: chrome_repo_file
+        path: /usr/bin/google-chrome-stable
+      register: chrome_installed
 
-    - name: Browsers - Añadir el repositorio de Google Chrome (forma moderna)
-      ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64 signed-by={{ external_repos.chrome.keyring_path }}] {{ external_repos.chrome.repo_url }} stable main"
-        state: present
-        filename: google-chrome
+    - name: Browsers - Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/google-chrome.list
+        state: absent
+      when: not chrome_installed.stat.exists
+
+    - name: Browsers - Añadir el repositorio de Google Chrome (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/google-chrome.sources
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ external_repos.chrome.repo_url }}
+          Suites: stable
+          Components: main
+          Architectures: amd64
+          Signed-By: {{ external_repos.chrome.keyring_path }}
       register: chrome_repo_added
-      when: not chrome_repo_file.stat.exists
+      when: not chrome_installed.stat.exists
 
     - name: Browsers - Actualizar cache de APT si el repositorio fue agregado
       ansible.builtin.apt:
         update_cache: true
-      when: chrome_repo_added.changed
+      when: chrome_repo_added.changed | default(false)
 
     - name: Browsers - Instalar el paquete google-chrome-stable
       ansible.builtin.apt:
