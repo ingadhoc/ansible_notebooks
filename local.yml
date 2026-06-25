@@ -13,7 +13,7 @@
       ansible.builtin.file:
         path: /tmp
         state: directory
-        mode: '1777'
+        mode: "1777"
 
     - name: Actualizar caché de paquetes
       tags: always

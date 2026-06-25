@@ -7,31 +7,31 @@
       ansible.builtin.file:
         path: /etc/apt/keyrings
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Code | Verificar si la clave GPG ya está instalada
       ansible.builtin.stat:
         path: "{{ developer_external_repos.vscode.keyring_path }}"
-      register: vscode_gpg_key
+      register: developer_vscode_gpg_key
 
     - name: Code | Descargar la clave GPG de Microsoft
       ansible.builtin.get_url:
         url: "{{ developer_external_repos.vscode.gpg_url }}"
         dest: /tmp/microsoft.asc
-        mode: '0644'
-      when: not vscode_gpg_key.stat.exists
+        mode: "0644"
+      when: not developer_vscode_gpg_key.stat.exists
 
     - name: Code | Convertir y guardar la clave GPG
       ansible.builtin.command: >-
         gpg --dearmor -o {{ developer_external_repos.vscode.keyring_path }} /tmp/microsoft.asc
-      when: not vscode_gpg_key.stat.exists
+      when: not developer_vscode_gpg_key.stat.exists
       changed_when: false
 
     - name: Code | Limpiar archivo temporal
       ansible.builtin.file:
         path: /tmp/microsoft.asc
         state: absent
-      when: not vscode_gpg_key.stat.exists
+      when: not developer_vscode_gpg_key.stat.exists
 
     # El paquete 'code' de Microsoft autogestiona su propio archivo de repo
     # (postinst reescribe vscode.sources). Configuramos el repo solo como
@@ -40,13 +40,13 @@
     - name: Code | Verificar si VS Code ya está instalado
       ansible.builtin.stat:
         path: /usr/bin/code
-      register: vscode_installed
+      register: developer_vscode_installed
 
     - name: Code | Eliminar el repositorio legacy en formato .list (migración a deb822)
       ansible.builtin.file:
         path: "/etc/apt/sources.list.d/{{ developer_external_repos.vscode.filename }}.list"
         state: absent
-      when: not vscode_installed.stat.exists
+      when: not developer_vscode_installed.stat.exists
 
     - name: Code | Añadir el repositorio de VS Code (formato deb822 .sources)
       ansible.builtin.copy:
@@ -61,16 +61,11 @@
           Components: {{ developer_external_repos.vscode.components }}
           Architectures: {{ developer_external_repos.vscode.architectures | replace(',', ' ') }}
           Signed-By: {{ developer_external_repos.vscode.signed_by }}
-      register: vscode_repo_added
-      when: not vscode_installed.stat.exists
-
-    - name: Code | Actualizar cache de APT si el repositorio fue agregado
-      ansible.builtin.apt:
-        update_cache: true
-      when: vscode_repo_added.changed | default(false)
+      when: not developer_vscode_installed.stat.exists
 
 - name: Code | Instalar el paquete 'code'
   ansible.builtin.apt:
+    update_cache: true
     name: code
     state: present
 

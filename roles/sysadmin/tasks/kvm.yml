@@ -13,14 +13,14 @@
         else
           echo "not_supported"
         fi
-      register: kvm_cpu_check
+      register: sysadmin_kvm_cpu_check
       changed_when: false
       failed_when: false
 
     - name: KVM | Mostrar advertencia si no hay soporte de virtualización
       ansible.builtin.debug:
         msg: "⚠️  CPU no soporta virtualización (VT-x/AMD-V). KVM no funcionará correctamente."
-      when: kvm_cpu_check.stdout == "not_supported"
+      when: sysadmin_kvm_cpu_check.stdout == "not_supported"
 
     - name: KVM | Instalar paquetes KVM y herramientas de virtualización
       ansible.builtin.apt:
@@ -43,16 +43,16 @@
 
     - name: KVM | Verificar que el módulo kvm está cargado
       ansible.builtin.shell: lsmod | grep -E '^kvm'
-      register: kvm_module_check
+      register: sysadmin_kvm_module_check
       changed_when: false
       failed_when: false
 
     - name: KVM | Información sobre módulos KVM cargados
       ansible.builtin.debug:
-        msg: "✅ Módulos KVM cargados: {{ kvm_module_check.stdout_lines }}"
-      when: kvm_module_check.rc == 0
+        msg: "✅ Módulos KVM cargados: {{ sysadmin_kvm_module_check.stdout_lines }}"
+      when: sysadmin_kvm_module_check.rc == 0
 
     - name: KVM | Advertencia si módulo KVM no está cargado
       ansible.builtin.debug:
         msg: "⚠️  Módulo KVM no detectado. Es posible que necesites habilitar VT-x/AMD-V en BIOS."
-      when: kvm_module_check.rc != 0
+      when: sysadmin_kvm_module_check.rc != 0

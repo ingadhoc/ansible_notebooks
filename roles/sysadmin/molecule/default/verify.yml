@@ -8,12 +8,12 @@
     - ../../vars.yml
 
   vars:
-    remote_user: "{{ ansible_env.SUDO_USER | default('testuser') }}"
-    
+    sysadmin_remote_user: "{{ ansible_env.SUDO_USER | default('testuser') }}"
+
     # Paquetes específicos de sysadmin que deben estar instalados
     required_sysadmin_packages:
       - kubecolor
-    
+
     # Paquetes solo en Debian
     required_debian_packages:
       - rsync
@@ -47,19 +47,19 @@
 
     - name: Verify | Check pulumi binary
       ansible.builtin.command: pulumi version
-      register: verify_pulumi_version
+      register: sysadmin_verify_pulumi_version
       changed_when: false
-      failed_when: verify_pulumi_version.rc != 0
+      failed_when: sysadmin_verify_pulumi_version.rc != 0
 
     - name: Verify | Check helm binary
       ansible.builtin.command: helm version
-      register: verify_helm_version
+      register: sysadmin_verify_helm_version
       changed_when: false
-      failed_when: verify_helm_version.rc != 0
+      failed_when: sysadmin_verify_helm_version.rc != 0
 
     - name: Verify | Check KVM installation (skip if not installed)
       ansible.builtin.command: virsh version
-      register: verify_kvm_version
+      register: sysadmin_verify_kvm_version
       changed_when: false
       failed_when: false
       tags:
@@ -67,7 +67,7 @@
 
     - name: Verify | Check NordVPN installation (skip if not installed)
       ansible.builtin.command: nordvpn --version
-      register: verify_nordvpn_version
+      register: sysadmin_verify_nordvpn_version
       changed_when: false
       failed_when: false
       tags:
@@ -75,30 +75,30 @@
 
     - name: Verify | Check AWS CLI binary
       ansible.builtin.command: aws --version
-      register: verify_awscli_version
+      register: sysadmin_verify_awscli_version
       changed_when: false
-      failed_when: verify_awscli_version.rc != 0
+      failed_when: sysadmin_verify_awscli_version.rc != 0
 
     - name: Verify | Check aws_completer binary exists
       ansible.builtin.stat:
         path: /usr/local/bin/aws_completer
-      register: verify_awscli_completer
-      failed_when: not verify_awscli_completer.stat.exists
+      register: sysadmin_verify_awscli_completer
+      failed_when: not sysadmin_verify_awscli_completer.stat.exists
 
     - name: Verify | Check VS Code extensions for sysadmin
-      become_user: "{{ remote_user }}"
+      become_user: "{{ sysadmin_remote_user }}"
       ansible.builtin.command: code --list-extensions --no-sandbox
-      register: verify_vscode_extensions
+      register: sysadmin_verify_vscode_extensions
       changed_when: false
-      failed_when: verify_vscode_extensions.rc != 0
+      failed_when: sysadmin_verify_vscode_extensions.rc != 0
       tags:
         - molecule-notest
 
     - name: Verify | Summarize sysadmin toolchain versions
       ansible.builtin.debug:
         msg:
-          - "Pulumi version: {{ verify_pulumi_version.stdout | default('Not available') }}"
-          - "Helm version: {{ verify_helm_version.stdout | default('Not available') }}"
-          - "KVM/Libvirt version: {{ verify_kvm_version.stdout | default('Not installed') }}"
-          - "NordVPN version: {{ verify_nordvpn_version.stdout | default('Not installed') }}"
-          - "AWS CLI version: {{ verify_awscli_version.stdout | default('Not available') }}"
+          - "Pulumi version: {{ sysadmin_verify_pulumi_version.stdout | default('Not available') }}"
+          - "Helm version: {{ sysadmin_verify_helm_version.stdout | default('Not available') }}"
+          - "KVM/Libvirt version: {{ sysadmin_verify_kvm_version.stdout | default('Not installed') }}"
+          - "NordVPN version: {{ sysadmin_verify_nordvpn_version.stdout | default('Not installed') }}"
+          - "AWS CLI version: {{ sysadmin_verify_awscli_version.stdout | default('Not available') }}"

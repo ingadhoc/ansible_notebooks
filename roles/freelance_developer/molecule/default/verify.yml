@@ -12,6 +12,6 @@
         - kubectl
         - gcloud
         - docker
-      register: cli_checks
+      register: freelance_developer_cli_checks
       changed_when: false
-      failed_when: cli_checks.rc != 0
+      failed_when: freelance_developer_cli_checks.rc != 0

@@ -14,10 +14,20 @@ rules:
   comments:
     min-spaces-from-content: 1
 
-  comments-indentation: {}
+  # Requerido por ansible-lint (modo --fix): debe estar deshabilitado
+  comments-indentation: false
+
+  # Requerido por ansible-lint (modo --fix): máximo 1 espacio dentro de llaves
+  braces:
+    max-spaces-inside: 1
+
+  # Requerido por ansible-lint (modo --fix): prohibir valores octales
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
 
   truthy:
-    allowed-values: ['true', 'false', 'yes', 'no']
+    allowed-values: ["true", "false", "yes", "no"]
     check-keys: false
 
 ignore: |

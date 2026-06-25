@@ -40,13 +40,13 @@
   roles:
     - role: sysadmin
       vars:
-        skip_gnome_tasks: true
-        developer_manage_vscode_extensions: false
-        developer_manage_vscode_defaults: false
+        skip_gnome_tasks: true  # noqa: var-naming[no-role-prefix]
+        developer_manage_vscode_extensions: false  # noqa: var-naming[no-role-prefix]
+        developer_manage_vscode_defaults: false  # noqa: var-naming[no-role-prefix]
         sysadmin_manage_vscode_extensions: false
-        developer_skip_docker: false
-        developer_skip_docker_service: true
-        developer_skip_remote_dev: true
+        developer_skip_docker: false  # noqa: var-naming[no-role-prefix]
+        developer_skip_docker_service: true  # noqa: var-naming[no-role-prefix]
+        developer_skip_remote_dev: true  # noqa: var-naming[no-role-prefix]
         sysadmin_skip_kvm: true
         sysadmin_skip_kvm_service: true
         sysadmin_skip_nordvpn: true

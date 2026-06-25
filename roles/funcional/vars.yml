@@ -4,7 +4,7 @@ remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
 
 # INTERRUPTOR PRINCIPAL PARA EL ESTILO DE ESCRITORIOS VIRTUALES
 # Opciones válidas: 'dynamic' o 'fixed'
-gnome_workspace_style: 'dynamic'
+gnome_workspace_style: "dynamic"
 
 # Red interna permitida para SSH (ajustar según entorno)
 internal_network: "192.168.0.0/16"
@@ -205,4 +205,4 @@ external_repos:
 
 # Timeouts para descargas
 download_timeout: 30
-apt_cache_valid_time: 3600  # 1 hora
+apt_cache_valid_time: 3600 # 1 hora

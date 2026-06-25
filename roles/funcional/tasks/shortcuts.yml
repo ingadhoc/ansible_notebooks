@@ -28,18 +28,18 @@
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.command:
         cmd: "dconf read {{ gnome_custom_keybindings_base_path }}"
-      register: gnome_custom_keybindings_read
+      register: funcional_gnome_custom_keybindings_read
       changed_when: false
       failed_when: false
 
     - name: GNOME | Preparar lista de atajos personalizados
       ansible.builtin.set_fact:
-        gnome_custom_keybinding_paths: >-
+        funcional_gnome_custom_keybinding_paths: >-
           {{
             []
-            if (gnome_custom_keybindings_read.rc != 0
-                or (gnome_custom_keybindings_read.stdout | default('') | trim) in ['', '@as []'])
-            else (gnome_custom_keybindings_read.stdout | from_yaml)
+            if (funcional_gnome_custom_keybindings_read.rc != 0
+                or (funcional_gnome_custom_keybindings_read.stdout | default('') | trim) in ['', '@as []'])
+            else (funcional_gnome_custom_keybindings_read.stdout | from_yaml)
           }}
 
     - name: GNOME | Registrar la lista de atajos personalizados
@@ -47,7 +47,7 @@
       become_user: "{{ remote_regular_user }}"
       community.general.dconf:
         key: "{{ gnome_custom_keybindings_base_path }}"
-        value: "{{ (gnome_custom_keybinding_paths + [gnome_flameshot_shortcut_path]) | unique | list }}"
+        value: "{{ (funcional_gnome_custom_keybinding_paths + [gnome_flameshot_shortcut_path]) | unique | list }}"
         state: present
 
     - name: GNOME | Configurar claves del atajo personalizado de Flameshot

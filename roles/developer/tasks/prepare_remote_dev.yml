@@ -11,7 +11,7 @@
       ansible.builtin.file:
         path: "{{ developer_odoo_base_path }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Odoo Dev | Verificar si el directorio ctx existe
       ansible.builtin.stat:

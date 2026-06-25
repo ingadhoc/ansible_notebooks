@@ -13,31 +13,31 @@
       ansible.builtin.file:
         path: /etc/apt/keyrings
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Docker | Verificar si la clave GPG ya está instalada
       ansible.builtin.stat:
         path: "{{ developer_external_repos.docker.keyring_path }}"
-      register: docker_gpg_key
+      register: developer_docker_gpg_key
 
     - name: Docker | Añadir la clave GPG oficial de Docker
       ansible.builtin.get_url:
         url: "{{ developer_external_repos.docker.gpg_url }}"
         dest: /tmp/docker.gpg
-        mode: '0644'
-      when: not docker_gpg_key.stat.exists
+        mode: "0644"
+      when: not developer_docker_gpg_key.stat.exists
 
     - name: Docker | Convertir la clave GPG al formato requerido
       ansible.builtin.command: >-
         gpg --dearmor -o {{ developer_external_repos.docker.keyring_path }} /tmp/docker.gpg
-      when: not docker_gpg_key.stat.exists
+      when: not developer_docker_gpg_key.stat.exists
       changed_when: false
 
     - name: Docker | Limpiar archivo temporal de clave GPG
       ansible.builtin.file:
         path: /tmp/docker.gpg
         state: absent
-      when: not docker_gpg_key.stat.exists
+      when: not developer_docker_gpg_key.stat.exists
 
     - name: Docker | Eliminar el repositorio legacy en formato .list (migración a deb822)
       ansible.builtin.file:
@@ -57,15 +57,10 @@
           Components: stable
           Architectures: {{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}
           Signed-By: {{ developer_external_repos.docker.keyring_path }}
-      register: docker_repo_added
-
-    - name: Docker | Actualizar cache de APT si el repositorio fue agregado
-      ansible.builtin.apt:
-        update_cache: true
-      when: docker_repo_added.changed | default(false)
 
     - name: Docker | Instalar Docker Engine y plugins
       ansible.builtin.apt:
+        update_cache: true
         name: "{{ developer_docker_packages }}"
         state: present
 

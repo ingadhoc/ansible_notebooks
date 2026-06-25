@@ -14,30 +14,30 @@
     - name: Adhoccli - Verificar si la llave GPG ya está instalada
       ansible.builtin.stat:
         path: "{{ external_repos.adhoccli.keyring_path }}"
-      register: adhoccli_gpg_key
+      register: funcional_adhoccli_gpg_key
 
     - name: Adhoccli - Descargar la llave GPG del repositorio
       ansible.builtin.get_url:
         url: "{{ external_repos.adhoccli.gpg_url }}"
         dest: /tmp/adhoc-devops.asc
         mode: "0644"
-      register: adhoccli_gpg_download
-      until: adhoccli_gpg_download is succeeded
+      register: funcional_adhoccli_gpg_download
+      until: funcional_adhoccli_gpg_download is succeeded
       retries: 3
       delay: 2
-      when: not adhoccli_gpg_key.stat.exists
+      when: not funcional_adhoccli_gpg_key.stat.exists
 
     - name: Adhoccli - Convertir y guardar la llave GPG en el keyring
       ansible.builtin.command:
         cmd: gpg --dearmor -o {{ external_repos.adhoccli.keyring_path }} /tmp/adhoc-devops.asc
-      when: not adhoccli_gpg_key.stat.exists
+      when: not funcional_adhoccli_gpg_key.stat.exists
       changed_when: true
 
     - name: Adhoccli - Remover archivo temporal de llave GPG
       ansible.builtin.file:
         path: /tmp/adhoc-devops.asc
         state: absent
-      when: not adhoccli_gpg_key.stat.exists
+      when: not funcional_adhoccli_gpg_key.stat.exists
 
     - name: Adhoccli - Eliminar el repositorio legacy en formato .list (migración a deb822)
       ansible.builtin.file:
@@ -56,15 +56,10 @@
           Suites: stable
           Components: main
           Signed-By: {{ external_repos.adhoccli.keyring_path }}
-      register: adhoccli_repo_added
-
-    - name: Adhoccli - Actualizar cache de APT si el repositorio fue agregado
-      ansible.builtin.apt:
-        update_cache: true
-      when: adhoccli_repo_added.changed
 
     - name: Adhoccli - Instalar herramientas del repositorio Adhoc
       ansible.builtin.apt:
+        update_cache: true
         name:
           - adhoccli
           - streamsnap
