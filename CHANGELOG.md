@@ -4,6 +4,19 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-06-25]
+
+### Repositorios APT — migración de `apt_repository` a `deb822_repository`
+
+- Migrados los 9 repositorios externos del módulo deprecado `ansible.builtin.apt_repository` (será removido en ansible-core 2.25) al moderno `ansible.builtin.deb822_repository`, en los roles `funcional` (gcloud, kubectl, chrome, adhoccli), `developer` (docker, vscode, github-cli) y `sysadmin` (nordvpn)
+- Agregado `python3-debian` (dependencia del módulo `deb822_repository`) a los paquetes base de cada rol
+- Cada tarea elimina primero el archivo `.list` legacy para evitar repos configurados por duplicado en máquinas ya provisionadas (los repos ahora se escriben como `.sources`)
+- Eliminados los `stat` guard manuales: el módulo `deb822_repository` ya es idempotente de forma nativa
+- `github_cli` y `nordvpn` ahora usan campos estructurados (uris/suites/components) en vez de la línea `deb ...` completa
+- Actualizado el `verify.yml` de molecule del rol `funcional` para verificar archivos `.sources` en lugar de `.list`
+
+---
+
 ## [2026-05-16]
 
 ### Devcontainer

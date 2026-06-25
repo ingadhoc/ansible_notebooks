@@ -25,14 +25,26 @@
         state: absent
       changed_when: false
 
+    - name: NordVPN | Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/nordvpn.list
+        state: absent
+
     - name: NordVPN | Añadir el repositorio de APT de NordVPN
-      ansible.builtin.apt_repository:
-        repo: "{{ sysadmin_nordvpn_repo_line }}"
+      ansible.builtin.deb822_repository:
+        name: nordvpn
+        types: deb
+        uris: https://repo.nordvpn.com/deb/nordvpn/debian
+        suites: stable
+        components: main
+        signed_by: "{{ sysadmin_nordvpn_gpg_path }}"
         state: present
-        filename: nordvpn
+      register: nordvpn_repo_added
+
+    - name: NordVPN | Actualizar cache de APT si el repositorio fue agregado
+      ansible.builtin.apt:
         update_cache: true
-      tags:
-        - molecule-idempotence-notest
+      when: nordvpn_repo_added.changed
 
     - name: NordVPN | Instalar el paquete de NordVPN
       ansible.builtin.apt:

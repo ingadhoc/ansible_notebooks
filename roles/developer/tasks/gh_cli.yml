@@ -15,18 +15,22 @@
         mode: '0644'
       when: not github_cli_gpg_key.stat.exists
 
-    - name: GitHub CLI | Verificar si el repositorio ya está configurado
-      ansible.builtin.stat:
+    - name: GitHub CLI | Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
         path: /etc/apt/sources.list.d/github-cli.list
-      register: github_cli_repo_file
+        state: absent
 
     - name: GitHub CLI | Añadir el repositorio oficial
-      ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64 signed-by={{ developer_external_repos.github_cli.keyring_path }}] {{ developer_external_repos.github_cli.repo_url }}"
+      ansible.builtin.deb822_repository:
+        name: github-cli
+        types: deb
+        uris: "{{ developer_external_repos.github_cli.uris }}"
+        suites: "{{ developer_external_repos.github_cli.suites }}"
+        components: "{{ developer_external_repos.github_cli.components }}"
+        architectures: "{{ developer_external_repos.github_cli.architectures }}"
+        signed_by: "{{ developer_external_repos.github_cli.keyring_path }}"
         state: present
-        filename: github-cli
       register: github_cli_repo_added
-      when: not github_cli_repo_file.stat.exists
 
     - name: GitHub CLI | Actualizar cache de APT si el repositorio fue agregado
       ansible.builtin.apt:

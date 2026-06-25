@@ -33,14 +33,27 @@
         state: absent
       when: not vscode_gpg_key.stat.exists
 
+    - name: Code | Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/{{ developer_external_repos.vscode.filename }}.list"
+        state: absent
+
     - name: Code | Añadir el repositorio de VS Code
-      ansible.builtin.apt_repository:
-        repo: "deb [arch={{ developer_external_repos.vscode.architectures }} signed-by={{ developer_external_repos.vscode.signed_by }}] {{ developer_external_repos.vscode.uris }} {{ developer_external_repos.vscode.suites }} {{ developer_external_repos.vscode.components }}"
+      ansible.builtin.deb822_repository:
+        name: "{{ developer_external_repos.vscode.filename }}"
+        types: deb
+        uris: "{{ developer_external_repos.vscode.uris }}"
+        suites: "{{ developer_external_repos.vscode.suites }}"
+        components: "{{ developer_external_repos.vscode.components }}"
+        architectures: "{{ developer_external_repos.vscode.architectures.split(',') }}"
+        signed_by: "{{ developer_external_repos.vscode.signed_by }}"
         state: present
-        filename: "{{ developer_external_repos.vscode.filename }}"
+      register: vscode_repo_added
+
+    - name: Code | Actualizar cache de APT si el repositorio fue agregado
+      ansible.builtin.apt:
         update_cache: true
-      tags:
-        - molecule-idempotence-notest
+      when: vscode_repo_added.changed
 
 - name: Code | Instalar el paquete 'code'
   ansible.builtin.apt:

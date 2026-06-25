@@ -23,18 +23,21 @@
         creates: "{{ external_repos.adhoccli.keyring_path }}"
       when: not adhoccli_gpg_key.stat.exists
 
-    - name: Adhoccli - Verificar si el repositorio ya está configurado
-      ansible.builtin.stat:
+    - name: Adhoccli - Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
         path: /etc/apt/sources.list.d/adhoc.list
-      register: adhoccli_repo_file
+        state: absent
 
     - name: Adhoccli - Añadir el repositorio de Adhoc
-      ansible.builtin.apt_repository:
-        repo: "deb [signed-by={{ external_repos.adhoccli.keyring_path }}] {{ external_repos.adhoccli.repo_url }} stable main"
+      ansible.builtin.deb822_repository:
+        name: adhoc
+        types: deb
+        uris: "{{ external_repos.adhoccli.repo_url }}"
+        suites: stable
+        components: main
+        signed_by: "{{ external_repos.adhoccli.keyring_path }}"
         state: present
-        filename: adhoc
       register: adhoccli_repo_added
-      when: not adhoccli_repo_file.stat.exists
 
     - name: Adhoccli - Actualizar cache de APT si el repositorio fue agregado
       ansible.builtin.apt:

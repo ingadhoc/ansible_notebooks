@@ -38,18 +38,21 @@
         state: absent
       when: not gcloud_gpg_key.stat.exists
 
-    - name: Verificar si el repositorio ya está configurado
-      ansible.builtin.stat:
+    - name: Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
         path: /etc/apt/sources.list.d/google-cloud-cli.list
-      register: gcloud_repo_file
+        state: absent
 
     - name: Agregar el repositorio de Google Cloud CLI
-      ansible.builtin.apt_repository:
-        repo: "deb [signed-by={{ external_repos.gcloud.keyring_path }}] {{ external_repos.gcloud.repo_url }} cloud-sdk main"
+      ansible.builtin.deb822_repository:
+        name: google-cloud-cli
+        types: deb
+        uris: "{{ external_repos.gcloud.repo_url }}"
+        suites: cloud-sdk
+        components: main
+        signed_by: "{{ external_repos.gcloud.keyring_path }}"
         state: present
-        filename: google-cloud-cli
       register: gcloud_repo_added
-      when: not gcloud_repo_file.stat.exists
 
     - name: Actualizar cache de APT si el repositorio fue agregado
       ansible.builtin.apt:

@@ -9,10 +9,9 @@
         state: present
 
     - name: Kubectl | Eliminar el repositorio antiguo y obsoleto (apt.kubernetes.io)
-      ansible.builtin.apt_repository:
-        repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/kubernetes.list
         state: absent
-        filename: kubernetes
 
     - name: Kubectl | Verificar si la clave GPG ya está instalada
       ansible.builtin.stat:
@@ -38,18 +37,20 @@
         state: absent
       when: not kubectl_gpg_key.stat.exists
 
-    - name: Kubectl | Verificar si el repositorio ya está configurado
-      ansible.builtin.stat:
+    - name: Kubectl | Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
         path: /etc/apt/sources.list.d/kubernetes-pkgs.list
-      register: kubectl_repo_file
+        state: absent
 
     - name: Kubectl | Añadir el nuevo repositorio de Kubernetes (pkgs.k8s.io)
-      ansible.builtin.apt_repository:
-        repo: "deb [signed-by={{ external_repos.kubectl.keyring_path }}] {{ external_repos.kubectl.repo_url }} /"
+      ansible.builtin.deb822_repository:
+        name: kubernetes-pkgs
+        types: deb
+        uris: "{{ external_repos.kubectl.repo_url }}"
+        suites: "/"
+        signed_by: "{{ external_repos.kubectl.keyring_path }}"
         state: present
-        filename: kubernetes-pkgs
       register: kubectl_repo_added
-      when: not kubectl_repo_file.stat.exists
 
     - name: Kubectl | Actualizar cache de APT si el repositorio fue agregado
       ansible.builtin.apt:
