@@ -43,6 +43,11 @@
         path: /etc/apt/sources.list.d/google-cloud-cli.list
         state: absent
 
+    - name: Asegurar python3-debian (requerido por ansible.builtin.deb822_repository)
+      ansible.builtin.apt:
+        name: python3-debian
+        state: present
+
     - name: Agregar el repositorio de Google Cloud CLI
       ansible.builtin.deb822_repository:
         name: google-cloud-cli

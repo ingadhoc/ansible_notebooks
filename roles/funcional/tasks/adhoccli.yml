@@ -16,11 +16,27 @@
         path: "{{ external_repos.adhoccli.keyring_path }}"
       register: adhoccli_gpg_key
 
-    - name: Adhoccli - Descargar y convertir la llave GPG del repositorio
-      ansible.builtin.shell: |
-        wget -qO - {{ external_repos.adhoccli.gpg_url }} | gpg --dearmor -o {{ external_repos.adhoccli.keyring_path }}
-      args:
-        creates: "{{ external_repos.adhoccli.keyring_path }}"
+    - name: Adhoccli - Descargar la llave GPG del repositorio
+      ansible.builtin.get_url:
+        url: "{{ external_repos.adhoccli.gpg_url }}"
+        dest: /tmp/adhoc-devops.asc
+        mode: "0644"
+      register: adhoccli_gpg_download
+      until: adhoccli_gpg_download is succeeded
+      retries: 3
+      delay: 2
+      when: not adhoccli_gpg_key.stat.exists
+
+    - name: Adhoccli - Convertir y guardar la llave GPG en el keyring
+      ansible.builtin.command:
+        cmd: gpg --dearmor -o {{ external_repos.adhoccli.keyring_path }} /tmp/adhoc-devops.asc
+      when: not adhoccli_gpg_key.stat.exists
+      changed_when: true
+
+    - name: Adhoccli - Remover archivo temporal de llave GPG
+      ansible.builtin.file:
+        path: /tmp/adhoc-devops.asc
+        state: absent
       when: not adhoccli_gpg_key.stat.exists
 
     - name: Adhoccli - Eliminar el repositorio legacy en formato .list (migración a deb822)
