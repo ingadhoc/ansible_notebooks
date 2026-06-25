@@ -38,16 +38,19 @@
         path: "/etc/apt/sources.list.d/{{ developer_external_repos.vscode.filename }}.list"
         state: absent
 
-    - name: Code | Añadir el repositorio de VS Code
-      ansible.builtin.deb822_repository:
-        name: "{{ developer_external_repos.vscode.filename }}"
-        types: deb
-        uris: "{{ developer_external_repos.vscode.uris }}"
-        suites: "{{ developer_external_repos.vscode.suites }}"
-        components: "{{ developer_external_repos.vscode.components }}"
-        architectures: "{{ developer_external_repos.vscode.architectures.split(',') }}"
-        signed_by: "{{ developer_external_repos.vscode.signed_by }}"
-        state: present
+    - name: Code | Añadir el repositorio de VS Code (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: "/etc/apt/sources.list.d/{{ developer_external_repos.vscode.filename }}.sources"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ developer_external_repos.vscode.uris }}
+          Suites: {{ developer_external_repos.vscode.suites }}
+          Components: {{ developer_external_repos.vscode.components }}
+          Architectures: {{ developer_external_repos.vscode.architectures | replace(',', ' ') }}
+          Signed-By: {{ developer_external_repos.vscode.signed_by }}
       register: vscode_repo_added
 
     - name: Code | Actualizar cache de APT si el repositorio fue agregado

@@ -44,15 +44,18 @@
         path: /etc/apt/sources.list.d/adhoc.list
         state: absent
 
-    - name: Adhoccli - Añadir el repositorio de Adhoc
-      ansible.builtin.deb822_repository:
-        name: adhoc
-        types: deb
-        uris: "{{ external_repos.adhoccli.repo_url }}"
-        suites: stable
-        components: main
-        signed_by: "{{ external_repos.adhoccli.keyring_path }}"
-        state: present
+    - name: Adhoccli - Añadir el repositorio de Adhoc (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/adhoc.sources
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ external_repos.adhoccli.repo_url }}
+          Suites: stable
+          Components: main
+          Signed-By: {{ external_repos.adhoccli.keyring_path }}
       register: adhoccli_repo_added
 
     - name: Adhoccli - Actualizar cache de APT si el repositorio fue agregado

@@ -8,7 +8,6 @@
         state: present
       vars:
         packages:
-          - python3-debian  # Requerido por el módulo ansible.builtin.deb822_repository
           - kubecolor
           - yq
           - speedtest-cli

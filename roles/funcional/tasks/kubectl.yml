@@ -42,19 +42,17 @@
         path: /etc/apt/sources.list.d/kubernetes-pkgs.list
         state: absent
 
-    - name: Kubectl | Asegurar python3-debian (requerido por ansible.builtin.deb822_repository)
-      ansible.builtin.apt:
-        name: python3-debian
-        state: present
-
-    - name: Kubectl | Añadir el nuevo repositorio de Kubernetes (pkgs.k8s.io)
-      ansible.builtin.deb822_repository:
-        name: kubernetes-pkgs
-        types: deb
-        uris: "{{ external_repos.kubectl.repo_url }}"
-        suites: "/"
-        signed_by: "{{ external_repos.kubectl.keyring_path }}"
-        state: present
+    - name: Kubectl | Añadir el nuevo repositorio de Kubernetes (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/kubernetes-pkgs.sources
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ external_repos.kubectl.repo_url }}
+          Suites: /
+          Signed-By: {{ external_repos.kubectl.keyring_path }}
       register: kubectl_repo_added
 
     - name: Kubectl | Actualizar cache de APT si el repositorio fue agregado

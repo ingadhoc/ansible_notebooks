@@ -24,7 +24,6 @@ packages_system:
   - mc
   - tmux
   - apt-transport-https
-  - python3-debian  # Requerido por el módulo ansible.builtin.deb822_repository
   - curl
   - wget
   - openssh-client

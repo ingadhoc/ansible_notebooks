@@ -6,7 +6,6 @@ remote_regular_user_uid: "{{ ansible_env.SUDO_UID | default(ansible_user_uid) }}
 # Lista de paquetes base para el perfil de DEV
 developer_packages_base:
   - ccze
-  - python3-debian  # Requerido por el módulo ansible.builtin.deb822_repository
   - tmux
   - tmuxp
   - xclip
@@ -169,7 +168,7 @@ developer_external_repos:
   github_cli:
     gpg_url: "https://cli.github.com/packages/githubcli-archive-keyring.gpg"
     keyring_path: "/usr/share/keyrings/githubcli-archive-keyring.gpg"
-    # Campos estructurados para deb822_repository
+    # Campos estructurados para el repositorio en formato deb822
     uris: "https://cli.github.com/packages"
     suites: "stable"
     components: "main"

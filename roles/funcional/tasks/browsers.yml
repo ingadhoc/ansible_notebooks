@@ -37,16 +37,19 @@
         path: /etc/apt/sources.list.d/google-chrome.list
         state: absent
 
-    - name: Browsers - Añadir el repositorio de Google Chrome (formato deb822)
-      ansible.builtin.deb822_repository:
-        name: google-chrome
-        types: deb
-        uris: "{{ external_repos.chrome.repo_url }}"
-        suites: stable
-        components: main
-        architectures: amd64
-        signed_by: "{{ external_repos.chrome.keyring_path }}"
-        state: present
+    - name: Browsers - Añadir el repositorio de Google Chrome (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/google-chrome.sources
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ external_repos.chrome.repo_url }}
+          Suites: stable
+          Components: main
+          Architectures: amd64
+          Signed-By: {{ external_repos.chrome.keyring_path }}
       register: chrome_repo_added
 
     - name: Browsers - Actualizar cache de APT si el repositorio fue agregado

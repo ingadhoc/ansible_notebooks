@@ -20,16 +20,19 @@
         path: /etc/apt/sources.list.d/github-cli.list
         state: absent
 
-    - name: GitHub CLI | Añadir el repositorio oficial
-      ansible.builtin.deb822_repository:
-        name: github-cli
-        types: deb
-        uris: "{{ developer_external_repos.github_cli.uris }}"
-        suites: "{{ developer_external_repos.github_cli.suites }}"
-        components: "{{ developer_external_repos.github_cli.components }}"
-        architectures: "{{ developer_external_repos.github_cli.architectures }}"
-        signed_by: "{{ developer_external_repos.github_cli.keyring_path }}"
-        state: present
+    - name: GitHub CLI | Añadir el repositorio oficial (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/github-cli.sources
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ developer_external_repos.github_cli.uris }}
+          Suites: {{ developer_external_repos.github_cli.suites }}
+          Components: {{ developer_external_repos.github_cli.components }}
+          Architectures: {{ developer_external_repos.github_cli.architectures }}
+          Signed-By: {{ developer_external_repos.github_cli.keyring_path }}
       register: github_cli_repo_added
 
     - name: GitHub CLI | Actualizar cache de APT si el repositorio fue agregado
