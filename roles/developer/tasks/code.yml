@@ -33,10 +33,20 @@
         state: absent
       when: not vscode_gpg_key.stat.exists
 
+    # El paquete 'code' de Microsoft autogestiona su propio archivo de repo
+    # (postinst reescribe vscode.sources). Configuramos el repo solo como
+    # bootstrap cuando VS Code aún no está instalado; luego lo maneja el
+    # paquete. Así evitamos pisarnos con su postinst (idempotencia).
+    - name: Code | Verificar si VS Code ya está instalado
+      ansible.builtin.stat:
+        path: /usr/bin/code
+      register: vscode_installed
+
     - name: Code | Eliminar el repositorio legacy en formato .list (migración a deb822)
       ansible.builtin.file:
         path: "/etc/apt/sources.list.d/{{ developer_external_repos.vscode.filename }}.list"
         state: absent
+      when: not vscode_installed.stat.exists
 
     - name: Code | Añadir el repositorio de VS Code (formato deb822 .sources)
       ansible.builtin.copy:
@@ -52,11 +62,12 @@
           Architectures: {{ developer_external_repos.vscode.architectures | replace(',', ' ') }}
           Signed-By: {{ developer_external_repos.vscode.signed_by }}
       register: vscode_repo_added
+      when: not vscode_installed.stat.exists
 
     - name: Code | Actualizar cache de APT si el repositorio fue agregado
       ansible.builtin.apt:
         update_cache: true
-      when: vscode_repo_added.changed
+      when: vscode_repo_added.changed | default(false)
 
 - name: Code | Instalar el paquete 'code'
   ansible.builtin.apt:
