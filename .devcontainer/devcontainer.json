@@ -3,6 +3,13 @@
     "build": {
         "dockerfile": "Dockerfile"
     },
+    // Acceso al Docker del host (docker-outside-of-docker): monta el socket y
+    // agrega el remoteUser al grupo docker al buildear. Necesario para correr
+    // los tests de Molecule (crean contenedores en el daemon del host).
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
     "customizations": {
         "vscode": {
             "settings": {

@@ -7,7 +7,7 @@
     key: "{{ item.key }}"
     value: "{{ item.value }}"
     state: present
-  loop: "{{ gnome_keybindings | from_yaml }}"
+  loop: "{{ funcional_gnome_keybindings | from_yaml }}"
   when: not (skip_gnome_tasks | default(false))
 
 - name: GNOME | Configurar atajo personalizado de Flameshot
@@ -27,7 +27,7 @@
       become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.command:
-        cmd: "dconf read {{ gnome_custom_keybindings_base_path }}"
+        cmd: "dconf read {{ funcional_gnome_custom_keybindings_base_path }}"
       register: funcional_gnome_custom_keybindings_read
       changed_when: false
       failed_when: false
@@ -46,18 +46,18 @@
       become: true
       become_user: "{{ remote_regular_user }}"
       community.general.dconf:
-        key: "{{ gnome_custom_keybindings_base_path }}"
-        value: "{{ (funcional_gnome_custom_keybinding_paths + [gnome_flameshot_shortcut_path]) | unique | list }}"
+        key: "{{ funcional_gnome_custom_keybindings_base_path }}"
+        value: "{{ (funcional_gnome_custom_keybinding_paths + [funcional_gnome_flameshot_shortcut_path]) | unique | list }}"
         state: present
 
     - name: GNOME | Configurar claves del atajo personalizado de Flameshot
       become: true
       become_user: "{{ remote_regular_user }}"
       community.general.dconf:
-        key: "{{ gnome_flameshot_shortcut_path }}{{ item.key }}"
+        key: "{{ funcional_gnome_flameshot_shortcut_path }}{{ item.key }}"
         value: "{{ item.value }}"
         state: present
       loop:
-        - { key: "name", value: "'{{ gnome_flameshot_shortcut_name }}'" }
-        - { key: "command", value: "'{{ gnome_flameshot_shortcut_command }}'" }
-        - { key: "binding", value: "'{{ gnome_flameshot_shortcut_binding }}'" }
+        - { key: "name", value: "'{{ funcional_gnome_flameshot_shortcut_name }}'" }
+        - { key: "command", value: "'{{ funcional_gnome_flameshot_shortcut_command }}'" }
+        - { key: "binding", value: "'{{ funcional_gnome_flameshot_shortcut_binding }}'" }

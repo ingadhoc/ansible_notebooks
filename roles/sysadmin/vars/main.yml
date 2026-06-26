@@ -1,7 +1,7 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
-remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
-remote_regular_user_uid: "{{ ansible_env.SUDO_UID | default(ansible_user_uid) }}"
+remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"  # noqa: var-naming[no-role-prefix]
+remote_regular_user_uid: "{{ ansible_env.SUDO_UID | default(ansible_user_uid) }}"  # noqa: var-naming[no-role-prefix]
 
 # --- Configuración para Pulumi ---
 # Pulumi se instala como binario en /usr/local/bin/pulumi.
@@ -11,7 +11,7 @@ sysadmin_pulumi_version: "latest"
 sysadmin_pulumi_install_root: "/opt/pulumi"
 
 # Extensiones predefinidas para sysadmin
-vscode_extension_list_sysadmin:
+sysadmin_vscode_extension_list:
   # Container Tools
   - ms-azuretools.vscode-containers
   # Dev Containers

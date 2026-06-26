@@ -6,6 +6,16 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ## [2026-06-26]
 
+### Variables: migración a `vars/main.yml` con prefijo de rol
+
+- Movidas las variables de cada rol de `roles/<rol>/vars.yml` (cargado vía `include_vars` manual) a `roles/<rol>/vars/main.yml` (autocarga estándar de Ansible). Eliminados los `include_vars` redundantes de funcional/developer/sysadmin
+- Prefijadas con el nombre del rol todas las variables internas que no lo tenían (~28 en `funcional`: `funcional_packages_*`, `funcional_dconf_settings`, `funcional_branding_*`, `funcional_external_repos`, `funcional_gnome_*`, etc.; `sysadmin_vscode_extension_list`). Cumple `var-naming[no-role-prefix]` y evita colisiones en el namespace global del play
+- `remote_regular_user`/`remote_regular_user_uid` se mantienen sin prefijo (alias play-wide compartido a propósito) con `# noqa` documentado
+- `deploy` y `freelance_developer` actualizados para cargar las vars del rol de origen desde `vars/main.yml`
+- Nueva sección `specifications.md` §3.5 documentando la convención de nombres de variables
+- DevContainer: agregados los features `docker-outside-of-docker` (correr Molecule contra el daemon del host) y `github-cli` (gestionar PRs sin instalar `gh` manualmente)
+- `ansible-lint local.yml` pasa limpio a profile `production`; syntax-check OK en los 4 perfiles. Validado con `molecule test`: los 4 roles (funcional, developer, sysadmin, freelance_developer) pasan converge + idempotence (changed=0) + verify (exit 0)
+
 ### Limpieza de estructura: documentación, scripts y consistencia
 
 - **Documentación consolidada**: testing unificado en un único `docs/TESTING.md`

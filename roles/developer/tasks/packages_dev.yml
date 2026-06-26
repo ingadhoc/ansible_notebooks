@@ -5,4 +5,4 @@
   ansible.builtin.apt:
     name: "{{ developer_packages_base }}"
     state: present
-    cache_valid_time: "{{ apt_cache_valid_time | default(3600) }}"
+    cache_valid_time: "{{ funcional_apt_cache_valid_time | default(3600) }}"

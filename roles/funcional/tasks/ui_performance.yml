@@ -7,5 +7,5 @@
     key: "{{ item.key }}"
     value: "{{ item.value }}"
     state: present
-  loop: "{{ ui_performance_dconf_settings }}"
+  loop: "{{ funcional_ui_performance_dconf_settings }}"
   when: not (skip_gnome_tasks | default(false))

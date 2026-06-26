@@ -1,11 +1,13 @@
 ---
+# freelance_developer no hereda funcional/developer vía meta (corre un subset con
+# tasks_from y skip de dependencias), así que carga sus vars explícitamente.
 - name: Freelance Developer | Include vars from funcional
-  ansible.builtin.include_vars: "{{ role_path | dirname }}/funcional/vars.yml"
+  ansible.builtin.include_vars: "{{ role_path | dirname }}/funcional/vars/main.yml"
   tags: always
   no_log: true
 
 - name: Freelance Developer | Include vars from developer
-  ansible.builtin.include_vars: "{{ role_path | dirname }}/developer/vars.yml"
+  ansible.builtin.include_vars: "{{ role_path | dirname }}/developer/vars/main.yml"
   tags: always
   no_log: true
 

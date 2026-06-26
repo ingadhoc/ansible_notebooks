@@ -46,7 +46,7 @@ ansible-playbook local.yml --tags "deploy" -K --verbose
 
 ### Adding a new package installation task
 1. **Identify the target role** based on the package purpose (funcional/developer/sysadmin)
-2. **Update `vars.yml`**: Add package to appropriate list variable (e.g., `developer_packages_base`, `packages_system`)
+2. **Update `vars/main.yml`**: Add package to appropriate list variable (e.g., `developer_packages_base`, `funcional_packages_system`)
 3. **Choose installation method**:
    - **Simple apt packages**: Add to existing list in `tasks/packages.yml` or `tasks/packages_dev.yml`
    - **External repository needed**: Create dedicated task file (e.g., `tasks/newtool.yml`)
@@ -82,7 +82,7 @@ ansible-playbook local.yml --tags "deploy" -K --verbose
 ## Project Conventions
 
 ### File organization
-- Each role has: `tasks/main.yml` (orchestrator), `vars.yml` (variables), individual `tasks/*.yml` (feature-specific)
+- Each role has: `tasks/main.yml` (orchestrator), `vars/main.yml` (variables), individual `tasks/*.yml` (feature-specific)
 - `tasks/main.yml` imports all feature tasks in sequence (e.g., `packages.yml`, `docker.yml`, `code.yml`)
 - Configuration files stored in `files/` directory, Jinja2 templates in `templates/`
 - All roles tagged with their profile name (e.g., `tags: developer`, `tags: funcional`)
@@ -90,7 +90,7 @@ ansible-playbook local.yml --tags "deploy" -K --verbose
 ### Variable patterns
 - **User detection**: `remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"` - critical for running tasks as the actual user when using `sudo`
 - **Distribution version logic**: Use `ansible_facts['distribution_version']` for Debian version-specific behavior
-- **Package exclusions**: `packages_exclude_debian_13` pattern for distro-specific package availability
+- **Package exclusions**: `funcional_packages_exclude_debian_13` pattern for distro-specific package availability
 - Variables prefixed with role name: `developer_*`, `funcional_*`, `sysadmin_*`
 
 ### Task structure patterns
@@ -182,5 +182,5 @@ Manual testing in VirtualBox VMs with clean Debian 13 installations.
 
 - `local.yml`: Main playbook orchestration logic
 - `roles/{profile}/tasks/main.yml`: Entry points showing feature organization
-- `roles/{profile}/vars.yml`: Profile-specific variable definitions
+- `roles/{profile}/vars/main.yml`: Profile-specific variable definitions
 - `launch_project.sh`: Bootstrap script pattern for understanding initial setup flow

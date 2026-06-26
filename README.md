@@ -244,8 +244,8 @@ sudo reboot
 ### Error: Paquete no disponible en Debian 13
 
 ```yaml
-# Solución: Agregar a packages_exclude_debian_13 en vars.yml
-packages_exclude_debian_13:
+# Solución: Agregar a funcional_packages_exclude_debian_13 en vars/main.yml
+funcional_packages_exclude_debian_13:
   - nombre-paquete-problemático
 ```
 

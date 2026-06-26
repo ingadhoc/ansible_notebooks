@@ -15,19 +15,19 @@
 
     - name: Kubectl | Verificar si la clave GPG ya está instalada
       ansible.builtin.stat:
-        path: "{{ external_repos.kubectl.keyring_path }}"
+        path: "{{ funcional_external_repos.kubectl.keyring_path }}"
       register: funcional_kubectl_gpg_key
 
     - name: Kubectl | Añadir la nueva clave GPG de Kubernetes
       ansible.builtin.get_url:
-        url: "{{ external_repos.kubectl.gpg_url }}"
+        url: "{{ funcional_external_repos.kubectl.gpg_url }}"
         dest: /tmp/kubernetes-release.key
         mode: "0644"
       when: not funcional_kubectl_gpg_key.stat.exists
 
     - name: Kubectl | Convertir y guardar la clave GPG
       ansible.builtin.shell: >
-        gpg --dearmor -o {{ external_repos.kubectl.keyring_path }} /tmp/kubernetes-release.key
+        gpg --dearmor -o {{ funcional_external_repos.kubectl.keyring_path }} /tmp/kubernetes-release.key
       when: not funcional_kubectl_gpg_key.stat.exists
       changed_when: true
 
@@ -50,14 +50,14 @@
         mode: "0644"
         content: |
           Types: deb
-          URIs: {{ external_repos.kubectl.repo_url }}
+          URIs: {{ funcional_external_repos.kubectl.repo_url }}
           Suites: /
-          Signed-By: {{ external_repos.kubectl.keyring_path }}
+          Signed-By: {{ funcional_external_repos.kubectl.keyring_path }}
       register: funcional_kubectl_repo
 
     - name: Kubectl | Instalar kubectl
       ansible.builtin.apt:
         update_cache: true
-        cache_valid_time: "{{ 0 if (funcional_kubectl_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
+        cache_valid_time: "{{ 0 if (funcional_kubectl_repo.changed | default(false)) else (funcional_apt_cache_valid_time | default(3600)) }}"
         name: kubectl
         state: present
