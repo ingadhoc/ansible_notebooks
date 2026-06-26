@@ -40,6 +40,11 @@ RUN adduser -u $USER_UID --disabled-password --gecos "" $USERNAME \
 USER $USERNAME
 WORKDIR /home/$USERNAME
 
+# 4b. Creamos ~/.claude owned por appuser. Cuando el volume nombrado
+# devansible-claude se monte por primera vez (vacío), Docker copia el
+# ownership de este dir al volume, evitando que quede root-owned.
+RUN mkdir -p /home/$USERNAME/.claude
+
 # 5. Creamos un entorno virtual dedicado y le instalamos las herramientas
 RUN python3 -m venv /home/$USERNAME/ansible-venv
 RUN /home/$USERNAME/ansible-venv/bin/pip install --no-cache-dir ansible-core ansible-lint
