@@ -40,17 +40,28 @@ El sistema utiliza una arquitectura de roles jerárquica basada en el perfil del
 
 Cualquier contribución (humana o IA) DEBE adherirse a los siguientes patrones ya establecidos:
 
-### 3.1. Patrón Moderno de Repositorios APT (Zero `apt-key`)
+### 3.1. Patrón Moderno de Repositorios APT (deb822 `.sources`)
 
-Está estrictamente prohibido usar el módulo obsoleto `apt_key`. Todo nuevo repositorio externo debe seguir este patrón:
+Está estrictamente prohibido usar los módulos obsoletos `apt_key` y
+`apt_repository` (este último será removido en ansible-core 2.25). Tampoco se usa
+el módulo `deb822_repository` (depende de `python3-debian` y tiene rarezas de
+idempotencia con `architectures` en contenedores). Todo repositorio externo debe
+seguir este patrón:
 
 1. Validar si el keyring existe (`stat`).
-2. Descargar la llave GPG a `/tmp` (`get_url` con `changed_when: false`).
+2. Descargar la llave GPG a `/tmp` (`get_url`, solo `when: not <keyring>.stat.exists`).
 3. Convertir con `gpg --dearmor` hacia `/usr/share/keyrings/` o `/etc/apt/keyrings/`.
-4. Borrar archivo temporal de `/tmp` (`changed_when: false`).
-5. Validar si existe `.list` (`stat`).
-6. Agregar el repositorio (`apt_repository` referenciando el `signed-by`).
+4. Borrar archivo temporal de `/tmp`.
+5. Eliminar el `.list` legacy si existe (`file: state=absent`) para no duplicar el
+   repo en máquinas ya provisionadas.
+6. Escribir el archivo `.sources` (formato deb822) con `ansible.builtin.copy` y
+   campos estructurados (`Types`, `URIs`, `Suites`, `Components`, `Signed-By`).
+   `copy` es idempotente por contenido, así que no necesita `stat` guard previo.
 7. Actualizar cache condicionalmente (`when: repo_added.changed`).
+
+Las URLs, claves y rutas de keyring de cada repo se centralizan en el
+`external_repos` de `vars.yml` del rol. Ver implementación de referencia en
+`roles/funcional/tasks/kubectl.yml` y `gcloud.yml`.
 
 ### 3.2. Idempotencia Real vs Temporal
 

@@ -68,36 +68,11 @@ tasks/
 
 ## Testing
 
-Los tests se ejecutan sobre **Debian 13 (Trixie)** usando Molecule + Docker.
+Los tests corren sobre **Debian 13 (Trixie)** con Molecule + Docker. Atajo:
+`./test-role.sh funcional` desde la raíz.
 
-#### Ejecutar tests completos
-```bash
-cd roles/funcional
-molecule test
-```
-
-#### Workflow de desarrollo iterativo
-```bash
-# Una vez al inicio
-molecule create
-molecule prepare
-
-# Iterar: editar → probar
-molecule converge
-molecule converge  # Verificar idempotencia
-
-# Validar
-molecule verify
-
-# Limpiar
-molecule destroy
-```
-
-#### Ejecutar solo tags específicos
-```bash
-molecule converge -- --tags chrome
-molecule converge -- --tags gcloud,kubectl
-```
+El flujo de trabajo, troubleshooting y cómo agregar tests están documentados en
+**[docs/TESTING.md](../../docs/TESTING.md)**.
 
 ## Optimizaciones Aplicadas
 
@@ -151,8 +126,9 @@ Editar `vars.yml` y actualizar las listas de paquetes.
 **Solución**: Ya implementado con `skip_gnome_tasks: true` en converge.yml
 
 ### Problema: Idempotencia falla en repositorios
-**Causa**: `apt_repository` reporta changed aunque el repo exista  
-**Solución**: Verificar existencia del archivo `.list` antes con `stat`
+**Causa**: `get_url` de la clave GPG reporta changed en cada corrida  
+**Solución**: `stat` guard sobre el keyring + escribir el `.sources` deb822 con
+`copy` (idempotente por contenido). Ver [specifications.md](../../specifications.md) §3.1
 
 ### Problema: Servicios fallan en Docker
 **Causa**: systemd limitado en contenedores  

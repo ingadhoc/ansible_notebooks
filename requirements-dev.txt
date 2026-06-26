@@ -21,3 +21,6 @@ docker>=6.1.0
 
 # Additional utilities
 jmespath>=1.0.0
+
+# Git hooks
+pre-commit>=3.0.0

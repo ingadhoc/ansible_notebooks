@@ -4,6 +4,30 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-06-26]
+
+### Limpieza de estructura: documentación, scripts y consistencia
+
+- **Documentación consolidada**: testing unificado en un único `docs/TESTING.md`
+  (absorbe `TESTING.md`, `QUICKSTART_TESTING.md`, `docs/MOLECULE_GUIDE.md` y
+  `docs/LESSONS_LEARNED.md`, ahora eliminados). `docs/` pasa de 6 a 3 archivos
+- Eliminado `docs/CHANGELOG_MEJORAS_FUNCIONAL.md` (obsoleto: describía el patrón
+  `apt_key` y referenciaba archivos inexistentes). El changelog vive solo en la raíz
+- README adelgazado: delega perfiles/freelance en `docs/PROFILES.md` y
+  `docs/FREELANCE_DEVELOPER.md`; eliminados todos los enlaces rotos y un fence colgante
+- `specifications.md` §3.1 actualizado al patrón real deb822 (`.sources` con `copy`),
+  reemplazando la descripción obsoleta de `apt_repository`/`.list`
+- **Scripts**: eliminados `setup-dev.sh` y `setup-testing.sh` (huérfanos y
+  duplicaban `make setup` / `make install-hooks`). `test-role.sh` se mantiene como
+  runner de tests
+- **`assign_laptop.yml`** alineado a la spec: FQCN, `true/false`, `failed_when`
+  en lugar de `ignore_errors`. Pasa `ansible-lint` con perfil `production`
+- **Rol `deploy`** autocontenido: carga explícita de `funcional/vars.yml` y comentario
+  que documenta por qué los `import_tasks` usan ruta relativa (evitar la cascada de
+  dependencias de `meta/main.yml`)
+
+---
+
 ## [2026-06-25]
 
 ### Limpieza de warnings de ansible-lint (~180 → 13)
@@ -55,5 +79,3 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 - Pre-commit hooks configurados (yamllint, ansible-lint, detect-secrets, markdownlint)
 - Makefile con 20+ comandos de desarrollo y testing
 - GitHub Actions con caché de pip y colecciones (~30% más rápido en CI)
-
-Ver detalle técnico en [docs/CHANGELOG_MEJORAS_FUNCIONAL.md](docs/CHANGELOG_MEJORAS_FUNCIONAL.md).
