@@ -16,6 +16,12 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 - DevContainer: agregados los features `docker-outside-of-docker` (correr Molecule contra el daemon del host) y `github-cli` (gestionar PRs sin instalar `gh` manualmente)
 - `ansible-lint local.yml` pasa limpio a profile `production`; syntax-check OK en los 4 perfiles. Validado con `molecule test`: los 4 roles (funcional, developer, sysadmin, freelance_developer) pasan converge + idempotence (changed=0) + verify (exit 0)
 
+### CI/CD: filtrado por paths y branch protection
+
+- El workflow `molecule.yml` ahora filtra qué roles testear según los paths cambiados (`dorny/paths-filter`), respetando el grafo de dependencias: tocar `funcional` re-testea los 3 roles, `developer` re-testea developer+sysadmin, `sysadmin` solo sysadmin; cambios solo-docs no disparan ningún molecule (`lint` sí corre siempre). Evita correr los 3 molecule en cada cambio
+- El job `summary` trata `skipped` (rol sin cambios) como OK
+- Branch protection en `main`: requiere PR con 1 approval; required checks = `Lint Ansible code` y `Test Summary` (jobs que corren siempre), no los jobs por-rol (que se saltean). Documentado en `docs/TESTING.md`
+
 ### Limpieza de estructura: documentación, scripts y consistencia
 
 - **Documentación consolidada**: testing unificado en un único `docs/TESTING.md`

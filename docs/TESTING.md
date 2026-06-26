@@ -247,11 +247,41 @@ extensiones de GNOME, VirtualBox y NordVPN (kernel modules).
 `.github/workflows/molecule.yml` corre en push/PR a `main`/`develop` y por
 `workflow_dispatch`:
 
-1. **lint** — `yamllint`, `ansible-lint` y `--syntax-check` (publica resumen en
-   el step summary).
-2. **test-funcional / test-developer / test-sysadmin** — `molecule test` por rol
-   en Debian 13, dependientes del job de lint. Ante fallo, suben un extracto del
-   log al summary.
+1. **changes** — `dorny/paths-filter` detecta qué cambió y decide qué roles
+   testear (ver más abajo).
+2. **lint** — `yamllint`, `ansible-lint` y `--syntax-check` (publica resumen en
+   el step summary). Corre **siempre**.
+3. **test-funcional / test-developer / test-sysadmin** — `molecule test` por rol
+   en Debian 13, dependientes de `lint` y gateados por `changes`. Ante fallo,
+   suben un extracto del log al summary.
+4. **summary** — agrega el resultado de los 3 roles. Trata `skipped` (rol sin
+   cambios) como OK; solo `failure`/`cancelled` marcan el pipeline como fallido.
+
+### Filtrado por paths (respeta el grafo de dependencias)
+
+Para no correr los 3 molecule en cada cambio (sobre todo en cambios solo-docs),
+cada test se gatea según los paths modificados. Como `developer` depende de
+`funcional` y `sysadmin` de `developer`, el filtro propaga la cascada:
+
+| Cambio en…           | Re-testea…                       |
+|----------------------|----------------------------------|
+| `roles/funcional/**` | funcional + developer + sysadmin |
+| `roles/developer/**` | developer + sysadmin             |
+| `roles/sysadmin/**`  | sysadmin                         |
+| `shared` (ver abajo) | los 3                            |
+| solo docs            | ninguno (igual corre `lint`)     |
+
+`shared` = archivos que afectan a todos los roles: `local.yml`,
+`collections/requirements.yml`, `requirements-dev.txt` y el propio
+`.github/workflows/molecule.yml`.
+
+### Branch protection (`main`)
+
+- Requiere PR con al menos **1 approval** (no se puede aprobar el PR propio).
+- Required status checks: **`Lint Ansible code`** y **`Test Summary`** — los dos
+  jobs que corren siempre. Los jobs por-rol **no** se marcan como required: como
+  se saltean cuando no hay cambios relevantes, un PR solo-docs los dejaría
+  eternamente pendientes. `Test Summary` ya refleja el resultado real de los 3.
 
 Para reproducir el pipeline localmente: `make ci` (lint + tests).
 
