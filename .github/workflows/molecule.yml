@@ -11,7 +11,50 @@ on:
       - main
       - develop
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
+  changes:
+    name: Detect changed roles
+    runs-on: ubuntu-latest
+    outputs:
+      funcional: ${{ steps.filter.outputs.funcional }}
+      developer: ${{ steps.filter.outputs.developer }}
+      sysadmin: ${{ steps.filter.outputs.sysadmin }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Filter paths por rol (respeta el grafo de dependencias)
+        # funcional es base; developer depende de funcional; sysadmin de developer.
+        # Por eso cada filtro incluye los paths de los roles de los que depende:
+        # tocar funcional re-testea los 3, developer re-testea developer+sysadmin.
+        # 'shared' = archivos que afectan a todos (play, deps, el propio workflow).
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            shared: &shared
+              - 'local.yml'
+              - 'collections/requirements.yml'
+              - 'requirements-dev.txt'
+              - '.github/workflows/molecule.yml'
+            funcional:
+              - *shared
+              - 'roles/funcional/**'
+            developer:
+              - *shared
+              - 'roles/funcional/**'
+              - 'roles/developer/**'
+            sysadmin:
+              - *shared
+              - 'roles/funcional/**'
+              - 'roles/developer/**'
+              - 'roles/sysadmin/**'
+
   lint:
     name: Lint Ansible code
     runs-on: ubuntu-latest
@@ -81,7 +124,8 @@ jobs:
   test-funcional:
     name: Test funcional role
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, changes]
+    if: needs.changes.outputs.funcional == 'true'
 
     steps:
       - name: Checkout code
@@ -135,7 +179,8 @@ jobs:
   test-developer:
     name: Test developer role
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, changes]
+    if: needs.changes.outputs.developer == 'true'
 
     steps:
       - name: Checkout code
@@ -189,7 +234,8 @@ jobs:
   test-sysadmin:
     name: Test sysadmin role
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, changes]
+    if: needs.changes.outputs.sysadmin == 'true'
 
     steps:
       - name: Checkout code
@@ -256,36 +302,29 @@ jobs:
           echo "| Role | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
 
-          # Funcional
-          if [ "${{ needs.test-funcional.result }}" == "success" ]; then
-            echo "| funcional | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "| funcional | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          # Developer
-          if [ "${{ needs.test-developer.result }}" == "success" ]; then
-            echo "| developer | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "| developer | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          # Sysadmin
-          if [ "${{ needs.test-sysadmin.result }}" == "success" ]; then
-            echo "| sysadmin | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "| sysadmin | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
-          fi
+          # Una fila por rol. 'skipped' = no hubo cambios que afecten ese rol.
+          row() {
+            case "$2" in
+              success) echo "| $1 | ✅ Passed |" >> $GITHUB_STEP_SUMMARY ;;
+              skipped) echo "| $1 | ⏭️ Skipped (sin cambios) |" >> $GITHUB_STEP_SUMMARY ;;
+              *)       echo "| $1 | ❌ Failed |" >> $GITHUB_STEP_SUMMARY ;;
+            esac
+          }
+          row funcional "${{ needs.test-funcional.result }}"
+          row developer "${{ needs.test-developer.result }}"
+          row sysadmin "${{ needs.test-sysadmin.result }}"
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Platforms Tested" >> $GITHUB_STEP_SUMMARY
           echo "- 🐧 Debian 13 (Trixie)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          # Overall status
-          if [ "${{ needs.test-funcional.result }}" == "success" ] && \
-             [ "${{ needs.test-developer.result }}" == "success" ] && \
-             [ "${{ needs.test-sysadmin.result }}" == "success" ]; then
+          # Overall status: 'skipped' (sin cambios para ese rol) cuenta como OK;
+          # solo 'failure'/'cancelled' marcan el resumen como fallido.
+          ok() { [ "$1" == "success" ] || [ "$1" == "skipped" ]; }
+          if ok "${{ needs.test-funcional.result }}" && \
+             ok "${{ needs.test-developer.result }}" && \
+             ok "${{ needs.test-sysadmin.result }}"; then
             echo "## ✅ Overall Status: SUCCESS" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "All tests passed successfully! 🎉" >> $GITHUB_STEP_SUMMARY
