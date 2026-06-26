@@ -2,7 +2,6 @@
 - name: Adhoccli - Configurar repositorio Adhoc y instalar adhoccli
   tags: adhoccli
   become: true
-
   block:
     - name: Adhoccli - Asegurar prerrequisitos para repositorios APT
       ansible.builtin.apt:
@@ -11,57 +10,15 @@
           - apt-transport-https
         state: present
 
-    - name: Adhoccli - Verificar si la llave GPG ya está instalada
-      ansible.builtin.stat:
-        path: "{{ funcional_external_repos.adhoccli.keyring_path }}"
-      register: funcional_adhoccli_gpg_key
-
-    - name: Adhoccli - Descargar la llave GPG del repositorio
-      ansible.builtin.get_url:
-        url: "{{ funcional_external_repos.adhoccli.gpg_url }}"
-        dest: /tmp/adhoc-devops.asc
-        mode: "0644"
-      register: funcional_adhoccli_gpg_download
-      until: funcional_adhoccli_gpg_download is succeeded
-      retries: 3
-      delay: 2
-      when: not funcional_adhoccli_gpg_key.stat.exists
-
-    - name: Adhoccli - Convertir y guardar la llave GPG en el keyring
-      ansible.builtin.command:
-        cmd: gpg --dearmor -o {{ funcional_external_repos.adhoccli.keyring_path }} /tmp/adhoc-devops.asc
-      when: not funcional_adhoccli_gpg_key.stat.exists
-      changed_when: true
-
-    - name: Adhoccli - Remover archivo temporal de llave GPG
-      ansible.builtin.file:
-        path: /tmp/adhoc-devops.asc
-        state: absent
-      when: not funcional_adhoccli_gpg_key.stat.exists
-
-    - name: Adhoccli - Eliminar el repositorio legacy en formato .list (migración a deb822)
-      ansible.builtin.file:
-        path: /etc/apt/sources.list.d/adhoc.list
-        state: absent
-
-    - name: Adhoccli - Añadir el repositorio de Adhoc (formato deb822 .sources)
-      ansible.builtin.copy:
-        dest: /etc/apt/sources.list.d/adhoc.sources
-        owner: root
-        group: root
-        mode: "0644"
-        content: |
-          Types: deb
-          URIs: {{ funcional_external_repos.adhoccli.repo_url }}
-          Suites: stable
-          Components: main
-          Signed-By: {{ funcional_external_repos.adhoccli.keyring_path }}
-      register: funcional_adhoc_repo
+    - name: Adhoccli - Configurar keyring GPG + repositorio deb822
+      ansible.builtin.include_tasks: _setup_apt_repo.yml
+      vars:
+        _repo: "{{ funcional_external_repos.adhoccli }}"
 
     - name: Adhoccli - Instalar herramientas del repositorio Adhoc
       ansible.builtin.apt:
         update_cache: true
-        cache_valid_time: "{{ 0 if (funcional_adhoc_repo.changed | default(false)) else (funcional_apt_cache_valid_time | default(3600)) }}"
+        cache_valid_time: "{{ 0 if (_repo_sources.changed | default(false)) else (funcional_apt_cache_valid_time | default(3600)) }}"
         name:
           - adhoccli
           - streamsnap

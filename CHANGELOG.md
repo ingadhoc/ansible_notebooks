@@ -6,6 +6,23 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ## [2026-06-26]
 
+### Refactor (PoC): helper reutilizable para repos deb822
+
+- Nuevo `roles/funcional/tasks/_setup_apt_repo.yml` + template
+  `roles/funcional/templates/deb822.sources.j2`: centralizan el patrón "keyring GPG +
+  repo deb822" (§3.1) que estaba duplicado ~7 veces (docker, code, gh_cli, browsers,
+  gcloud, kubectl, nordvpn, adhoccli). Toma una entrada de `*_external_repos` y arma
+  keyring + `.sources`; el caller solo instala los paquetes y gatea el `update_cache`
+  con `_repo_sources.changed`
+- Migrado `funcional/adhoccli.yml` como **prueba de concepto** (68 → 25 líneas). Vars
+  de adhoccli normalizadas a campos estructurados deb822 (`uris`/`suites`/`components`/
+  `filename`); la salida del `.sources` es byte-idéntica a la anterior
+- Pendiente (si se valida el PoC): migrar los repos restantes y resolver el acceso
+  cross-rol al helper (developer/sysadmin lo consumirían vía `include_role` +
+  `tasks_from`, sin re-ejecutar el rol funcional)
+- Verificado: `ansible-lint` perfil `production` y `yamllint` limpios; `--syntax-check`
+  OK. El `verify` de molecule de funcional ya chequea el keyring y el `.sources` de adhoc
+
 ### Idempotencia: auditoría de roles (dearmor GPG + código muerto)
 
 - `developer/docker.yml` y `developer/code.yml`: el `gpg --dearmor` (gateado por un

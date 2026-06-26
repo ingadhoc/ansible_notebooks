@@ -1,0 +1,70 @@
+---
+# Helper reutilizable: instala el keyring GPG y el repositorio deb822 (.sources)
+# de un repo externo. Centraliza el patrón de §3.1 (specifications.md), antes
+# duplicado en cada tarea de repo (docker, code, browsers, gcloud, kubectl...).
+#
+# Entrada (vars):
+#   _repo: una entrada de *_external_repos con las claves:
+#     - gpg_url       URL de la llave GPG (armada / .asc)
+#     - keyring_path  destino del keyring dearmado
+#     - uris          URI del repo (deb822 URIs)
+#     - suites        deb822 Suites
+#     - components    deb822 Components
+#     - filename      base del archivo en sources.list.d (sin extensión) y del
+#                     temporal de la llave
+#     - architectures (opcional) deb822 Architectures
+#
+# Salida:
+#   _repo_sources: resultado del template del .sources. Usar `_repo_sources.changed`
+#   para gatear el `update_cache` del install posterior en el caller.
+#
+# Nota: los registros van con # noqa var-naming porque este helper es transversal
+# a varios roles; no aplica un prefijo de rol único.
+- name: "Repo deb822 | Asegurar el directorio del keyring ({{ _repo.filename }})"
+  ansible.builtin.file:
+    path: "{{ _repo.keyring_path | dirname }}"
+    state: directory
+    mode: "0755"
+
+- name: "Repo deb822 | Verificar si la llave GPG ya existe ({{ _repo.filename }})"
+  ansible.builtin.stat:
+    path: "{{ _repo.keyring_path }}"
+  register: _repo_keyring  # noqa: var-naming[no-role-prefix]
+
+- name: "Repo deb822 | Descargar la llave GPG ({{ _repo.filename }})"
+  ansible.builtin.get_url:
+    url: "{{ _repo.gpg_url }}"
+    dest: "/tmp/{{ _repo.filename }}-apt-key.tmp"
+    mode: "0644"
+  register: _repo_key_download  # noqa: var-naming[no-role-prefix]
+  until: _repo_key_download is succeeded
+  retries: 3
+  delay: 2
+  when: not _repo_keyring.stat.exists
+
+- name: "Repo deb822 | Convertir la llave a keyring/dearmor ({{ _repo.filename }})"
+  ansible.builtin.command: >-
+    gpg --dearmor -o {{ _repo.keyring_path }} /tmp/{{ _repo.filename }}-apt-key.tmp
+  # Gateado por el stat: cuando corre, crea el keyring → el cambio es real.
+  when: not _repo_keyring.stat.exists
+  changed_when: true
+
+- name: "Repo deb822 | Limpiar la llave temporal ({{ _repo.filename }})"
+  ansible.builtin.file:
+    path: "/tmp/{{ _repo.filename }}-apt-key.tmp"
+    state: absent
+  when: not _repo_keyring.stat.exists
+
+- name: "Repo deb822 | Eliminar el .list legacy ({{ _repo.filename }})"
+  ansible.builtin.file:
+    path: "/etc/apt/sources.list.d/{{ _repo.filename }}.list"
+    state: absent
+
+- name: "Repo deb822 | Escribir el repositorio .sources ({{ _repo.filename }})"
+  ansible.builtin.template:
+    src: deb822.sources.j2
+    dest: "/etc/apt/sources.list.d/{{ _repo.filename }}.sources"
+    owner: root
+    group: root
+    mode: "0644"
+  register: _repo_sources  # noqa: var-naming[no-role-prefix]

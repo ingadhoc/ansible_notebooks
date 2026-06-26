@@ -1,0 +1,8 @@
+Types: deb
+URIs: {{ _repo.uris }}
+Suites: {{ _repo.suites }}
+Components: {{ _repo.components }}
+{% if _repo.architectures is defined -%}
+Architectures: {{ _repo.architectures }}
+{% endif -%}
+Signed-By: {{ _repo.keyring_path }}

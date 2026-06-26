@@ -199,8 +199,12 @@ funcional_external_repos:
     keyring_path: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
   adhoccli:
     gpg_url: "https://apt.dev-adhoc.com/adhoc-devops.asc"
-    repo_url: "https://apt.dev-adhoc.com/"
     keyring_path: "/usr/share/keyrings/adhoc-devops.gpg"
+    # Campos estructurados deb822 (consumidos por _setup_apt_repo.yml)
+    uris: "https://apt.dev-adhoc.com/"
+    suites: "stable"
+    components: "main"
+    filename: "adhoc"
     github_url: "https://github.com/ingadhoc/adhoc-cli"
 
 # Timeouts para descargas
