@@ -10,8 +10,10 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 - `funcional/wine-microsip.yml`:
   - `dpkg --add-architecture i386` reportaba `changed` en cada corrida. Ahora se
-    gatea contra `dpkg --print-foreign-architectures`, y el `apt update_cache`
-    posterior solo corre si recién se agregó la arquitectura
+    gatea contra `dpkg --print-foreign-architectures`. El `apt update_cache` que
+    venía después se eliminó por redundante: el refresco del repo WineHQ
+    (`cache_valid_time: 0`) ya corre con i386 habilitado y cubre las variantes
+    `:i386` (esto quita además un `# noqa: no-handler`)
   - el `get_url` de MicroSIP usaba `force: true`, re-descargando el instalador en
     cada corrida aunque ya estuviera instalado. Ahora se gatea (junto con el
     install) contra un `stat` del `.exe` final
