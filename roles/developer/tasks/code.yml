@@ -24,8 +24,10 @@
     - name: Code | Convertir y guardar la clave GPG
       ansible.builtin.command: >-
         gpg --dearmor -o {{ developer_external_repos.vscode.keyring_path }} /tmp/microsoft.asc
+      # Solo corre si la clave no existía (gateado por el stat de arriba): cuando
+      # corre, crea el keyring, así que el cambio es real (igual que browsers/adhoccli).
       when: not developer_vscode_gpg_key.stat.exists
-      changed_when: false
+      changed_when: true
 
     - name: Code | Limpiar archivo temporal
       ansible.builtin.file:

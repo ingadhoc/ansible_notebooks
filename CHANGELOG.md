@@ -6,6 +6,24 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ## [2026-06-26]
 
+### Idempotencia: auditoría de roles (dearmor GPG + código muerto)
+
+- `developer/docker.yml` y `developer/code.yml`: el `gpg --dearmor` (gateado por un
+  `stat` previo de la clave) usaba `changed_when: false`, así que cuando creaba el
+  keyring en la primera instalación reportaba `ok` en vez de `changed`. Cambiado a
+  `changed_when: true`, alineándolos con el mismo patrón ya correcto en
+  `funcional/browsers.yml`, `funcional/adhoccli.yml` y `funcional/gcloud.yml`
+- `developer/prepare_remote_dev.yml`: eliminadas 4 tareas `stat`
+  (`developer_ctx_dir`, `developer_16_dir`, `developer_18_dir`, `developer_19_dir`)
+  cuyos registros no se usaban en ningún `when` — código muerto. El módulo `git`
+  con `update: true` ya hace clone-or-update idempotente
+- Auditados además awscli, pulumi, kvm, shortcuts, python, browsers, adhoccli,
+  gnome, gcloud, local_dns y los `fixes` de developer/funcional: sin hallazgos
+  (módulos idempotentes, `changed_when`/`creates`/`stat` correctos). Cross-check de
+  `notify` → todos apuntan a handlers existentes
+- Verificado: `ansible-lint` perfil `production` y `yamllint` limpios; `--syntax-check`
+  OK. La idempotencia (`changed=0` en la segunda corrida) la valida `molecule` en CI
+
 ### Idempotencia: wine-microsip y extensiones de VS Code (sysadmin)
 
 - `funcional/wine-microsip.yml`:
