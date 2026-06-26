@@ -22,7 +22,7 @@ Rol base para estaciones de trabajo de Adhoc. Instala y configura las aplicacion
 
 ### Paquetes
 - `funcional_packages_system`: Paquetes de sistema esenciales
-- `packages_apps`: Aplicaciones de usuario
+- `funcional_packages_apps`: Aplicaciones de usuario
 - `funcional_packages_exclude_debian_13`: Paquetes que no están en Debian 13
 
 ### Seguridad

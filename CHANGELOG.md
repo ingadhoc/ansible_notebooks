@@ -13,8 +13,8 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 - `remote_regular_user`/`remote_regular_user_uid` se mantienen sin prefijo (alias play-wide compartido a propósito) con `# noqa` documentado
 - `deploy` y `freelance_developer` actualizados para cargar las vars del rol de origen desde `vars/main.yml`
 - Nueva sección `specifications.md` §3.5 documentando la convención de nombres de variables
-- DevContainer: agregado el feature `docker-outside-of-docker` para poder correr los tests de Molecule contra el daemon del host
-- `ansible-lint local.yml` pasa limpio a profile `production`; syntax-check OK en los 4 perfiles. **Pendiente: validación con `molecule test` tras rebuild del devcontainer**
+- DevContainer: agregados los features `docker-outside-of-docker` (correr Molecule contra el daemon del host) y `github-cli` (gestionar PRs sin instalar `gh` manualmente)
+- `ansible-lint local.yml` pasa limpio a profile `production`; syntax-check OK en los 4 perfiles. Validado con `molecule test`: los 4 roles (funcional, developer, sysadmin, freelance_developer) pasan converge + idempotence (changed=0) + verify (exit 0)
 
 ### Limpieza de estructura: documentación, scripts y consistencia
 
