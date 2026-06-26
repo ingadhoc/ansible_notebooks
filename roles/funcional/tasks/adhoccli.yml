@@ -56,10 +56,12 @@
           Suites: stable
           Components: main
           Signed-By: {{ external_repos.adhoccli.keyring_path }}
+      register: funcional_adhoc_repo
 
     - name: Adhoccli - Instalar herramientas del repositorio Adhoc
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: "{{ 0 if (funcional_adhoc_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
         name:
           - adhoccli
           - streamsnap

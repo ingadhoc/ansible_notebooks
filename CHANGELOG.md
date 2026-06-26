@@ -10,7 +10,7 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 - Alineada la config `.yamllint` con los requisitos de ansible-lint (`comments-indentation`, `braces`, `octal-values`) para habilitar el modo `--fix`
 - Resueltos vía autofix determinístico: `yaml` (formato, 63) y `fqcn` (nombres de módulo completos, 12)
-- `no-handler` (8): las tareas `update_cache when ...changed` se fusionaron como `update_cache: true` en la propia tarea de instalación (preserva orden e idempotencia; elimina los `register` intermedios)
+- `no-handler` (8): las tareas `update_cache when ...changed` se fusionaron en la propia tarea de instalación con `update_cache: true` + `cache_valid_time` condicional (`0` cuando el `.sources` cambió para forzar refresh, `apt_cache_valid_time` si no) — preserva orden e idempotencia y evita refrescar APT en cada corrida sin cambios
 - `no-changed-when` (10) y `name` (1): `changed_when` explícito en comandos imperativos y nombre al play de `assign_laptop.yml`
 - `var-naming` (64): registers y set_facts de los roles renombrados con su prefijo de rol (`funcional_`, `developer_`, `sysadmin_`); en `molecule/` se renombró lo seguro y se anotó con `# noqa` los falsos positivos (override de `ansible_env`, vars cross-role en converge)
 - Restan 13 warnings de menor prioridad (`ignore-errors`, `partial-become`, `risky-shell-pipe`, `command-instead-of-module`) que requieren revisión caso por caso

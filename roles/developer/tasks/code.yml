@@ -61,11 +61,13 @@
           Components: {{ developer_external_repos.vscode.components }}
           Architectures: {{ developer_external_repos.vscode.architectures | replace(',', ' ') }}
           Signed-By: {{ developer_external_repos.vscode.signed_by }}
+      register: developer_vscode_repo
       when: not developer_vscode_installed.stat.exists
 
 - name: Code | Instalar el paquete 'code'
   ansible.builtin.apt:
     update_cache: true
+    cache_valid_time: "{{ 0 if (developer_vscode_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
     name: code
     state: present
 

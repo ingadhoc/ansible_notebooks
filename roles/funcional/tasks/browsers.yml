@@ -62,10 +62,12 @@
           Components: main
           Architectures: amd64
           Signed-By: {{ external_repos.chrome.keyring_path }}
+      register: funcional_chrome_repo
       when: not funcional_chrome_installed.stat.exists
 
     - name: Browsers - Instalar el paquete google-chrome-stable
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: "{{ 0 if (funcional_chrome_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
         name: google-chrome-stable
         state: present

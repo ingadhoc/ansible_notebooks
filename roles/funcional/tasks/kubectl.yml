@@ -53,9 +53,11 @@
           URIs: {{ external_repos.kubectl.repo_url }}
           Suites: /
           Signed-By: {{ external_repos.kubectl.keyring_path }}
+      register: funcional_kubectl_repo
 
     - name: Kubectl | Instalar kubectl
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: "{{ 0 if (funcional_kubectl_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
         name: kubectl
         state: present

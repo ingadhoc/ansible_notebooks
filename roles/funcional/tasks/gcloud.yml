@@ -55,10 +55,12 @@
           Suites: cloud-sdk
           Components: main
           Signed-By: {{ external_repos.gcloud.keyring_path }}
+      register: funcional_gcloud_repo
 
     - name: Instalar paquetes y dependencias de gcloud
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: "{{ 0 if (funcional_gcloud_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
         name:
           - google-cloud-cli
           - google-cloud-cli-gke-gcloud-auth-plugin

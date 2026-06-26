@@ -33,9 +33,11 @@
           Components: {{ developer_external_repos.github_cli.components }}
           Architectures: {{ developer_external_repos.github_cli.architectures }}
           Signed-By: {{ developer_external_repos.github_cli.keyring_path }}
+      register: developer_github_repo
 
     - name: GitHub CLI | Instalar el paquete 'gh'
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: "{{ 0 if (developer_github_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
         name: gh
         state: present

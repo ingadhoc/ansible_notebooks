@@ -57,10 +57,12 @@
           Components: stable
           Architectures: {{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}
           Signed-By: {{ developer_external_repos.docker.keyring_path }}
+      register: developer_docker_repo
 
     - name: Docker | Instalar Docker Engine y plugins
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: "{{ 0 if (developer_docker_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
         name: "{{ developer_docker_packages }}"
         state: present
 

@@ -52,11 +52,13 @@
           Suites: stable
           Components: main
           Signed-By: {{ sysadmin_nordvpn_gpg_path }}
+      register: sysadmin_nordvpn_repo
       when: not sysadmin_nordvpn_installed.stat.exists
 
     - name: NordVPN | Instalar el paquete de NordVPN
       ansible.builtin.apt:
         update_cache: true
+        cache_valid_time: "{{ 0 if (sysadmin_nordvpn_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
         name: "{{ sysadmin_nordvpn_package }}"
         state: present
 
