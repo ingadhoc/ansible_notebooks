@@ -6,6 +6,15 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ## [2026-06-26]
 
+### Docs: convención de idempotencia en `specifications.md`
+
+- Reescrita la §3.2 ("Idempotencia Real vs Temporal"): la redacción anterior
+  (`DEBE usar changed_when: false` para temporales) habilitaba justo el smell que
+  veníamos corrigiendo. Ahora documenta el patrón real — `changed_when: false` solo
+  para lecturas/limpiezas, patrón "stat-gate" + `changed_when: true` para comandos
+  que crean artefactos, `changed_when` calculado cuando la salida indica el cambio,
+  y prohibición explícita de enmascarar no-idempotencia
+
 ### Idempotencia: auditoría de roles (dearmor GPG + código muerto)
 
 - `developer/docker.yml` y `developer/code.yml`: el `gpg --dearmor` (gateado por un
