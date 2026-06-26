@@ -4,15 +4,23 @@
   tags: asistencia
   block:
     # ===== 1. Habilitar arquitectura 32-bit (MicroSIP lo requiere) =====
+    - name: Wine & MicroSIP | Detectar arquitecturas foráneas habilitadas
+      ansible.builtin.command: dpkg --print-foreign-architectures
+      register: funcional_foreign_arch
+      changed_when: false
+
     - name: Wine & MicroSIP | Enable 32-bit architecture support
       ansible.builtin.command: dpkg --add-architecture i386
+      when: "'i386' not in funcional_foreign_arch.stdout_lines"
       register: funcional_add_arch_result
       changed_when: true
 
     # ===== 2. Actualizar cache APT tras habilitar i386 =====
-    - name: Wine & MicroSIP | Update APT cache after enabling i386
+    # Solo si recién agregamos i386: si ya estaba, el índice no cambió.
+    - name: Wine & MicroSIP | Update APT cache after enabling i386  # noqa: no-handler
       ansible.builtin.apt:
         update_cache: true
+      when: funcional_add_arch_result is changed
 
     # ===== 3. Crear directorio de keyrings =====
     - name: Wine & MicroSIP | Create keyring directory
@@ -87,15 +95,22 @@
         WINEARCH: win64
 
     # ===== 10. Descargar MicroSIP =====
+    # Gateamos descarga e instalación contra el .exe final: si MicroSIP ya está
+    # instalado no re-descargamos (antes force:true bajaba el instalador siempre).
+    - name: Wine & MicroSIP | Verificar si MicroSIP ya está instalado
+      ansible.builtin.stat:
+        path: "/home/{{ remote_regular_user }}/.wine/drive_c/Program Files/MicroSIP/MicroSIP.exe"
+      register: funcional_microsip_installed
+
     - name: Wine & MicroSIP | Download MicroSIP installer
       ansible.builtin.get_url:
         url: "https://www.microsip.org/download/MicroSIP-3.22.3.exe"
         dest: /tmp/MicroSIP-3.22.3.exe
         mode: "0755"
         validate_certs: false
-        force: true
         headers:
           User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+      when: not funcional_microsip_installed.stat.exists
 
     # ===== 11. Instalar MicroSIP con Wine (headless, silenciosa) =====
     - name: Wine & MicroSIP | Install MicroSIP via Wine
@@ -137,11 +152,15 @@
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
         mode: "0644"
+      register: funcional_microsip_desktop_entry
 
     # ===== 14. Actualizar base de datos de aplicaciones =====
-    - name: Wine & MicroSIP | Update desktop database
+    # Solo si el .desktop cambió: refrescar la base si no cambió nada reportaba
+    # changed en cada corrida.
+    - name: Wine & MicroSIP | Update desktop database  # noqa: no-handler
       become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.command: >
         update-desktop-database /home/{{ remote_regular_user }}/.local/share/applications/
       changed_when: true
+      when: funcional_microsip_desktop_entry is changed

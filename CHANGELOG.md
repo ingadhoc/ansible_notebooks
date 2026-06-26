@@ -6,6 +6,23 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ## [2026-06-26]
 
+### Idempotencia: wine-microsip y extensiones de VS Code (sysadmin)
+
+- `funcional/wine-microsip.yml`:
+  - `dpkg --add-architecture i386` reportaba `changed` en cada corrida. Ahora se
+    gatea contra `dpkg --print-foreign-architectures`, y el `apt update_cache`
+    posterior solo corre si recién se agregó la arquitectura
+  - el `get_url` de MicroSIP usaba `force: true`, re-descargando el instalador en
+    cada corrida aunque ya estuviera instalado. Ahora se gatea (junto con el
+    install) contra un `stat` del `.exe` final
+  - `update-desktop-database` (siempre `changed`) ahora corre solo cuando el
+    `.desktop` cambió
+- `sysadmin/fixes.yml`: la instalación de extensiones de VS Code no tenía el guard
+  `rc == 0` que sí tiene `developer/code.yml` (#25). Si `code --list-extensions`
+  fallaba, se reinstalaban **todas** las extensiones. Alineado con `code.yml`
+- Verificado: `ansible-lint` perfil `production` y `yamllint` limpios; `--syntax-check`
+  OK. La idempotencia (`changed=0` en la segunda corrida) la valida `molecule` en CI
+
 ### Idempotencia: tareas que reportan sus cambios con veracidad
 
 - `sysadmin/helm.yml` y `sysadmin/nordvpn.yml`: el patrón "descargar a `/tmp` →
