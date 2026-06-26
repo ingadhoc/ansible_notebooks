@@ -3,27 +3,34 @@
 - name: SysAdmin - Install helm cli
   tags: helm_cli
   block:
+    - name: Helm | Verificar si el binario de helm ya está instalado
+      become: true
+      ansible.builtin.stat:
+        path: /usr/local/bin/helm
+      register: sysadmin_helm_bin
+
     - name: Helm | Descargar script de instalación
       become: true
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
         dest: /tmp/get_helm.sh
         mode: "0755"
-      changed_when: false
+      when: not sysadmin_helm_bin.stat.exists
 
     - name: Helm | Ejecutar script de instalación si no existe el binario
       become: true
-      ansible.builtin.shell: bash /tmp/get_helm.sh
+      ansible.builtin.command: bash /tmp/get_helm.sh
       args:
         creates: /usr/local/bin/helm
-        executable: /bin/bash
+      when: not sysadmin_helm_bin.stat.exists
+      changed_when: true
 
     - name: Helm | Limpiar el script de instalación
       become: true
       ansible.builtin.file:
         path: /tmp/get_helm.sh
         state: absent
-      changed_when: false
+      when: not sysadmin_helm_bin.stat.exists
 
     - name: Helm | Configurar autocompletado de bash para el usuario
       ansible.builtin.blockinfile:
