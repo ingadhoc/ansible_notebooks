@@ -83,12 +83,12 @@
         DBUS_SESSION_BUS_ADDRESS: "unix:path=/run/user/{{ remote_regular_user_uid }}/bus"
       register: developer_installed_extensions
       changed_when: false
-      ignore_errors: true
+      failed_when: false
 
     - name: Code | Instalar solo las extensiones que falten
       ansible.builtin.command: "code --install-extension {{ item }}"
       loop: "{{ developer_vscode_extension_list }}"
-      when: item not in developer_installed_extensions.stdout_lines
+      when: item not in (developer_installed_extensions.stdout_lines | default([]))
       changed_when: true
 
 - name: Code | Gestionar la configuración del usuario
