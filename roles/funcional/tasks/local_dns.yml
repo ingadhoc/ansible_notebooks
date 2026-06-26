@@ -35,7 +35,7 @@
         state: present
         mode: "0644"
       loop:
-        - { option: "DNS", value: "{{ sysadmin_public_dns_servers | join(' ') }}" }
+        - { option: "DNS", value: "{{ funcional_public_dns_servers | join(' ') }}" }
         - { option: "FallbackDNS", value: "" }
         - { option: "DNSOverTLS", value: "yes" }
       notify: Restart systemd-resolved # Asumo que tienes este handler definido

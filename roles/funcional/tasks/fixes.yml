@@ -5,7 +5,7 @@
   become_user: "{{ remote_regular_user }}"
   community.general.dconf:
     key: "/org/gnome/shell/favorite-apps"
-    value: "{{ gnome_functional_favorite_apps }}"
+    value: "{{ funcional_gnome_functional_favorite_apps }}"
     state: present
   when: not (skip_gnome_tasks | default(false))
 

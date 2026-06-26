@@ -21,9 +21,9 @@ Rol base para estaciones de trabajo de Adhoc. Instala y configura las aplicacion
 ## Variables Importantes
 
 ### Paquetes
-- `packages_system`: Paquetes de sistema esenciales
+- `funcional_packages_system`: Paquetes de sistema esenciales
 - `packages_apps`: Aplicaciones de usuario
-- `packages_exclude_debian_13`: Paquetes que no están en Debian 13
+- `funcional_packages_exclude_debian_13`: Paquetes que no están en Debian 13
 
 ### Seguridad
 - Usuario `sysadmin` con UID 499
@@ -106,10 +106,10 @@ El flujo de trabajo, troubleshooting y cómo agregar tests están documentados e
 ## Mantenimiento
 
 ### Actualizar versiones de paquetes
-Editar `vars.yml` y actualizar las listas de paquetes.
+Editar `vars/main.yml` y actualizar las listas de paquetes.
 
 ### Agregar nuevos paquetes
-1. Agregar a la lista apropiada en `vars.yml`
+1. Agregar a la lista apropiada en `vars/main.yml`
 2. Actualizar test de verificación en `molecule/default/verify.yml`
 3. Ejecutar `molecule test` para validar
 

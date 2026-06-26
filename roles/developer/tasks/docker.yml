@@ -62,7 +62,7 @@
     - name: Docker | Instalar Docker Engine y plugins
       ansible.builtin.apt:
         update_cache: true
-        cache_valid_time: "{{ 0 if (developer_docker_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
+        cache_valid_time: "{{ 0 if (developer_docker_repo.changed | default(false)) else (funcional_apt_cache_valid_time | default(3600)) }}"
         name: "{{ developer_docker_packages }}"
         state: present
 

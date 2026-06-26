@@ -18,7 +18,7 @@
     - name: Firewall | Permitir SSH desde la red interna
       community.general.ufw:
         rule: allow
-        src: "{{ internal_network }}"
+        src: "{{ funcional_internal_network }}"
         port: "22"
         proto: tcp
       notify: Restart UFW

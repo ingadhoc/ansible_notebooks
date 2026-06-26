@@ -3,14 +3,14 @@
   tags: packages_funcional
   vars:
     all_packages_to_install: >-
-      {{ packages_system +
-         packages_compression +
-         packages_apps +
-         packages_hardware_analysis +
-         packages_gui_utils }}
+      {{ funcional_packages_system +
+         funcional_packages_compression +
+         funcional_packages_apps +
+         funcional_packages_hardware_analysis +
+         funcional_packages_gui_utils }}
 
     excluded_packages: >-
-      {{ packages_exclude_debian_13 if ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '13' else [] }}
+      {{ funcional_packages_exclude_debian_13 if ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] == '13' else [] }}
 
   ansible.builtin.apt:
     name: "{{ all_packages_to_install | difference(excluded_packages) }}"
@@ -20,6 +20,6 @@
   tags: packages_funcional
   become: true
   ansible.builtin.apt:
-    name: "{{ packages_to_remove }}"
+    name: "{{ funcional_packages_to_remove }}"
     state: absent
     purge: true

@@ -13,12 +13,12 @@
 
     - name: Adhoccli - Verificar si la llave GPG ya está instalada
       ansible.builtin.stat:
-        path: "{{ external_repos.adhoccli.keyring_path }}"
+        path: "{{ funcional_external_repos.adhoccli.keyring_path }}"
       register: funcional_adhoccli_gpg_key
 
     - name: Adhoccli - Descargar la llave GPG del repositorio
       ansible.builtin.get_url:
-        url: "{{ external_repos.adhoccli.gpg_url }}"
+        url: "{{ funcional_external_repos.adhoccli.gpg_url }}"
         dest: /tmp/adhoc-devops.asc
         mode: "0644"
       register: funcional_adhoccli_gpg_download
@@ -29,7 +29,7 @@
 
     - name: Adhoccli - Convertir y guardar la llave GPG en el keyring
       ansible.builtin.command:
-        cmd: gpg --dearmor -o {{ external_repos.adhoccli.keyring_path }} /tmp/adhoc-devops.asc
+        cmd: gpg --dearmor -o {{ funcional_external_repos.adhoccli.keyring_path }} /tmp/adhoc-devops.asc
       when: not funcional_adhoccli_gpg_key.stat.exists
       changed_when: true
 
@@ -52,16 +52,16 @@
         mode: "0644"
         content: |
           Types: deb
-          URIs: {{ external_repos.adhoccli.repo_url }}
+          URIs: {{ funcional_external_repos.adhoccli.repo_url }}
           Suites: stable
           Components: main
-          Signed-By: {{ external_repos.adhoccli.keyring_path }}
+          Signed-By: {{ funcional_external_repos.adhoccli.keyring_path }}
       register: funcional_adhoc_repo
 
     - name: Adhoccli - Instalar herramientas del repositorio Adhoc
       ansible.builtin.apt:
         update_cache: true
-        cache_valid_time: "{{ 0 if (funcional_adhoc_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
+        cache_valid_time: "{{ 0 if (funcional_adhoc_repo.changed | default(false)) else (funcional_apt_cache_valid_time | default(3600)) }}"
         name:
           - adhoccli
           - streamsnap

@@ -1,9 +1,5 @@
 ---
-- name: Include vars
-  ansible.builtin.include_vars: "{{ role_path }}/vars.yml"
-  tags: always
-  no_log: true
-
+# Las variables del rol se cargan automáticamente desde vars/main.yml
 - name: Include
   block:
     - name: Developer - Packages

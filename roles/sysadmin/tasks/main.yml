@@ -1,8 +1,5 @@
 ---
-- name: Include vars
-  tags: always, sysadmin
-  ansible.builtin.include_vars: "{{ role_path }}/vars.yml"
-
+# Las variables del rol se cargan automáticamente desde vars/main.yml
 - name: Include
   block:
     - name: SysAdmin - Instalación de paquetes y dependencias varias

@@ -5,7 +5,7 @@
   block:
     - name: Idiomas | Instalar paquetes de idioma
       ansible.builtin.apt:
-        name: "{{ language_packs_debian }}"
+        name: "{{ funcional_language_packs_debian }}"
         state: present
 
     - name: Idiomas | Asegurar que el locale 'es_ES.UTF-8' esté generado
@@ -38,6 +38,6 @@
       become_user: "{{ remote_regular_user }}"
       community.general.dconf:
         key: "/org/gnome/desktop/input-sources/sources"
-        value: "{{ keyboard_layouts | trim }}"
+        value: "{{ funcional_keyboard_layouts | trim }}"
         state: present
       when: not (skip_gnome_tasks | default(false))

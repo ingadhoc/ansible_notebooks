@@ -1,6 +1,6 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
-remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
+remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"  # noqa: var-naming[no-role-prefix]
 
 # --- Configuración para Pulumi ---
 # Por defecto instala la última release estable. Para pinnear:

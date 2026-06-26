@@ -60,7 +60,7 @@ seguir este patrón:
 7. Actualizar cache condicionalmente (`when: repo_added.changed`).
 
 Las URLs, claves y rutas de keyring de cada repo se centralizan en el
-`external_repos` de `vars.yml` del rol. Ver implementación de referencia en
+`funcional_external_repos` de `vars/main.yml` del rol. Ver implementación de referencia en
 `roles/funcional/tasks/kubectl.yml` y `gcloud.yml`.
 
 ### 3.2. Idempotencia Real vs Temporal
@@ -80,6 +80,13 @@ El código debe estar preparado para correr dentro de contenedores Docker durant
 
 - **VS Code Extensions:** La instalación de extensiones a veces provoca un crash de V8 al finalizar (return code `134`). Esto es esperado. Las tareas de VS Code deben aceptar `rc not in [0, 134]`.
 
+### 3.5. Variables y Nombres (vars/main.yml)
+
+- Las variables de cada rol viven en `roles/<rol>/vars/main.yml` (autocargado por Ansible), NUNCA hardcodeadas en los `tasks/*.yml`.
+- **Prefijo de rol obligatorio:** toda variable interna de un rol DEBE prefijarse con el nombre del rol (`funcional_packages_system`, `developer_docker_packages`, `sysadmin_kvm_packages`). Las variables de Ansible viven en un namespace global por play, así que el prefijo evita colisiones silenciosas entre roles y deja claro el origen (regla `var-naming[no-role-prefix]` de ansible-lint).
+- **Excepción — variables transversales:** `remote_regular_user` (y `remote_regular_user_uid`) son alias play-wide del usuario que se aprovisiona, compartidos a propósito entre todos los roles. NO se prefijan; se anotan con `# noqa: var-naming[no-role-prefix]` para documentar que es deliberado.
+- Roles que reutilizan tareas de otro rol sin heredarlo vía `meta` (ej. `deploy`, `freelance_developer`) cargan las vars del rol de origen con `include_vars` explícito, porque `import_tasks` con ruta relativa no las autocarga.
+
 ---
 
 ## 4. Testing Strategy (Molecule)
@@ -98,7 +105,7 @@ En lugar de correr el ciclo completo, para desarrollo se exige el flujo:
 
 1. **NO "Vibe Coding":** Antes de instalar un nuevo paquete o servicio, revisa este archivo. Aplica el patrón APT correspondiente si requiere un repositorio de terceros.
 2. **Linting estricto:** El proyecto usa pre-commit hooks (`yamllint`, `ansible-lint`). Escribe YAML canónico (sin abreviaturas raras de diccionarios, usando FQCN como `ansible.builtin.apt`).
-3. **Variables:** Las URLs de repositorios, GPG keys y listas de paquetes deben centralizarse en `vars.yml` del rol correspondiente, NUNCA hardcodeadas en los `tasks/main.yml`.
+3. **Variables:** Las URLs de repositorios, GPG keys y listas de paquetes deben centralizarse en `vars/main.yml` del rol correspondiente, NUNCA hardcodeadas en los `tasks/main.yml`.
 4. **Verificación:** Si agregas una herramienta (ej. `terraform`), DEBES agregar su correspondiente check de instalación y versión en `molecule/default/verify.yml`.
 5. **Changelog:** Todo cambio relevante al proyecto debe registrarse en `CHANGELOG.md` (raíz del repo) bajo la fecha del día. Se considera relevante cualquier cambio de comportamiento, nueva herramienta, decisión de arquitectura, o modificación de infraestructura de desarrollo (devcontainer, CI, tooling). No se registran correcciones de typos ni refactors internos sin impacto funcional.
 

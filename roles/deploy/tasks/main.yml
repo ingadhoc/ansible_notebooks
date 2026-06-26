@@ -1,14 +1,11 @@
 ---
-- name: Include vars
-  ansible.builtin.include_vars: "{{ role_path }}/vars.yml"
-  tags: always
-
-# Las tareas reutilizadas (kubectl/gcloud) dependen de vars definidas en
-# funcional/vars.yml (external_repos, funcional_kubectl_prerequisites). Las
-# cargamos explícitamente para que el rol 'deploy' sea autocontenido y no dependa
-# de que el rol 'funcional' haya corrido antes en el mismo play.
-- name: Include vars from funcional (external_repos, etc.)
-  ansible.builtin.include_vars: "{{ role_path | dirname }}/funcional/vars.yml"
+# Los vars propios del rol se cargan automáticamente desde vars/main.yml.
+# Además, las tareas reutilizadas (kubectl/gcloud) dependen de vars de funcional
+# (funcional_external_repos, funcional_kubectl_prerequisites): como se importan vía
+# import_tasks con ruta relativa (no import_role), funcional/vars/main.yml NO se
+# autocarga, así que lo incluimos explícitamente.
+- name: Include vars from funcional (funcional_external_repos, etc.)
+  ansible.builtin.include_vars: "{{ role_path | dirname }}/funcional/vars/main.yml"
   tags: always
 
 # NOTA: se reutilizan los archivos de tareas de funcional/sysadmin vía
