@@ -13,11 +13,8 @@
         state: directory
         mode: "0755"
 
-    - name: Odoo Dev | Verificar si el directorio ctx existe
-      ansible.builtin.stat:
-        path: "{{ developer_odoo_base_path }}/ctx"
-      register: developer_ctx_dir
-
+    # git con update: true ya hace clone-or-update idempotente; no hace falta
+    # un stat previo (los registros que había no se usaban en ningún when).
     - name: Odoo Dev | Clonar/actualizar repositorio docker-compose-context a 'ctx'
       ansible.builtin.git:
         repo: "{{ developer_odoo_ctx_repo }}"
@@ -26,11 +23,6 @@
         accept_hostkey: true
         update: true
         force: true
-
-    - name: Odoo Dev | Verificar si el directorio 16 existe
-      ansible.builtin.stat:
-        path: "{{ developer_odoo_base_path }}/16"
-      register: developer_16_dir
 
     - name: Odoo Dev | Clonar/actualizar repositorio docker-compose-odoo a '16'
       ansible.builtin.git:
@@ -41,11 +33,6 @@
         update: true
         force: true
 
-    - name: Odoo Dev | Verificar si el directorio 18 existe
-      ansible.builtin.stat:
-        path: "{{ developer_odoo_base_path }}/18"
-      register: developer_18_dir
-
     - name: Odoo Dev | Clonar/actualizar repositorio docker-compose-odoo a '18'
       ansible.builtin.git:
         repo: "{{ developer_odoo_main_repo }}"
@@ -54,11 +41,6 @@
         accept_hostkey: true
         update: true
         force: true
-
-    - name: Odoo Dev | Verificar si el directorio 19 existe
-      ansible.builtin.stat:
-        path: "{{ developer_odoo_base_path }}/19"
-      register: developer_19_dir
 
     - name: Odoo Dev | Clonar/actualizar repositorio docker-compose-odoo a '19'
       ansible.builtin.git:

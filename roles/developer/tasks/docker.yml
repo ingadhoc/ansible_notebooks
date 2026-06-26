@@ -30,8 +30,10 @@
     - name: Docker | Convertir la clave GPG al formato requerido
       ansible.builtin.command: >-
         gpg --dearmor -o {{ developer_external_repos.docker.keyring_path }} /tmp/docker.gpg
+      # Solo corre si la clave no existía (gateado por el stat de arriba): cuando
+      # corre, crea el keyring, así que el cambio es real.
       when: not developer_docker_gpg_key.stat.exists
-      changed_when: false
+      changed_when: true
 
     - name: Docker | Limpiar archivo temporal de clave GPG
       ansible.builtin.file:
