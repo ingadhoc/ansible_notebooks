@@ -6,6 +6,29 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ## [2026-06-26]
 
+### Idempotencia: tareas que reportan sus cambios con veracidad
+
+- `sysadmin/helm.yml` y `sysadmin/nordvpn.yml`: el patrón "descargar a `/tmp` →
+  procesar → borrar temporal" reportaba `changed` en cada corrida y lo ocultaba con
+  `changed_when: false`. Ahora se gatea contra la existencia del artefacto final
+  (binario / keyring) con un `stat` previo, igual que el patrón ya usado en
+  `funcional/kubectl.yml`: en la segunda corrida no se ejecuta nada. Además
+  `shell` → `command` (sin features de shell; `gpg --dearmor -o`)
+- `funcional/user_sysadmin.yml`: quitado `changed_when: false` de la creación del
+  directorio de PolicyKit; el módulo `file` ya es idempotente y ahora reporta el
+  cambio real
+- `funcional/language.yml`: `localectl set-locale`/`set-x11-keymap` reportaban
+  siempre `ok` (`changed_when: false`) aunque cambiaran el sistema. Ahora el
+  `changed_when` se calcula contra `localectl status`. Se mantiene `failed_when:
+  false` (load-bearing: `localectl` puede no estar disponible sin systemd, y hay
+  fallback sobre `/etc/default/locale`), ahora documentado
+- `developer/code.yml`: `ignore_errors: true` → `failed_when: false` y guard del
+  loop con `| default([])`. Si `code --list-extensions` fallaba, se reinstalaban
+  **todas** las extensiones en vez de ninguna
+- Verificado: `ansible-lint` perfil `production` y `yamllint` limpios en los 5
+  archivos; `--syntax-check` OK. La idempotencia (`changed=0` en la segunda corrida)
+  la valida `molecule` en CI
+
 ### Variables: migración a `vars/main.yml` con prefijo de rol
 
 - Movidas las variables de cada rol de `roles/<rol>/vars.yml` (cargado vía `include_vars` manual) a `roles/<rol>/vars/main.yml` (autocarga estándar de Ansible). Eliminados los `include_vars` redundantes de funcional/developer/sysadmin

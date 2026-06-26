@@ -13,11 +13,21 @@
         name: es_ES.UTF-8
         state: present
 
+    - name: Idiomas | Consultar la configuración regional actual del sistema
+      ansible.builtin.command: localectl status
+      register: funcional_localectl_status
+      changed_when: false
+      failed_when: false
+
     - name: Idiomas | Establecer la configuración regional (locale) del sistema
       ansible.builtin.command: "localectl set-locale LANG=es_ES.UTF-8"
-      changed_when: false
       register: funcional_localectl_result
+      # localectl puede no estar disponible en entornos sin systemd (ej. contenedores):
+      # no fallamos y caemos al fallback sobre /etc/default/locale.
       failed_when: false
+      changed_when: >-
+        funcional_localectl_result.rc == 0
+        and 'LANG=es_ES.UTF-8' not in funcional_localectl_status.stdout
 
     - name: Idiomas | Establecer locale via /etc/default/locale (fallback)
       ansible.builtin.lineinfile:
@@ -30,8 +40,12 @@
 
     - name: Idiomas | Establecer las distribuciones de teclado del sistema (X11)
       ansible.builtin.command: "localectl set-x11-keymap es,us pc105 ,alt-intl"
-      changed_when: false
+      register: funcional_x11keymap_result
+      # Igual que el locale: localectl puede no estar disponible sin systemd.
       failed_when: false
+      changed_when: >-
+        funcional_x11keymap_result.rc == 0
+        and 'X11 Layout: es,us' not in funcional_localectl_status.stdout
 
     - name: Idiomas | Configurar las distribuciones de teclado para la sesión del usuario (GNOME)
       become: true
