@@ -43,7 +43,10 @@
     // y credenciales de Claude Code). En rebuilds siguientes el volume ya tiene
     // datos y no se pisa. ~/.claude.json vive fuera del volume, así que se restaura
     // solo si falta.
-    "postCreateCommand": "sudo mkdir -p /home/appuser/.claude && sudo chown appuser:appuser /home/appuser/.claude && if [ -z \"$(ls -A /home/appuser/.claude 2>/dev/null)\" ] && [ -d /app/.ansible/claude-persist/dot-claude ]; then cp -a /app/.ansible/claude-persist/dot-claude/. /home/appuser/.claude/; fi; if [ ! -f /home/appuser/.claude.json ] && [ -f /app/.ansible/claude-persist/dot-claude.json ]; then cp -a /app/.ansible/claude-persist/dot-claude.json /home/appuser/.claude.json; fi; pip install --quiet -r /app/requirements-dev.txt && ansible-galaxy install -r collections/requirements.yml && pre-commit install",
+    // Mismo patrón para ~/.config/gh (credenciales de GitHub CLI): chown + seed
+    // opcional desde el backup. Si no hay backup, basta con hacer 'gh auth login'
+    // una vez y el volume lo persiste entre rebuilds.
+    "postCreateCommand": "sudo mkdir -p /home/appuser/.claude && sudo chown appuser:appuser /home/appuser/.claude && if [ -z \"$(ls -A /home/appuser/.claude 2>/dev/null)\" ] && [ -d /app/.ansible/claude-persist/dot-claude ]; then cp -a /app/.ansible/claude-persist/dot-claude/. /home/appuser/.claude/; fi; if [ ! -f /home/appuser/.claude.json ] && [ -f /app/.ansible/claude-persist/dot-claude.json ]; then cp -a /app/.ansible/claude-persist/dot-claude.json /home/appuser/.claude.json; fi; sudo mkdir -p /home/appuser/.config/gh && sudo chown appuser:appuser /home/appuser/.config && sudo chown -R appuser:appuser /home/appuser/.config/gh && if [ -z \"$(ls -A /home/appuser/.config/gh 2>/dev/null)\" ] && [ -d /app/.ansible/claude-persist/dot-config-gh ]; then cp -a /app/.ansible/claude-persist/dot-config-gh/. /home/appuser/.config/gh/; fi; pip install --quiet -r /app/requirements-dev.txt && ansible-galaxy install -r collections/requirements.yml && pre-commit install",
     "containerEnv": {
         "ANSIBLE_FORCE_COLOR": "1",
         "ANSIBLE_NOCOLOR": "0"
@@ -52,7 +55,10 @@
         "source=${localEnv:SSH_AUTH_SOCK},target=/run/host-ssh-agent.sock,type=bind,consistency=cached",
         // Persiste ~/.claude (memoria, sesiones, credenciales de Claude Code) entre
         // rebuilds del devcontainer. Se siembra desde el backup vía postCreateCommand.
-        "source=devansible-claude,target=/home/appuser/.claude,type=volume"
+        "source=devansible-claude,target=/home/appuser/.claude,type=volume",
+        // Persiste ~/.config/gh (credenciales de GitHub CLI) entre rebuilds. Sin
+        // esto, cada rebuild obliga a re-hacer 'gh auth login'.
+        "source=devansible-gh,target=/home/appuser/.config/gh,type=volume"
     ],
     "remoteEnv": {
         "SSH_AUTH_SOCK": "/run/host-ssh-agent.sock"
