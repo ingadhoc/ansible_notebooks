@@ -1,9 +1,11 @@
 # Specifications: Ansible Notebooks Provisioning
 
 ## 1. Project Overview
+
 Este repositorio contiene la automatización oficial de Adhoc para aprovisionar estaciones de trabajo (notebooks). Utiliza Ansible para configurar sistemas operativos desde cero, garantizando entornos consistentes, seguros y auditables.
 
 **Filosofía Core:**
+
 - **Debian-Only:** Soporte exclusivo para Debian 13 (Trixie). Sistema base limpio, estable y libre de decisiones comerciales de Canonical.
 - **Idempotencia estricta:** Ejecutar el playbook múltiples veces sobre el mismo equipo debe resultar en `changed=0`.
 - **Testing Continuo:** Todo rol debe ser testeable en entornos aislados vía Molecule + Docker.
@@ -13,7 +15,7 @@ Este repositorio contiene la automatización oficial de Adhoc para aprovisionar 
 
 ## 2. Perfiles de Provisión (Roles Architecture)
 
-El sistema utiliza una arquitectura de roles jerárquica basada en el perfil del usuario. 
+El sistema utiliza una arquitectura de roles jerárquica basada en el perfil del usuario.
 *Importante:* Para evitar duplicación, los roles superiores incluyen (`include_role` / `import_tasks`) tareas de los roles base.
 
 1. **`funcional` (Base):**
@@ -39,7 +41,9 @@ El sistema utiliza una arquitectura de roles jerárquica basada en el perfil del
 Cualquier contribución (humana o IA) DEBE adherirse a los siguientes patrones ya establecidos:
 
 ### 3.1. Patrón Moderno de Repositorios APT (Zero `apt-key`)
+
 Está estrictamente prohibido usar el módulo obsoleto `apt_key`. Todo nuevo repositorio externo debe seguir este patrón:
+
 1. Validar si el keyring existe (`stat`).
 2. Descargar la llave GPG a `/tmp` (`get_url` con `changed_when: false`).
 3. Convertir con `gpg --dearmor` hacia `/usr/share/keyrings/` o `/etc/apt/keyrings/`.
@@ -49,10 +53,12 @@ Está estrictamente prohibido usar el módulo obsoleto `apt_key`. Todo nuevo rep
 7. Actualizar cache condicionalmente (`when: repo_added.changed`).
 
 ### 3.2. Idempotencia Real vs Temporal
+
 - Si una tarea manipula archivos temporales o hace limpiezas que no alteran el estado funcional del sistema, DEBE usar `changed_when: false`.
 - La idempotencia se valida evaluando el estado final del sistema (ej. si el binario está instalado), no en los pasos intermedios de descarga.
 
 ### 3.3. Entornos Docker y Restricciones (Para Molecule)
+
 El código debe estar preparado para correr dentro de contenedores Docker durante el testing (CI/CD):
 - **GUI / GNOME Tasks:** Todas las tareas relacionadas con `dconf`, fondos de pantalla o UI deben envolverse con `when: not (skip_gnome_tasks | default(false))`.
 - **/tmp Noexec:** Docker monta `/tmp` con flag `noexec`. Los scripts descargados allí NUNCA deben ejecutarse directamente. Usar intérprete explícito: `ansible.builtin.shell: bash /tmp/script.sh` con `args: { executable: /bin/bash }`.
@@ -60,6 +66,7 @@ El código debe estar preparado para correr dentro de contenedores Docker durant
 - **Shell Scripts:** `/bin/sh` en Debian apunta a `dash` (no soporta `pipefail`). Si usas bashismos, define explícitamente `executable: /bin/bash`.
 
 ### 3.4. Manejo de Errores y Bugs Conocidos
+
 - **VS Code Extensions:** La instalación de extensiones a veces provoca un crash de V8 al finalizar (return code `134`). Esto es esperado. Las tareas de VS Code deben aceptar `rc not in [0, 134]`.
 
 ---
