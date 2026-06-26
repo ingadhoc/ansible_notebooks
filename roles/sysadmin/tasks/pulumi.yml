@@ -52,21 +52,21 @@
       ansible.builtin.file:
         path: "{{ sysadmin_pulumi_install_root }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Pulumi | Download release tarball
       when: sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved
       ansible.builtin.get_url:
         url: "https://get.pulumi.com/releases/sdk/pulumi-v{{ sysadmin_pulumi_version_resolved }}-{{ sysadmin_pulumi_arch }}.tar.gz"
         dest: "/tmp/pulumi-v{{ sysadmin_pulumi_version_resolved }}-{{ sysadmin_pulumi_arch }}.tar.gz"
-        mode: '0644'
+        mode: "0644"
 
     - name: Pulumi | Create version directory
       when: sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved
       ansible.builtin.file:
         path: "{{ sysadmin_pulumi_install_root }}/{{ sysadmin_pulumi_version_resolved }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Pulumi | Extract tarball
       when: sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved

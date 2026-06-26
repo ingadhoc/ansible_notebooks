@@ -3,12 +3,11 @@
   tags: gcloud
   become: true
   block:
-
     - name: Asegurar que el directorio para keyrings de APT existe
       ansible.builtin.file:
         path: /usr/share/keyrings
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Asegurar que gnupg esté instalado
       ansible.builtin.apt:
@@ -18,25 +17,26 @@
     - name: Verificar si la llave GPG ya está instalada
       ansible.builtin.stat:
         path: "{{ external_repos.gcloud.keyring_path }}"
-      register: gcloud_gpg_key
+      register: funcional_gcloud_gpg_key
 
     - name: Descargar la llave GPG de Google Cloud
       ansible.builtin.get_url:
         url: "{{ external_repos.gcloud.gpg_url }}"
         dest: /tmp/google-cloud-apt-key.gpg
-        mode: '0644'
-      when: not gcloud_gpg_key.stat.exists
+        mode: "0644"
+      when: not funcional_gcloud_gpg_key.stat.exists
 
     - name: Convertir y guardar la llave GPG en /usr/share/keyrings
       ansible.builtin.command:
         cmd: gpg --dearmor -o {{ external_repos.gcloud.keyring_path }} /tmp/google-cloud-apt-key.gpg
-      when: not gcloud_gpg_key.stat.exists
+      when: not funcional_gcloud_gpg_key.stat.exists
+      changed_when: true
 
     - name: Remover archivo temporal de llave GPG
       ansible.builtin.file:
         path: /tmp/google-cloud-apt-key.gpg
         state: absent
-      when: not gcloud_gpg_key.stat.exists
+      when: not funcional_gcloud_gpg_key.stat.exists
 
     - name: Eliminar el repositorio legacy en formato .list (migración a deb822)
       ansible.builtin.file:
@@ -55,15 +55,12 @@
           Suites: cloud-sdk
           Components: main
           Signed-By: {{ external_repos.gcloud.keyring_path }}
-      register: gcloud_repo_added
-
-    - name: Actualizar cache de APT si el repositorio fue agregado
-      ansible.builtin.apt:
-        update_cache: true
-      when: gcloud_repo_added.changed
+      register: funcional_gcloud_repo
 
     - name: Instalar paquetes y dependencias de gcloud
       ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: "{{ 0 if (funcional_gcloud_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
         name:
           - google-cloud-cli
           - google-cloud-cli-gke-gcloud-auth-plugin

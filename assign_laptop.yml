@@ -1,81 +1,85 @@
-- hosts: all
-  become: yes
+---
+- name: Reasignar laptop a un nuevo usuario
+  hosts: all
+  become: true
 
   vars:
     old_user: adhoc
 
   tasks:
     - name: Terminate user session
-      command: loginctl terminate-user {{ old_user }}
-      ignore_errors: yes
+      ansible.builtin.command: loginctl terminate-user {{ old_user }}
+      changed_when: true
+      ignore_errors: true
 
     - name: Wait for processes to die
-      pause:
+      ansible.builtin.pause:
         seconds: 3
 
     - name: Kill remaining user processes
-      command: pkill -9 -u {{ old_user }}
-      ignore_errors: yes
+      ansible.builtin.command: pkill -9 -u {{ old_user }}
+      changed_when: true
+      ignore_errors: true
 
     - name: Wait for killed processes to exit
-      pause:
+      ansible.builtin.pause:
         seconds: 2
 
     - name: Rename user
-      command: >
+      ansible.builtin.command: >
         usermod -l {{ new_user }}
                 -d /home/{{ new_user }}
                 -m
                 -c "{{ full_name }}"
                 {{ old_user }}
-
+      changed_when: true
     - name: Rename primary group
-      command: groupmod -n {{ new_user }} {{ old_user }}
-
+      ansible.builtin.command: groupmod -n {{ new_user }} {{ old_user }}
+      changed_when: true
     - name: Update primary group assignment
-      command: usermod -g {{ new_user }} {{ new_user }}
-
+      ansible.builtin.command: usermod -g {{ new_user }} {{ new_user }}
+      changed_when: true
     - name: Rename sudoers file if exists
-      command: mv /etc/sudoers.d/{{ old_user }} /etc/sudoers.d/{{ new_user }}
+      ansible.builtin.command: mv /etc/sudoers.d/{{ old_user }} /etc/sudoers.d/{{ new_user }}
       args:
         creates: /etc/sudoers.d/{{ new_user }}
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Update sudoers content
-      replace:
+      ansible.builtin.replace:
         path: /etc/sudoers.d/{{ new_user }}
         regexp: "{{ old_user }}"
         replace: "{{ new_user }}"
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Update GTK bookmarks
       ansible.builtin.replace:
         path: /home/{{ new_user }}/.config/gtk-3.0/bookmarks
         regexp: "/home/{{ old_user }}"
         replace: "/home/{{ new_user }}"
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Set wallpaper URI
-      command: >
+      ansible.builtin.command: >
         sudo -u {{ new_user }} dbus-run-session
         dconf write /org/gnome/desktop/background/picture-uri
         "'file:///home/{{ new_user }}/.wallpaper.png'"
-
+      changed_when: true
     - name: Set wallpaper URI dark
-      command: >
+      ansible.builtin.command: >
         sudo -u {{ new_user }} dbus-run-session
         dconf write /org/gnome/desktop/background/picture-uri-dark
         "'file:///home/{{ new_user }}/.wallpaper.png'"
-
+      changed_when: true
     - name: Set git config for new user
       become_user: "{{ new_user }}"
-      git_config:
+      community.general.git_config:
         name: "{{ item.key }}"
         value: "{{ item.value }}"
         scope: global
       loop:
         - { key: "user.name", value: "{{ full_name }}" }
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Update /etc/hosts hostname
       ansible.builtin.replace:

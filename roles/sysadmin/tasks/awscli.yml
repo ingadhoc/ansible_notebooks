@@ -5,7 +5,6 @@
   tags: awscli
   become: true
   block:
-
     - name: AWS CLI | Detectar instalación existente
       ansible.builtin.command: aws --version
       register: sysadmin_awscli_installed
@@ -26,7 +25,7 @@
       ansible.builtin.get_url:
         url: "https://awscli.amazonaws.com/awscli-exe-linux-{{ sysadmin_awscli_arch }}.zip"
         dest: /tmp/awscliv2.zip
-        mode: '0644'
+        mode: "0644"
         force: true
 
     - name: AWS CLI | Descomprimir instalador
@@ -53,6 +52,7 @@
           --install-dir {{ sysadmin_awscli_install_dir }}
           --bin-dir {{ sysadmin_awscli_bin_dir }}
           --update
+      changed_when: true
 
     - name: AWS CLI | Limpiar archivos temporales
       when: sysadmin_awscli_installed.rc != 0 or (sysadmin_awscli_force_update | default(false) | bool)

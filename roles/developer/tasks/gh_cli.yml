@@ -6,14 +6,14 @@
     - name: GitHub CLI | Verificar si la clave GPG ya está instalada
       ansible.builtin.stat:
         path: "{{ developer_external_repos.github_cli.keyring_path }}"
-      register: github_cli_gpg_key
+      register: developer_github_cli_gpg_key
 
     - name: GitHub CLI | Descargar y colocar la clave GPG del repositorio
       ansible.builtin.get_url:
         url: "{{ developer_external_repos.github_cli.gpg_url }}"
         dest: "{{ developer_external_repos.github_cli.keyring_path }}"
-        mode: '0644'
-      when: not github_cli_gpg_key.stat.exists
+        mode: "0644"
+      when: not developer_github_cli_gpg_key.stat.exists
 
     - name: GitHub CLI | Eliminar el repositorio legacy en formato .list (migración a deb822)
       ansible.builtin.file:
@@ -33,14 +33,11 @@
           Components: {{ developer_external_repos.github_cli.components }}
           Architectures: {{ developer_external_repos.github_cli.architectures }}
           Signed-By: {{ developer_external_repos.github_cli.keyring_path }}
-      register: github_cli_repo_added
-
-    - name: GitHub CLI | Actualizar cache de APT si el repositorio fue agregado
-      ansible.builtin.apt:
-        update_cache: true
-      when: github_cli_repo_added.changed | default(false)
+      register: developer_github_repo
 
     - name: GitHub CLI | Instalar el paquete 'gh'
       ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: "{{ 0 if (developer_github_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
         name: gh
         state: present

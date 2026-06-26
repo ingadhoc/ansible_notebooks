@@ -8,8 +8,8 @@
     - name: Prepare | Ensure systemd is running
       ansible.builtin.command: systemctl --version
       changed_when: false
-      register: systemd_check
-      failed_when: systemd_check.rc != 0
+      register: funcional_systemd_check
+      failed_when: funcional_systemd_check.rc != 0
 
     - name: Prepare | Create test user for SUDO_USER simulation
       ansible.builtin.user:
@@ -18,7 +18,7 @@
         create_home: true
         shell: /bin/bash
 
-    - name: Prepare | Set SUDO_USER environment for testing
+    - name: Prepare | Set SUDO_USER environment for testing  # noqa: var-naming[no-role-prefix]
       ansible.builtin.set_fact:
         ansible_env:
           SUDO_USER: testuser
@@ -27,4 +27,4 @@
       ansible.builtin.file:
         path: /tmp
         state: directory
-        mode: '1777'
+        mode: "1777"

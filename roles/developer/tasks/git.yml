@@ -16,7 +16,7 @@
       ansible.builtin.file:
         path: "{{ developer_git_hooks_path }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Git | Copiar script de hook genérico a múltiples destinos
       ansible.builtin.copy:

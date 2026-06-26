@@ -6,7 +6,7 @@
     # ===== 1. Habilitar arquitectura 32-bit (MicroSIP lo requiere) =====
     - name: Wine & MicroSIP | Enable 32-bit architecture support
       ansible.builtin.command: dpkg --add-architecture i386
-      register: add_arch_result
+      register: funcional_add_arch_result
       changed_when: true
 
     # ===== 2. Actualizar cache APT tras habilitar i386 =====
@@ -19,21 +19,21 @@
       ansible.builtin.file:
         path: /etc/apt/keyrings
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     # ===== 4. Descargar clave GPG WineHQ =====
     - name: Wine & MicroSIP | Download WineHQ GPG key
       ansible.builtin.get_url:
         url: https://dl.winehq.org/wine-builds/winehq.key
         dest: /etc/apt/keyrings/winehq-archive.key
-        mode: '0644'
+        mode: "0644"
 
     # ===== 5. Descargar archivo .sources de WineHQ para Trixie =====
     - name: Wine & MicroSIP | Download WineHQ Trixie sources file
       ansible.builtin.get_url:
         url: https://dl.winehq.org/wine-builds/debian/dists/trixie/winehq-trixie.sources
         dest: /etc/apt/sources.list.d/winehq-trixie.sources
-        mode: '0644'
+        mode: "0644"
 
     # ===== 6. Actualizar cache APT con repo WineHQ =====
     # cache_valid_time: 0 fuerza el refresco real del índice (evita que APT
@@ -43,8 +43,8 @@
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 0
-      register: winehq_cache_update
-      until: winehq_cache_update is succeeded
+      register: funcional_winehq_cache_update
+      until: funcional_winehq_cache_update is succeeded
       retries: 3
       delay: 5
 
@@ -60,8 +60,8 @@
         state: present
         update_cache: true
         cache_valid_time: 0
-      register: winehq_install
-      until: winehq_install is succeeded
+      register: funcional_winehq_install
+      until: funcional_winehq_install is succeeded
       retries: 3
       delay: 10
 
@@ -91,7 +91,7 @@
       ansible.builtin.get_url:
         url: "https://www.microsip.org/download/MicroSIP-3.22.3.exe"
         dest: /tmp/MicroSIP-3.22.3.exe
-        mode: '0755'
+        mode: "0755"
         validate_certs: false
         force: true
         headers:
@@ -122,7 +122,7 @@
         state: directory
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
-        mode: '0755'
+        mode: "0755"
 
     # ===== 13. Crear acceso directo de escritorio =====
     - name: Wine & MicroSIP | Create MicroSIP desktop entry
@@ -136,7 +136,7 @@
         dest: "/home/{{ remote_regular_user }}/.local/share/applications/microsip.desktop"
         owner: "{{ remote_regular_user }}"
         group: "{{ remote_regular_user }}"
-        mode: '0644'
+        mode: "0644"
 
     # ===== 14. Actualizar base de datos de aplicaciones =====
     - name: Wine & MicroSIP | Update desktop database

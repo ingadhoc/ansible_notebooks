@@ -11,12 +11,11 @@ on:
       - main
       - develop
   workflow_dispatch:
-
 jobs:
   lint:
     name: Lint Ansible code
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,7 +23,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Cache Ansible collections
         uses: actions/cache@v4
@@ -83,7 +82,7 @@ jobs:
     name: Test funcional role
     runs-on: ubuntu-latest
     needs: lint
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -91,7 +90,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -120,8 +119,8 @@ jobs:
             exit 1
           fi
         env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
 
       - name: Upload test logs on failure
         if: failure()
@@ -137,7 +136,7 @@ jobs:
     name: Test developer role
     runs-on: ubuntu-latest
     needs: lint
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -145,7 +144,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -174,8 +173,8 @@ jobs:
             exit 1
           fi
         env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
 
       - name: Upload test logs on failure
         if: failure()
@@ -191,7 +190,7 @@ jobs:
     name: Test sysadmin role
     runs-on: ubuntu-latest
     needs: lint
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -199,7 +198,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -228,8 +227,8 @@ jobs:
             exit 1
           fi
         env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"
 
       - name: Upload test logs on failure
         if: failure()
@@ -256,33 +255,33 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Role | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          
+
           # Funcional
           if [ "${{ needs.test-funcional.result }}" == "success" ]; then
             echo "| funcional | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| funcional | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           # Developer
           if [ "${{ needs.test-developer.result }}" == "success" ]; then
             echo "| developer | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| developer | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           # Sysadmin
           if [ "${{ needs.test-sysadmin.result }}" == "success" ]; then
             echo "| sysadmin | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
           else
             echo "| sysadmin | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
           fi
-          
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Platforms Tested" >> $GITHUB_STEP_SUMMARY
           echo "- 🐧 Debian 13 (Trixie)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           # Overall status
           if [ "${{ needs.test-funcional.result }}" == "success" ] && \
              [ "${{ needs.test-developer.result }}" == "success" ] && \

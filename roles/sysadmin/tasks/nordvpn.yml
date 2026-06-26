@@ -9,7 +9,7 @@
       ansible.builtin.get_url:
         url: https://repo.nordvpn.com/gpg/nordvpn_public.asc
         dest: /tmp/nordvpn_public.asc
-        mode: '0644'
+        mode: "0644"
       changed_when: false
 
     - name: NordVPN | Convertir y mover la clave GPG
@@ -32,13 +32,13 @@
     - name: NordVPN | Verificar si NordVPN ya está instalado
       ansible.builtin.stat:
         path: /usr/bin/nordvpn
-      register: nordvpn_installed
+      register: sysadmin_nordvpn_installed
 
     - name: NordVPN | Eliminar el repositorio legacy en formato .list (migración a deb822)
       ansible.builtin.file:
         path: /etc/apt/sources.list.d/nordvpn.list
         state: absent
-      when: not nordvpn_installed.stat.exists
+      when: not sysadmin_nordvpn_installed.stat.exists
 
     - name: NordVPN | Añadir el repositorio de APT de NordVPN (formato deb822 .sources)
       ansible.builtin.copy:
@@ -52,16 +52,13 @@
           Suites: stable
           Components: main
           Signed-By: {{ sysadmin_nordvpn_gpg_path }}
-      register: nordvpn_repo_added
-      when: not nordvpn_installed.stat.exists
-
-    - name: NordVPN | Actualizar cache de APT si el repositorio fue agregado
-      ansible.builtin.apt:
-        update_cache: true
-      when: nordvpn_repo_added.changed | default(false)
+      register: sysadmin_nordvpn_repo
+      when: not sysadmin_nordvpn_installed.stat.exists
 
     - name: NordVPN | Instalar el paquete de NordVPN
       ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: "{{ 0 if (sysadmin_nordvpn_repo.changed | default(false)) else (apt_cache_valid_time | default(3600)) }}"
         name: "{{ sysadmin_nordvpn_package }}"
         state: present
 

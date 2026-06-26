@@ -1,3 +1,4 @@
+---
 # Pre-commit Configuration for Ansible Notebooks
 # Install: pip install pre-commit && pre-commit install
 
@@ -36,7 +37,7 @@ repos:
         args: [--maxkb=1000]
       - id: check-merge-conflict
       - id: detect-private-key
-        exclude: ^(roles/.*/files/.*\.pub)  # Excluir claves públicas
+        exclude: ^(roles/.*/files/.*\.pub) # Excluir claves públicas
 
   # Markdown Linting
   - repo: https://github.com/igorshubovych/markdownlint-cli

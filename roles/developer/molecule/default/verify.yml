@@ -8,8 +8,8 @@
     - ../../vars.yml
 
   vars:
-    remote_user: "{{ ansible_env.SUDO_USER | default('testuser') }}"
-    docker_group_user: "{{ remote_user }}"
+    developer_remote_user: "{{ ansible_env.SUDO_USER | default('testuser') }}"
+    docker_group_user: "{{ developer_remote_user }}"
     required_package_sets:
       - "{{ developer_packages_base }}"
       - "{{ developer_docker_packages }}"
@@ -45,7 +45,7 @@
 
     - name: Verify | Check VS Code binary is available
       become: true
-      become_user: "{{ remote_user }}"
+      become_user: "{{ developer_remote_user }}"
       ansible.builtin.command: code --version --no-sandbox
       register: developer_code_version
       changed_when: false
@@ -78,7 +78,7 @@
       loop: "{{ linter_packages }}"
 
     - name: Verify | Check git global hooks configuration
-      become_user: "{{ remote_user }}"
+      become_user: "{{ developer_remote_user }}"
       ansible.builtin.command: git config --global core.hooksPath
       register: developer_git_hooks
       changed_when: false
@@ -87,17 +87,17 @@
     - name: Verify | Assert git hooks path configured
       ansible.builtin.assert:
         that:
-          - developer_git_hooks.stdout.strip() == "/home/{{ remote_user }}/.git_hooks"
-        fail_msg: "Expected git hooks path '/home/{{ remote_user }}/.git_hooks', but got '{{ developer_git_hooks.stdout.strip() }}'"
+          - developer_git_hooks.stdout.strip() == "/home/{{ developer_remote_user }}/.git_hooks"
+        fail_msg: "Expected git hooks path '/home/{{ developer_remote_user }}/.git_hooks', but got '{{ developer_git_hooks.stdout.strip() }}'"
 
     - name: Verify | Check dotfiles copied
       ansible.builtin.stat:
         path: "{{ item }}"
       loop:
-        - "/home/{{ remote_user }}/.bash_aliases"
-        - "/home/{{ remote_user }}/.adhoc_bash_ps.sh"
-        - "/home/{{ remote_user }}/.tmux"
-        - "/home/{{ remote_user }}/.prompt_git"
+        - "/home/{{ developer_remote_user }}/.bash_aliases"
+        - "/home/{{ developer_remote_user }}/.adhoc_bash_ps.sh"
+        - "/home/{{ developer_remote_user }}/.tmux"
+        - "/home/{{ developer_remote_user }}/.prompt_git"
       register: developer_dotfiles
 
     - name: Verify | Assert dotfiles exist
@@ -109,7 +109,7 @@
 
     - name: Verify | Check ssh configuration exists
       ansible.builtin.stat:
-        path: "/home/{{ remote_user }}/.ssh/config"
+        path: "/home/{{ developer_remote_user }}/.ssh/config"
       register: developer_ssh_config
 
     - name: Verify | Assert ssh config created

@@ -6,7 +6,6 @@
   # TODO: Investigar solución robusta para Debian
   when: ansible_facts['distribution'] == 'Ubuntu'
   block:
-    
     # 1. Instala el paquete solo en Debian (Ubuntu ya lo tiene integrado)
     # NOTA: Este bloque completo está deshabilitado en Debian, esta tarea no se ejecutará
     - name: DNS | Asegurar que systemd-resolved esté instalado (solo Debian)
@@ -34,7 +33,7 @@
         option: "{{ item.option }}"
         value: "{{ item.value }}"
         state: present
-        mode: '0644'
+        mode: "0644"
       loop:
         - { option: "DNS", value: "{{ sysadmin_public_dns_servers | join(' ') }}" }
         - { option: "FallbackDNS", value: "" }
