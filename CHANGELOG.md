@@ -6,6 +6,15 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ## [2026-06-27]
 
+### Docs: registrar decisiones de arquitectura en `specifications.md`
+
+- §3.1: documentada la decisión de **mantener el patrón de repos deb822 inline por
+  rol y NO extraer un helper compartido** (se evaluó y se descartó: chrome/code/nordvpn
+  escriben el `.sources` condicional por `postinst`, kubectl es repo flat, gh_cli usa
+  key binaria, docker computa campos en runtime). Evita re-intentar el refactor
+- Nueva §3.6 "Estructura de Documentación": fija el criterio de **3 archivos**
+  (`README.md`, `docs/TESTING.md`, `specifications.md`), sin docs por-rol ni por-perfil
+
 ### Tooling: config de markdownlint + limpieza de docs
 
 - Agregado `.markdownlint.json` en la raíz: el repo no tenía archivo de config, así
