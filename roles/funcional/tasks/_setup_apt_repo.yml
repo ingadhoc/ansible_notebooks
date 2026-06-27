@@ -15,8 +15,9 @@
 #     - architectures (opcional) deb822 Architectures
 #
 # Salida:
-#   _repo_sources: resultado del template del .sources. Usar `_repo_sources.changed`
-#   para gatear el `update_cache` del install posterior en el caller.
+#   _repo_sources: resultado del template del .sources. El caller usa
+#   `_repo_sources.changed` para forzar el refresh del índice (`cache_valid_time: 0`)
+#   en su tarea de install solo cuando el repo cambió.
 #
 # Nota: los registros van con # noqa var-naming porque este helper es transversal
 # a varios roles; no aplica un prefijo de rol único.
@@ -43,8 +44,13 @@
   when: not _repo_keyring.stat.exists
 
 - name: "Repo deb822 | Convertir la llave a keyring/dearmor ({{ _repo.filename }})"
-  ansible.builtin.command: >-
-    gpg --dearmor -o {{ _repo.keyring_path }} /tmp/{{ _repo.filename }}-apt-key.tmp
+  ansible.builtin.command:
+    argv:
+      - gpg
+      - --dearmor
+      - -o
+      - "{{ _repo.keyring_path }}"
+      - "/tmp/{{ _repo.filename }}-apt-key.tmp"
   # Gateado por el stat: cuando corre, crea el keyring → el cambio es real.
   when: not _repo_keyring.stat.exists
   changed_when: true
