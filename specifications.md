@@ -63,6 +63,20 @@ Las URLs, claves y rutas de keyring de cada repo se centralizan en el
 `funcional_external_repos` de `vars/main.yml` del rol. Ver implementación de referencia en
 `roles/funcional/tasks/kubectl.yml` y `gcloud.yml`.
 
+**El patrón se mantiene inline en cada rol, NO en un helper compartido.** Se evaluó
+extraer un `include_role`/task reutilizable y se descartó: la mayoría de los repos
+tiene variaciones que un helper genérico solo absorbería con flags que lo vuelven
+ilegible —
+
+- `chrome`, `code` y `nordvpn` escriben el `.sources` **condicionalmente**
+  (`when: not <pkg>_installed`) porque el paquete autogestiona su repo vía `postinst`;
+- `kubectl` es un repo *flat* (`Suites: /`, sin `Components`);
+- `gh_cli` baja un keyring binario directo (sin `dearmor`);
+- `docker` computa `URIs`/`Suites`/`Architectures` en runtime.
+
+La duplicación restante es chica y la legibilidad por rol vale más que ese DRY. No
+re-intentar el helper salvo que aparezca un caso nuevo que sí calce limpio.
+
 ### 3.2. Idempotencia Real vs Temporal
 
 La idempotencia se valida por el **estado final** del sistema (¿está el binario /
@@ -112,6 +126,21 @@ El código debe estar preparado para correr dentro de contenedores Docker durant
 - **Prefijo de rol obligatorio:** toda variable interna de un rol DEBE prefijarse con el nombre del rol (`funcional_packages_system`, `developer_docker_packages`, `sysadmin_kvm_packages`). Las variables de Ansible viven en un namespace global por play, así que el prefijo evita colisiones silenciosas entre roles y deja claro el origen (regla `var-naming[no-role-prefix]` de ansible-lint).
 - **Excepción — variables transversales:** `remote_regular_user` (y `remote_regular_user_uid`) son alias play-wide del usuario que se aprovisiona, compartidos a propósito entre todos los roles. NO se prefijan; se anotan con `# noqa: var-naming[no-role-prefix]` para documentar que es deliberado.
 - Roles que reutilizan tareas de otro rol sin heredarlo vía `meta` (ej. `deploy`, `freelance_developer`) cargan las vars del rol de origen con `include_vars` explícito, porque `import_tasks` con ruta relativa no las autocarga.
+
+### 3.6. Estructura de Documentación
+
+La documentación se mantiene en **3 archivos**, sin docs por-rol ni por-perfil (se
+evaluó esa vía y se descartó por inconsistente y redundante):
+
+- `README.md` — entrada para usuarios: perfiles, cómo elegir, cómo ejecutar,
+  post-instalación, troubleshooting.
+- `docs/TESTING.md` — guía de testing con Molecule.
+- `specifications.md` — arquitectura, patrones y reglas de contribución (este archivo).
+
+El detalle de cada rol vive en los **comentarios de las tareas** y en este documento,
+no en READMEs por rol. NO agregar `roles/<rol>/README.md` ni guías por-perfil en
+`docs/`; si algo es relevante para usuarios va al `README.md`, y si es arquitectura o
+una regla de contribución, acá.
 
 ---
 
