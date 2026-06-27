@@ -7,12 +7,15 @@
     - not (sysadmin_skip_kvm | default(false))
   block:
     - name: KVM | Verificar soporte de virtualización en CPU
-      ansible.builtin.shell: |
-        if grep -E '(vmx|svm)' /proc/cpuinfo > /dev/null; then
-          echo "supported"
-        else
-          echo "not_supported"
-        fi
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          if grep -E '(vmx|svm)' /proc/cpuinfo > /dev/null; then
+            echo "supported"
+          else
+            echo "not_supported"
+          fi
+        executable: /bin/bash
       register: sysadmin_kvm_cpu_check
       changed_when: false
       failed_when: false
@@ -42,7 +45,11 @@
         append: true
 
     - name: KVM | Verificar que el módulo kvm está cargado
-      ansible.builtin.shell: lsmod | grep -E '^kvm'
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          lsmod | grep -E '^kvm'
+        executable: /bin/bash
       register: sysadmin_kvm_module_check
       changed_when: false
       failed_when: false
