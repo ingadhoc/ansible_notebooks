@@ -65,8 +65,33 @@ Las URLs, claves y rutas de keyring de cada repo se centralizan en el
 
 ### 3.2. Idempotencia Real vs Temporal
 
-- Si una tarea manipula archivos temporales o hace limpiezas que no alteran el estado funcional del sistema, DEBE usar `changed_when: false`.
-- La idempotencia se valida evaluando el estado final del sistema (ej. si el binario está instalado), no en los pasos intermedios de descarga.
+La idempotencia se valida por el **estado final** del sistema (¿está el binario /
+keyring / archivo?), no por los pasos intermedios de descarga. Una segunda corrida
+del playbook DEBE dar `changed=0`. Las tareas deben reportar su cambio **con
+veracidad** — ni mentir que no cambiaron, ni reportar `changed` cuando no hubo cambio:
+
+- **`changed_when: false` SOLO para tareas sin efecto sobre el estado funcional:**
+  lecturas/consultas (`stat`, `dpkg --print-foreign-architectures`,
+  `localectl status`, `code --list-extensions`) y limpiezas de `/tmp`. NUNCA en una
+  tarea que crea o modifica un artefacto real.
+- **Comando imperativo que crea un artefacto → patrón "stat-gate":** un `stat`
+  previo del artefacto final + `when: not <artefacto>.stat.exists` +
+  `changed_when: true` (o el arg `creates:`). En la segunda corrida el `when`
+  saltea la tarea, así que da `changed=0` sin haber mentido en la primera.
+  Referencia: `gpg --dearmor` en `roles/funcional/tasks/browsers.yml` /
+  `roles/funcional/tasks/gcloud.yml`; descarga→instalación de binarios en
+  `roles/funcional/tasks/kubectl.yml` / `roles/sysadmin/tasks/helm.yml`.
+- **Comando cuya salida indica si cambió → `changed_when` calculado:** evaluar el
+  resultado real, p.ej. `changed_when: "'already installed' not in result.stdout"`
+  (VS Code), o comparar contra una consulta previa (`localectl status` antes de
+  `set-locale` en `roles/funcional/tasks/language.yml`).
+- **Prohibido usar `changed_when: false` para enmascarar no-idempotencia.** Si una
+  tarea reportaría `changed` en cada corrida (ej. descargar→procesar→borrar un
+  temporal, `dpkg --add-architecture`), hay que **gatearla** contra el estado final,
+  no silenciarla.
+- `failed_when: false` es aceptable solo cuando el fallo es esperado y hay fallback,
+  documentado en un comentario (p.ej. `localectl` sin systemd → fallback a
+  `/etc/default/locale`).
 
 ### 3.3. Entornos Docker y Restricciones (Para Molecule)
 
@@ -110,4 +135,4 @@ En lugar de correr el ciclo completo, para desarrollo se exige el flujo:
 5. **Changelog:** Todo cambio relevante al proyecto debe registrarse en `CHANGELOG.md` (raíz del repo) bajo la fecha del día. Se considera relevante cualquier cambio de comportamiento, nueva herramienta, decisión de arquitectura, o modificación de infraestructura de desarrollo (devcontainer, CI, tooling). No se registran correcciones de typos ni refactors internos sin impacto funcional.
 
 ---
-*Última actualización: Marzo 2026. Documento "Spec-Anchored" para el proyecto Ansible Notebooks de Adhoc.*
+*Última actualización: Junio 2026. Documento "Spec-Anchored" para el proyecto Ansible Notebooks de Adhoc.*
