@@ -21,6 +21,7 @@ sudo ./adhoc-ansible
 En el menú, elegir: **Freelance Developer**.
 
 Qué hace este método:
+
 - Instala Ansible (vía `pipx`) y dependencias.
 - Clona/actualiza el repo en `~/repositorios/ansible_notebooks`.
 - Ejecuta el playbook con el perfil correcto.
@@ -47,6 +48,7 @@ ansible-playbook local.yml -e "profile_override=freelance_developer" -K --list-t
 ## Qué instala el perfil `freelance_developer`
 
 Resumen (puede variar con el tiempo):
+
 - Herramientas de desarrollo: Git, Python, VS Code, GH CLI.
 - Tooling de contenedores y cloud: Docker, kubectl, gcloud.
 
@@ -80,5 +82,6 @@ Resumen (puede variar con el tiempo):
 ## Soporte
 
 Si algo falla, enviar:
+
 - Distribución y versión (`cat /etc/os-release`).
 - Las últimas ~50 líneas del output del playbook.

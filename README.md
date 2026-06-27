@@ -31,10 +31,10 @@ Priorizamos el uso de Debian para mantener un sistema base limpio, estable y lib
 
 El sistema está organizado en perfiles jerárquicos. Cada perfil incluye la configuración del anterior, creando un sistema incremental:
 
-* **`funcional` (Base)**: Contiene el software y la configuración esencial para todos los miembros de la empresa (navegadores, herramientas de comunicación, seguridad básica, etc.).
-* **`developer`**: Incluye el perfil `funcional` y añade todas las herramientas de desarrollo (Docker, VS Code, Git, Python, kubectl, etc.).
-* **`freelance_developer`**: Perfil acotado para developers freelance. Reutiliza tareas puntuales de `funcional` y `developer` pero evita configuración corporativa (por ejemplo branding/desktop) y corre solo un subset de herramientas de desarrollo.
-* **`sysadmin`**: Incluye ambos perfiles anteriores y añade herramientas de administración de sistemas e infraestructura (pulumi, gcloud, VirtualBox, etc.).
+- **`funcional` (Base)**: Contiene el software y la configuración esencial para todos los miembros de la empresa (navegadores, herramientas de comunicación, seguridad básica, etc.).
+- **`developer`**: Incluye el perfil `funcional` y añade todas las herramientas de desarrollo (Docker, VS Code, Git, Python, kubectl, etc.).
+- **`freelance_developer`**: Perfil acotado para developers freelance. Reutiliza tareas puntuales de `funcional` y `developer` pero evita configuración corporativa (por ejemplo branding/desktop) y corre solo un subset de herramientas de desarrollo.
+- **`sysadmin`**: Incluye ambos perfiles anteriores y añade herramientas de administración de sistemas e infraestructura (pulumi, gcloud, VirtualBox, etc.).
 
 ---
 
@@ -85,8 +85,8 @@ Si necesitas volver a ejecutar el playbook en un equipo ya configurado o quieres
 
 **Requisitos previos:**
 
-* Tener `git` y `ansible` (vía `pipx`) instalados.
-* Haber clonado este repositorio.
+- Tener `git` y `ansible` (vía `pipx`) instalados.
+- Haber clonado este repositorio.
 
 **Comandos:**
 
@@ -124,6 +124,7 @@ ansible-playbook local.yml -e "profile_override=sysadmin" --tags "kvm" -K --verb
 ```
 
 > ℹ️ **Nota sobre Asistencia**: Agregar `-e "asistencia=true"` a cualquier perfil instala Wine + MicroSIP automáticamente. Ejemplo:
+>
 > ```bash
 > # Developer + asistencia
 > ansible-playbook local.yml -e "profile_override=developer" -e "asistencia=true" -K --verbose
@@ -148,13 +149,13 @@ Después de que Ansible termine, hay algunas acciones que requieren tu intervenc
 
 1. **Configurar SSH en GitHub:**
 
-   * La CLI de `gh` ya estará instalada. Inicia sesión con:
+   - La CLI de `gh` ya estará instalada. Inicia sesión con:
 
      ```bash
      gh auth login
      ```
 
-   * Sube tu nueva clave SSH. El playbook la creó con el formato `id_rsa_TU_USUARIO@NOMBRE_HOST.pub`.
+   - Sube tu nueva clave SSH. El playbook la creó con el formato `id_rsa_TU_USUARIO@NOMBRE_HOST.pub`.
 
      ```bash
      # Reemplaza 'dib' y 'dib-adhoc-nb-debian' con tu usuario y hostname
@@ -182,6 +183,7 @@ Después de que Ansible termine, hay algunas acciones que requieren tu intervenc
 Cuando una notebook con el usuario genérico `adhoc` se asigna a un empleado nuevo, el playbook `assign_laptop.yml` renombra el usuario (y su grupo, home y sudoers) de forma remota, sin necesidad de reinstalar el sistema.
 
 **Prerrequisitos:**
+
 - Acceso SSH a la máquina via el usuario `_sysadmin` con la clave `~/.ssh/sysadmin_key`.
 - La notebook debe estar encendida y accesible en la red.
 - Solicitar IP con el comando `hostname -I`
@@ -199,6 +201,7 @@ ansible-playbook assign_laptop.yml \
 > ⚠️ Nota la **coma** después de `<ip>` — es requerida por Ansible para inventarios inline.
 
 **Qué hace:**
+
 1. Mata los procesos del usuario anterior (`pkill`).
 2. Renombra el usuario y mueve su home (`usermod`).
 3. Renombra el grupo primario (`groupmod`).

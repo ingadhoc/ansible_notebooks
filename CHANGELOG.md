@@ -4,6 +4,21 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-06-27]
+
+### Tooling: config de markdownlint + limpieza de docs
+
+- Agregado `.markdownlint.json` en la raíz: el repo no tenía archivo de config, así
+  que el editor (extensión de VS Code) aplicaba **todas** las reglas por defecto y
+  mostraba cientos de warnings (sobre todo `MD013/line-length`) que el hook de
+  pre-commit **ya ignora**. La config alinea el editor con la política del proyecto:
+  desactiva `MD013`, `MD033`, `MD041` (igual que el hook) y fija `MD004` a `dash`
+  (viñetas con `-`, la convención del repo)
+- Corregidos los warnings reales (autofixables) en los `.md`: blanks alrededor de
+  headings/listas/fences (`MD022`/`MD032`/`MD031`), lenguaje en fences (`MD040`) y
+  numeración de listas ordenadas (`MD029`). Solo formato, sin cambios de contenido
+- `markdownlint` pasa limpio en todos los `.md` trackeados
+
 ## [2026-06-26]
 
 ### Docs: convención de idempotencia en `specifications.md`

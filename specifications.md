@@ -96,6 +96,7 @@ veracidad** — ni mentir que no cambiaron, ni reportar `changed` cuando no hubo
 ### 3.3. Entornos Docker y Restricciones (Para Molecule)
 
 El código debe estar preparado para correr dentro de contenedores Docker durante el testing (CI/CD):
+
 - **GUI / GNOME Tasks:** Todas las tareas relacionadas con `dconf`, fondos de pantalla o UI deben envolverse con `when: not (skip_gnome_tasks | default(false))`.
 - **/tmp Noexec:** Docker monta `/tmp` con flag `noexec`. Los scripts descargados allí NUNCA deben ejecutarse directamente. Usar intérprete explícito: `ansible.builtin.shell: bash /tmp/script.sh` con `args: { executable: /bin/bash }`.
 - **Systemd:** Ciertos servicios (ej. `systemd-resolved`) no funcionan en Docker. Usar skip logic: `when: not (ansible_virtualization_type == 'docker')`.

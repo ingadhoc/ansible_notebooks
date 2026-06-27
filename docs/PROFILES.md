@@ -3,6 +3,7 @@
 Este proyecto instala un entorno de trabajo completo en **Debian 13** usando Ansible.
 
 La idea central es simple:
+
 - Elegís un **perfil** (rol) según tu tipo de trabajo.
 - Corrés el playbook.
 - Reiniciás el equipo.
@@ -17,16 +18,14 @@ La idea central es simple:
 ## Árbol de decisión (rápido)
 
 1) ¿Necesitás herramientas de **infra/SRE** (ej. Pulumi/Helm/VPN/KVM/etc.)?
-- Sí → `sysadmin`
-- No → seguir
-
+   - Sí → `sysadmin`
+   - No → seguir
 2) ¿Sos **freelance/externo** y querés evitar configuración corporativa de escritorio/branding?
-- Sí → `freelance_developer`
-- No → seguir
-
+   - Sí → `freelance_developer`
+   - No → seguir
 3) ¿Vas a desarrollar y necesitás tooling completo (VS Code, Git, Python, Docker, kubectl, etc.)?
-- Sí → `developer`
-- No → `funcional`
+   - Sí → `developer`
+   - No → `funcional`
 
 ## Matriz conceptual (para entender el alcance)
 
