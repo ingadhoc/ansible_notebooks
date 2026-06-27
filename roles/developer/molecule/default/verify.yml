@@ -78,8 +78,9 @@
       loop: "{{ linter_packages }}"
 
     - name: Verify | Check git global hooks configuration
+      become: true
       become_user: "{{ developer_remote_user }}"
-      ansible.builtin.command: git config --global core.hooksPath
+      ansible.builtin.command: git config --global core.hooksPath  # noqa: command-instead-of-module
       register: developer_git_hooks
       changed_when: false
       failed_when: developer_git_hooks.rc != 0

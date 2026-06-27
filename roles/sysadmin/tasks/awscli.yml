@@ -64,6 +64,7 @@
         - /tmp/aws
 
     - name: AWS CLI | Configurar autocompletado de bash para el usuario
+      become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.blockinfile:
         path: "/home/{{ remote_regular_user }}/.bashrc"

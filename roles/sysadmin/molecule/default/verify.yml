@@ -86,6 +86,7 @@
       failed_when: not sysadmin_verify_awscli_completer.stat.exists
 
     - name: Verify | Check VS Code extensions for sysadmin
+      become: true
       become_user: "{{ sysadmin_remote_user }}"
       ansible.builtin.command: code --list-extensions --no-sandbox
       register: sysadmin_verify_vscode_extensions
