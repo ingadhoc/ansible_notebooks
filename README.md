@@ -47,7 +47,12 @@ El sistema está organizado en perfiles jerárquicos. Cada perfil incluye la con
 | `freelance_developer` | Devs freelance/externos | Entorno de dev + cloud/containers (subset controlado) | Evita desktop/branding corporativo | `ansible-playbook local.yml -e "profile_override=freelance_developer" -K --verbose` |
 | `sysadmin` | SRE/infra | `developer` + herramientas extra de infra/SRE | Perfil más amplio (instala más herramientas) | `ansible-playbook local.yml -e "profile_override=sysadmin" -K --verbose` |
 
-Más detalle (qué hace cada perfil y cómo elegirlo): **[docs/PROFILES.md](docs/PROFILES.md)**
+**Árbol de decisión rápido:**
+
+1. ¿Necesitás herramientas de **infra/SRE** (Pulumi/Helm/VPN/KVM/etc.)? → `sysadmin`
+2. ¿Sos **freelance/externo** y querés evitar branding/escritorio corporativo? → `freelance_developer`
+3. ¿Vas a desarrollar y necesitás tooling completo (VS Code, Git, Python, Docker, kubectl)? → `developer`
+4. Si nada de lo anterior, lo mínimo común → `funcional`
 
 ---
 
@@ -134,12 +139,18 @@ ansible-playbook local.yml -e "profile_override=sysadmin" --tags "kvm" -K --verb
 
 ## 👩‍💻 Developers Freelance (perfil `freelance_developer`)
 
-Perfil acotado para developers externos: entorno de desarrollo completo (Git,
-Python, VS Code, Docker, kubectl, gcloud, GH CLI) sin branding corporativo ni
-configuración de escritorio GNOME.
+Perfil acotado para developers externos.
 
-Guía lista para copiar/pegar y enviar a externos:
-**[docs/FREELANCE_DEVELOPER.md](docs/FREELANCE_DEVELOPER.md)**.
+- **Instala**: entorno de desarrollo (Git, Python, VS Code, GH CLI) + tooling de contenedores/cloud (Docker, kubectl, gcloud).
+- **NO instala** (a propósito): branding corporativo ni configuración de escritorio GNOME.
+
+```bash
+# Bootstrap interactivo (elegir "Freelance Developer" en el menú) — ver "Uso Rápido"
+# o, si ya tenés el repo:
+ansible-playbook local.yml -e "profile_override=freelance_developer" -K --verbose
+```
+
+Post-instalación según necesidad: `gh auth login`, `docker login`, `gcloud auth login`.
 
 ---
 
@@ -282,11 +293,8 @@ ansible-playbook local.yml -K -e "skip_gnome_tasks=true"
 
 ## 📚 Documentación Adicional
 
-- **[docs/PROFILES.md](docs/PROFILES.md)** — Guía para elegir perfil + comandos
-- **[docs/FREELANCE_DEVELOPER.md](docs/FREELANCE_DEVELOPER.md)** — Guía rápida para developers freelance (copy/paste)
 - **[docs/TESTING.md](docs/TESTING.md)** — Guía completa de testing con Molecule
-- **[specifications.md](specifications.md)** — Arquitectura y reglas de contribución
-- **[roles/funcional/README.md](roles/funcional/README.md)** — Documentación del rol funcional
+- **[specifications.md](specifications.md)** — Arquitectura, patrones y reglas de contribución
 - **[Makefile](Makefile)** — Todos los comandos disponibles
 
 ---

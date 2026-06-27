@@ -22,6 +22,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     # Herramienta para configurar el idioma (locale)
     locales \
+    # Requerido por el node que usa el hook de pre-commit 'markdownlint'
+    # (node falla con "libatomic.so.1: cannot open shared object file" sin esto)
+    libatomic1 \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Configuramos el locale para evitar errores de Ansible

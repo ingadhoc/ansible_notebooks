@@ -19,6 +19,24 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
   numeración de listas ordenadas (`MD029`). Solo formato, sin cambios de contenido
 - `markdownlint` pasa limpio en todos los `.md` trackeados
 
+### Docs: criterio único y consolidación
+
+- Unificado el criterio de documentación a **3 archivos** (antes había docs por-rol
+  y por-perfil de forma inconsistente): `README.md` (usuarios), `docs/TESTING.md`
+  (testing) y `specifications.md` (arquitectura/contribución)
+- Eliminados por redundantes: `docs/PROFILES.md` (su tabla/comandos ya estaban en el
+  README; se absorbió el árbol de decisión), `docs/FREELANCE_DEVELOPER.md` (su
+  contenido se volcó a la sección freelance del README, ahora autocontenida) y
+  `roles/funcional/README.md` (era el único rol con README; el detalle vive en los
+  comentarios de tareas y en `specifications.md`)
+- Actualizados los enlaces del README; sin links rotos
+
+### DevContainer: libatomic1
+
+- Agregado `libatomic1` al `Dockerfile`. El `node` que usa el hook de pre-commit
+  `markdownlint` falla sin esa lib (`libatomic.so.1: cannot open shared object
+  file`), así que el hook estaba roto en devcontainers nuevos
+
 ## [2026-06-26]
 
 ### Docs: convención de idempotencia en `specifications.md`
