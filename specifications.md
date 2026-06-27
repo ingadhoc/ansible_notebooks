@@ -78,12 +78,13 @@ veracidad** — ni mentir que no cambiaron, ni reportar `changed` cuando no hubo
   previo del artefacto final + `when: not <artefacto>.stat.exists` +
   `changed_when: true` (o el arg `creates:`). En la segunda corrida el `when`
   saltea la tarea, así que da `changed=0` sin haber mentido en la primera.
-  Referencia: `gpg --dearmor` en `browsers.yml`/`gcloud.yml`; descarga→instalación
-  de binarios en `kubectl.yml`/`helm.yml`.
+  Referencia: `gpg --dearmor` en `roles/funcional/tasks/browsers.yml` /
+  `roles/funcional/tasks/gcloud.yml`; descarga→instalación de binarios en
+  `roles/funcional/tasks/kubectl.yml` / `roles/sysadmin/tasks/helm.yml`.
 - **Comando cuya salida indica si cambió → `changed_when` calculado:** evaluar el
   resultado real, p.ej. `changed_when: "'already installed' not in result.stdout"`
   (VS Code), o comparar contra una consulta previa (`localectl status` antes de
-  `set-locale` en `language.yml`).
+  `set-locale` en `roles/funcional/tasks/language.yml`).
 - **Prohibido usar `changed_when: false` para enmascarar no-idempotencia.** Si una
   tarea reportaría `changed` en cada corrida (ej. descargar→procesar→borrar un
   temporal, `dpkg --add-architecture`), hay que **gatearla** contra el estado final,
