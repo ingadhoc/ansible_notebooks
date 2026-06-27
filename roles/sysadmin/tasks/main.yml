@@ -18,15 +18,6 @@
       ansible.builtin.import_tasks: theme_desktop.yml
     - name: SysAdmin - Fixes
       ansible.builtin.import_tasks: fixes.yml
-
-    # adhoc-way (terreno): reutiliza el task del rol developer. Necesita sus vars
-    # (developer_external_repos.claude_code, developer_adhoc_way_node_packages).
-    - name: SysAdmin - Cargar vars del rol developer para adhoc-way
-      ansible.builtin.include_vars: "{{ role_path | dirname }}/developer/vars/main.yml"
-      tags: [adhoc_way]
-      no_log: true
-    - name: SysAdmin - Adhoc Way (terreno)
-      ansible.builtin.include_role:
-        name: developer
-        tasks_from: adhoc_way.yml
-      tags: [adhoc_way]
+    # adhoc-way (terreno) NO se incluye acá: el perfil sysadmin ya ejecuta el rol
+    # 'developer' por dependencia (meta/main.yml), y developer/tasks/main.yml ya
+    # importa adhoc_way.yml. Agregarlo de nuevo duplicaría el trabajo (APT incluido).
