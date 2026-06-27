@@ -4,6 +4,39 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-06-27]
+
+### Tooling: config de markdownlint + limpieza de docs
+
+- Agregado `.markdownlint.json` en la raíz: el repo no tenía archivo de config, así
+  que el editor (extensión de VS Code) aplicaba **todas** las reglas por defecto y
+  mostraba cientos de warnings (sobre todo `MD013/line-length`) que el hook de
+  pre-commit **ya ignora**. La config alinea el editor con la política del proyecto:
+  desactiva `MD013`, `MD033`, `MD041` (igual que el hook) y fija `MD004` a `dash`
+  (viñetas con `-`, la convención del repo)
+- Corregidos los warnings reales (autofixables) en los `.md`: blanks alrededor de
+  headings/listas/fences (`MD022`/`MD032`/`MD031`), lenguaje en fences (`MD040`) y
+  numeración de listas ordenadas (`MD029`). Solo formato, sin cambios de contenido
+- `markdownlint` pasa limpio en todos los `.md` trackeados
+
+### Docs: criterio único y consolidación
+
+- Unificado el criterio de documentación a **3 archivos** (antes había docs por-rol
+  y por-perfil de forma inconsistente): `README.md` (usuarios), `docs/TESTING.md`
+  (testing) y `specifications.md` (arquitectura/contribución)
+- Eliminados por redundantes: `docs/PROFILES.md` (su tabla/comandos ya estaban en el
+  README; se absorbió el árbol de decisión), `docs/FREELANCE_DEVELOPER.md` (su
+  contenido se volcó a la sección freelance del README, ahora autocontenida) y
+  `roles/funcional/README.md` (era el único rol con README; el detalle vive en los
+  comentarios de tareas y en `specifications.md`)
+- Actualizados los enlaces del README; sin links rotos
+
+### DevContainer: libatomic1
+
+- Agregado `libatomic1` al `Dockerfile`. El `node` que usa el hook de pre-commit
+  `markdownlint` falla sin esa lib (`libatomic.so.1: cannot open shared object
+  file`), así que el hook estaba roto en devcontainers nuevos
+
 ## [2026-06-26]
 
 ### Docs: convención de idempotencia en `specifications.md`
