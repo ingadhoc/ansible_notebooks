@@ -22,3 +22,5 @@
       ansible.builtin.import_tasks: ssh.yml
     - name: Developer - GH
       ansible.builtin.import_tasks: gh_cli.yml
+    - name: Developer - Adhoc Way (terreno)
+      ansible.builtin.import_tasks: adhoc_way.yml

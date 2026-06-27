@@ -173,3 +173,26 @@ developer_external_repos:
     suites: "stable"
     components: "main"
     architectures: "amd64"
+  claude_code:
+    # Repo APT oficial de Claude Code (binario self-contained, no requiere Node).
+    # Vía apt no se autoactualiza: las upgrades vienen por 'apt upgrade'.
+    # Verificar contra https://code.claude.com/docs/en/install.md si algo falla.
+    gpg_url: "https://downloads.claude.ai/keys/claude-code.asc"
+    keyring_path: "/etc/apt/keyrings/claude-code.gpg"
+    uris: "https://downloads.claude.ai/claude-code/apt/stable"
+    suites: "stable"
+    components: "main"
+    architectures: "amd64,arm64"
+    filename: "claude-code"
+
+# --- adhoc-way: preparación del terreno ---
+# El rol NO instala adhoc-way ni corre 'adhoc-way init': ambos pasos necesitan la
+# identidad/credenciales del dev (Tuqui), que no existen al aplicar Ansible. Se
+# completan en el primer 'hola' / 'ad install adhoc-way' cuando el dev toma posesión del
+# equipo. Acá solo dejamos: Node/npm + Claude Code + ~/.local/bin en PATH.
+developer_adhoc_way_node_packages:
+  - nodejs
+  - npm
+
+# Gate del task. developer/sysadmin = true por política; freelance = opt-in.
+developer_adhoc_way: true

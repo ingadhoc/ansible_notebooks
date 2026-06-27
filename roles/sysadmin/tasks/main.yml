@@ -18,3 +18,6 @@
       ansible.builtin.import_tasks: theme_desktop.yml
     - name: SysAdmin - Fixes
       ansible.builtin.import_tasks: fixes.yml
+    # adhoc-way (terreno) NO se incluye acá: el perfil sysadmin ya ejecuta el rol
+    # 'developer' por dependencia (meta/main.yml), y developer/tasks/main.yml ya
+    # importa adhoc_way.yml. Agregarlo de nuevo duplicaría el trabajo (APT incluido).
