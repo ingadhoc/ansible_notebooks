@@ -98,3 +98,11 @@
         name: developer
         tasks_from: gh_cli.yml
       tags: [developer, gh, github]
+
+    # Opt-in para freelance: solo con -e "adhoc_way=true".
+    - name: Developer | Adhoc Way (terreno, opt-in)
+      ansible.builtin.include_role:
+        name: developer
+        tasks_from: adhoc_way.yml
+      when: adhoc_way | default(false) | bool
+      tags: [developer, adhoc_way]

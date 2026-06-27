@@ -1,0 +1,110 @@
+---
+# adhoc-way — preparación del terreno (NO instala adhoc-way ni corre 'init').
+#
+# Reparto de responsabilidades (decidido con DevOps, tarea Odoo #67663):
+#   - Playbook (acá, sin credenciales del dev):
+#       * Node/npm en el host (prerrequisito para el futuro 'ad install adhoc-way').
+#       * Claude Code CLI (único agente preinstalado) vía repo APT oficial.
+#       * ~/.local/bin en el PATH del usuario (npm global user-space).
+#   - Primer 'hola' / 'ad install adhoc-way' (con Tuqui authed por el dev):
+#       * 'npm i -g' del paquete adhoc-way (repo privado → necesita auth del dev).
+#       * 'adhoc-way init' (identidad ~/.adhoc/user.json).
+#
+# Gate por perfil: developer/sysadmin = true; freelance_developer = opt-in.
+- name: Adhoc Way | Preparar terreno para adhoc-way
+  tags: adhoc_way
+  when: developer_adhoc_way | default(true) | bool
+  become: true
+  block:
+    - name: Adhoc Way | Asegurar prerrequisitos (https + gnupg para el keyring)
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - gnupg
+          - apt-transport-https
+        state: present
+        cache_valid_time: "{{ funcional_apt_cache_valid_time | default(3600) }}"
+
+    - name: Adhoc Way | Instalar Node.js y npm (prerrequisito de adhoc-way)
+      ansible.builtin.apt:
+        name: "{{ developer_adhoc_way_node_packages }}"
+        state: present
+        cache_valid_time: "{{ funcional_apt_cache_valid_time | default(3600) }}"
+
+    # --- Claude Code CLI (repo APT oficial, binario self-contained) ---
+    - name: Adhoc Way | Crear directorio para claves GPG
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Adhoc Way | Verificar si la clave GPG de Claude Code ya está instalada
+      ansible.builtin.stat:
+        path: "{{ developer_external_repos.claude_code.keyring_path }}"
+      register: developer_claude_code_gpg_key
+
+    - name: Adhoc Way | Descargar la clave GPG de Claude Code
+      ansible.builtin.get_url:
+        url: "{{ developer_external_repos.claude_code.gpg_url }}"
+        dest: /tmp/claude-code.asc
+        mode: "0644"
+      register: developer_claude_code_gpg_download
+      until: developer_claude_code_gpg_download is succeeded
+      retries: 3
+      delay: 2
+      when: not developer_claude_code_gpg_key.stat.exists
+
+    - name: Adhoc Way | Convertir y guardar la clave GPG en el keyring
+      ansible.builtin.command: >-
+        gpg --dearmor -o {{ developer_external_repos.claude_code.keyring_path }} /tmp/claude-code.asc
+      # Gateado por el stat de arriba: solo corre si la clave no existía y, cuando
+      # corre, crea el keyring → el cambio es real (idem code.yml/adhoccli.yml).
+      when: not developer_claude_code_gpg_key.stat.exists
+      changed_when: true
+
+    - name: Adhoc Way | Limpiar archivo temporal de la clave GPG
+      ansible.builtin.file:
+        path: /tmp/claude-code.asc
+        state: absent
+      when: not developer_claude_code_gpg_key.stat.exists
+
+    - name: Adhoc Way | Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/{{ developer_external_repos.claude_code.filename }}.list"
+        state: absent
+
+    - name: Adhoc Way | Añadir el repositorio de Claude Code (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: "/etc/apt/sources.list.d/{{ developer_external_repos.claude_code.filename }}.sources"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ developer_external_repos.claude_code.uris }}
+          Suites: {{ developer_external_repos.claude_code.suites }}
+          Components: {{ developer_external_repos.claude_code.components }}
+          Architectures: {{ developer_external_repos.claude_code.architectures | replace(',', ' ') }}
+          Signed-By: {{ developer_external_repos.claude_code.keyring_path }}
+      register: developer_claude_code_repo
+
+    - name: Adhoc Way | Instalar el paquete 'claude-code'
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: "{{ 0 if (developer_claude_code_repo.changed | default(false)) else (funcional_apt_cache_valid_time | default(3600)) }}"
+        name: claude-code
+        state: present
+
+# --- PATH del usuario (npm global en user-space → ~/.local/bin) ---
+- name: Adhoc Way | Asegurar ~/.local/bin en el PATH del usuario
+  tags: adhoc_way
+  when: developer_adhoc_way | default(true) | bool
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  ansible.builtin.blockinfile:
+    path: "/home/{{ remote_regular_user }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - adhoc-way PATH"
+    block: |
+      # adhoc-way / npm global (user-space)
+      export PATH="$HOME/.local/bin:$PATH"
+    create: false

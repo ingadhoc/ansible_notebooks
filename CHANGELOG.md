@@ -6,6 +6,18 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ## [2026-06-27]
 
+### Feature: preparación de terreno para adhoc-way (Claude Code + Node)
+
+- Nuevo task `roles/developer/tasks/adhoc_way.yml`: instala **Node.js/npm** y la
+  **CLI de Claude Code** (vía repo APT oficial firmado, deb822) y agrega `~/.local/bin`
+  al PATH del usuario. **No** instala el paquete adhoc-way ni corre `adhoc-way init`:
+  ambos necesitan la identidad/credenciales del dev (Tuqui), que no existen al aplicar
+  Ansible → se completan en el primer `hola` / `ad install adhoc-way`
+- Política por perfil: `developer` y `sysadmin` lo aplican por defecto;
+  `freelance_developer` es **opt-in** (`-e "adhoc_way=true"`); `funcional` no lo incluye
+- Cubre el hueco previo: hasta ahora `ansible_notebooks` no preinstalaba ninguna CLI de
+  agente (tarea Odoo #67663)
+
 ### Docs: registrar decisiones de arquitectura en `specifications.md`
 
 - §3.1: documentada la decisión de **mantener el patrón de repos deb822 inline por
