@@ -12,9 +12,13 @@ repos:
 
   # Ansible Linting
   - repo: https://github.com/ansible/ansible-lint
-    rev: v24.2.0
+    rev: v26.4.0
     hooks:
       - id: ansible-lint
+        # El manifest del hook fija language_version python3.14 por precaución,
+        # pero ansible-lint soporta >=3.10. Lo bajamos al python del entorno
+        # (devcontainer Debian 13 trae python3.13) para no exigir un 3.14 ausente.
+        language_version: python3.13
         files: \.(yaml|yml)$
         exclude: ^(molecule/|collections/|\.github/)
         args:
@@ -49,7 +53,7 @@ repos:
 
   # Security checks
   - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.4.0
+    rev: v1.5.0
     hooks:
       - id: detect-secrets
         args: [--baseline, .secrets.baseline]

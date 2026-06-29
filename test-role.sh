@@ -29,44 +29,44 @@ warn() {
 
 check_requirements() {
   log "Verificando requisitos..."
-  
+
   if ! command -v docker &> /dev/null; then
     error "Docker no esta instalado o no esta en el PATH"
   fi
-  
+
   if ! docker ps &> /dev/null; then
     error "No se puede conectar al daemon de Docker. Esta corriendo?"
   fi
-  
+
   if ! command -v molecule &> /dev/null; then
     error "Molecule no esta instalado. Ejecuta: pip install -r requirements-dev.txt"
   fi
-  
+
   success "Todos los requisitos cumplidos"
 }
 
 test_role() {
   local role=$1
   local role_path="roles/${role}"
-  
+
   if [ ! -d "$role_path" ]; then
     error "El rol '${role}' no existe en ${role_path}"
   fi
-  
+
   if [ ! -d "${role_path}/molecule" ]; then
     warn "El rol '${role}' no tiene tests de Molecule configurados todavia"
     return 0
   fi
-  
+
   log "Ejecutando tests para el rol: ${role}"
   cd "$role_path"
-  
+
   if molecule test; then
     success "Tests del rol '${role}' pasaron exitosamente"
   else
     error "Tests del rol '${role}' fallaron"
   fi
-  
+
   cd - > /dev/null
 }
 
@@ -98,7 +98,7 @@ EOF
 
 run_lint() {
   log "Ejecutando linting..."
-  
+
   log "-> Verificando sintaxis YAML..."
   if command -v yamllint &> /dev/null; then
     yamllint .
@@ -106,18 +106,18 @@ run_lint() {
   else
     warn "yamllint no instalado, saltando..."
   fi
-  
+
   log "-> Verificando sintaxis Ansible..."
   ansible-playbook local.yml --syntax-check
   success "Ansible syntax check OK"
-  
+
   log "-> Ejecutando ansible-lint..."
   if command -v ansible-lint &> /dev/null; then
-  ansible-lint local.yml || warn "ansible-lint encontro warnings"
+    ansible-lint local.yml || warn "ansible-lint encontro warnings"
   else
     warn "ansible-lint no instalado, saltando..."
   fi
-  
+
   success "Linting completado"
 }
 

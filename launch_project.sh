@@ -177,13 +177,13 @@ ls -lah "$PIPX_BIN_DIR" | grep ansible || true
 
 if [ ! -f "$ANSIBLE_PLAYBOOK_PATH" ]; then
     error "ansible-playbook no se instaló correctamente en $PIPX_BIN_DIR
-    
+
     Contenido completo de $PIPX_BIN_DIR:
     $(ls -la $PIPX_BIN_DIR 2>/dev/null || echo 'El directorio no existe o está vacío')
-    
+
     Estado de pipx:
     $(runuser -u $SCRIPT_USER -- python3 -m pipx list)
-    
+
     Intenta ejecutar manualmente:
     sudo -u $SCRIPT_USER python3 -m pipx uninstall ansible-core
     sudo -u $SCRIPT_USER python3 -m pipx install ansible-core
@@ -218,11 +218,11 @@ success "Repositorio listo en $REPO_DIR"
 # 10. Instalar colecciones de Ansible
 if [ -f "$REPO_DIR/collections/requirements.yml" ]; then
     log "Instalando colecciones de Ansible..."
-    
+
     if [ ! -f "$ANSIBLE_GALAXY_PATH" ]; then
         error "ansible-galaxy no existe en $ANSIBLE_GALAXY_PATH. No se pueden instalar colecciones."
     fi
-    
+
     runuser -u "$SCRIPT_USER" -- "$ANSIBLE_GALAXY_PATH" install -r "$REPO_DIR/collections/requirements.yml"
     success "Colecciones de Ansible instaladas"
 else
