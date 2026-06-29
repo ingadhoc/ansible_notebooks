@@ -113,7 +113,7 @@ run_lint() {
 
   log "-> Ejecutando ansible-lint..."
   if command -v ansible-lint &> /dev/null; then
-  ansible-lint local.yml || warn "ansible-lint encontro warnings"
+    ansible-lint local.yml || warn "ansible-lint encontro warnings"
   else
     warn "ansible-lint no instalado, saltando..."
   fi
