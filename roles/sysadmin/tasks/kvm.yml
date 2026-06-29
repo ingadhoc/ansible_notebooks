@@ -3,7 +3,6 @@
   tags: kvm
   become: true
   when:
-    - ansible_facts['os_family'] == 'Debian'
     - not (sysadmin_skip_kvm | default(false))
   block:
     - name: KVM | Verificar soporte de virtualización en CPU
