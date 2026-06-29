@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -x `pwd`/.git/hooks/$(basename $0) ];
-then
-    exec `pwd`/.git/hooks/$(basename $0)
+HOOK_PATH="$(pwd)/.git/hooks/$(basename "$0")"
+if [ -x "$HOOK_PATH" ]; then
+    exec "$HOOK_PATH"
 fi
