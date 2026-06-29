@@ -63,19 +63,19 @@ ansible-playbook local.yml --tags "deploy" -K --verbose
        path: /etc/apt/keyrings
        state: directory
        mode: '0755'
-   
+
    - name: Tool | Download and convert GPG key
      ansible.builtin.shell: curl -fsSL <URL> | gpg --dearmor -o /etc/apt/keyrings/tool.gpg
      args:
        creates: /etc/apt/keyrings/tool.gpg
-   
+
    - name: Tool | Add repository
      ansible.builtin.apt_repository:
        repo: "deb [signed-by=/etc/apt/keyrings/tool.gpg] <REPO_URL>"
        state: present
        filename: tool
        update_cache: true
-   
+
    - name: Tool | Install package
      ansible.builtin.apt:
        name: tool-name
