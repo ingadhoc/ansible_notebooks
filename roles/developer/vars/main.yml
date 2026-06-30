@@ -1,7 +1,7 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
-remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"  # noqa: var-naming[no-role-prefix]
-remote_regular_user_uid: "{{ ansible_env.SUDO_UID | default(ansible_user_uid) }}"  # noqa: var-naming[no-role-prefix]
+remote_regular_user: "{{ ansible_facts['env'].SUDO_USER | default(ansible_user) }}"  # noqa: var-naming[no-role-prefix]
+remote_regular_user_uid: "{{ ansible_facts['env'].SUDO_UID | default(ansible_facts['user_uid']) }}"  # noqa: var-naming[no-role-prefix]
 
 # Lista de paquetes base para el perfil de DEV
 developer_packages_base:
@@ -137,7 +137,7 @@ developer_odoo_ctx_repo: "https://github.com/ingadhoc/docker-compose-context.git
 developer_odoo_main_repo: "https://github.com/ingadhoc/docker-compose-odoo.git"
 
 developer_ssh_config:
-  key_path: "/home/{{ remote_regular_user }}/.ssh/id_rsa_{{ remote_regular_user }}@{{ ansible_hostname }}"
+  key_path: "/home/{{ remote_regular_user }}/.ssh/id_rsa_{{ remote_regular_user }}@{{ ansible_facts['hostname'] }}"
   key_type: "rsa"
   key_size: 4096
   config_template_src: "sshconfig.j2"

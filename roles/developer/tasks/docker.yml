@@ -54,10 +54,10 @@
         mode: "0644"
         content: |
           Types: deb
-          URIs: {{ developer_external_repos.docker.repo_url }}/{{ ansible_distribution | lower }}
-          Suites: {{ ansible_distribution_release }}
+          URIs: {{ developer_external_repos.docker.repo_url }}/{{ ansible_facts['distribution'] | lower }}
+          Suites: {{ ansible_facts['distribution_release'] }}
           Components: stable
-          Architectures: {{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }}
+          Architectures: {{ 'amd64' if ansible_facts['architecture'] == 'x86_64' else 'arm64' }}
           Signed-By: {{ developer_external_repos.docker.keyring_path }}
       register: developer_docker_repo
 

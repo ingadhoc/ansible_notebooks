@@ -1,6 +1,6 @@
 ---
 # Usuario genérico para ejecutar algunas tareas (con valor por defecto)
-remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"  # noqa: var-naming[no-role-prefix]
+remote_regular_user: "{{ ansible_facts['env'].SUDO_USER | default(ansible_user) }}"  # noqa: var-naming[no-role-prefix]
 
 # INTERRUPTOR PRINCIPAL PARA EL ESTILO DE ESCRITORIOS VIRTUALES
 # Opciones válidas: 'dynamic' o 'fixed'

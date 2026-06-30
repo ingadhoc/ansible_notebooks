@@ -4,8 +4,6 @@
   become: true
 
   vars:
-    ansible_env:
-      SUDO_USER: testuser
     skip_gnome_tasks: true
     developer_manage_vscode_extensions: false
     developer_manage_vscode_defaults: false
@@ -14,6 +12,10 @@
     developer_skip_remote_dev: true
 
   pre_tasks:
+    - name: Converge | Simulate sudo invocation (SUDO_USER) for the role  # noqa: var-naming[no-role-prefix]
+      ansible.builtin.set_fact:
+        ansible_facts: "{{ ansible_facts | combine({'env': {'SUDO_USER': 'testuser'}}, recursive=True) }}"
+
     - name: Update apt cache
       ansible.builtin.apt:
         update_cache: true

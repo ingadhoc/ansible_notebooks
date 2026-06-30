@@ -29,6 +29,9 @@ provisioner:
       stdout_callback: default
       result_format: yaml
       roles_path: ../../../../roles
+      # Replica el ansible.cfg del repo: testea el escenario post-deprecación
+      # (facts solo vía ansible_facts['...'], sin auto-inyección top-level).
+      inject_facts_as_vars: false
   inventory:
     host_vars:
       debian13-developer:
