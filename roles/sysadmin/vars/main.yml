@@ -1,7 +1,7 @@
 ---
 # Usuario genérico para ejecutar algunas tareas
-remote_regular_user: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"  # noqa: var-naming[no-role-prefix]
-remote_regular_user_uid: "{{ ansible_env.SUDO_UID | default(ansible_user_uid) }}"  # noqa: var-naming[no-role-prefix]
+remote_regular_user: "{{ ansible_facts['env'].SUDO_USER | default(ansible_user) }}"  # noqa: var-naming[no-role-prefix]
+remote_regular_user_uid: "{{ ansible_facts['env'].SUDO_UID | default(ansible_facts['user_uid']) }}"  # noqa: var-naming[no-role-prefix]
 
 # --- Configuración para Pulumi ---
 # Pulumi se instala como binario en /usr/local/bin/pulumi.

@@ -8,7 +8,7 @@
     - ../../vars/main.yml
 
   vars:
-    developer_remote_user: "{{ ansible_env.SUDO_USER | default('testuser') }}"
+    developer_remote_user: "{{ ansible_facts['env'].SUDO_USER | default('testuser') }}"
     docker_group_user: "{{ developer_remote_user }}"
     required_package_sets:
       - "{{ developer_packages_base }}"

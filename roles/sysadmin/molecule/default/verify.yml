@@ -8,7 +8,7 @@
     - ../../vars/main.yml
 
   vars:
-    sysadmin_remote_user: "{{ ansible_env.SUDO_USER | default('testuser') }}"
+    sysadmin_remote_user: "{{ ansible_facts['env'].SUDO_USER | default('testuser') }}"
 
     # Paquetes específicos de sysadmin que deben estar instalados
     required_sysadmin_packages:

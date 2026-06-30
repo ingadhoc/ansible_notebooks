@@ -15,7 +15,7 @@
         update_cache: true
       when:
         - ansible_facts['distribution'] == 'Debian'
-        - not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
+        - not (ansible_facts['virtualization_type'] == 'docker' or skip_dns_config | default(false))
 
     # 2. Habilita el servicio (Garantiza que /run/systemd/resolve/ existe)
     - name: DNS | Asegurar que systemd-resolved esté habilitado y corriendo
@@ -23,7 +23,7 @@
         name: systemd-resolved.service
         enabled: true
         state: started
-      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
+      when: not (ansible_facts['virtualization_type'] == 'docker' or skip_dns_config | default(false))
 
     # 3. Configura el servicio
     - name: DNS | Configurar servidores DNS en resolved.conf
@@ -39,7 +39,7 @@
         - { option: "FallbackDNS", value: "" }
         - { option: "DNSOverTLS", value: "yes" }
       notify: Restart systemd-resolved # Asumo que tienes este handler definido
-      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
+      when: not (ansible_facts['virtualization_type'] == 'docker' or skip_dns_config | default(false))
 
     # 4. Crea el enlace simbólico
     - name: DNS | Asegurar que /etc/resolv.conf sea un enlace a systemd-resolved
@@ -49,4 +49,4 @@
         state: link
         force: true
       notify: Restart systemd-resolved
-      when: not (ansible_virtualization_type == 'docker' or skip_dns_config | default(false))
+      when: not (ansible_facts['virtualization_type'] == 'docker' or skip_dns_config | default(false))
