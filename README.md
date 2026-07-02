@@ -134,6 +134,14 @@ ansible-playbook local.yml -e "profile_override=sysadmin" --tags "kvm" -K --verb
 > # Developer + asistencia
 > ansible-playbook local.yml -e "profile_override=developer" -e "asistencia=true" -K --verbose
 > ```
+>
+> El bloque de Wine + MicroSIP soporta **Debian y Ubuntu** (arma el repo de WineHQ
+> según la distro). Para instalar **solo** MicroSIP sobre una notebook ya entregada,
+> sin reaplicar el resto del perfil, acotá con el tag `asistencia`:
+>
+> ```bash
+> ansible-playbook local.yml -e "asistencia=true" --tags asistencia -K --verbose
+> ```
 
 ---
 

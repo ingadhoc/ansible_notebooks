@@ -1,5 +1,5 @@
 ---
-# Instalación de Wine + MicroSIP para asistencia telefónica (Debian Trixie)
+# Instalación de Wine + MicroSIP para asistencia telefónica (Debian/Ubuntu)
 - name: Wine & MicroSIP | Setup Wine and MicroSIP for assistance
   tags: asistencia
   block:
@@ -28,11 +28,19 @@
         dest: /etc/apt/keyrings/winehq-archive.key
         mode: "0644"
 
-    # ===== 4. Descargar archivo .sources de WineHQ para Trixie =====
-    - name: Wine & MicroSIP | Download WineHQ Trixie sources file
+    # ===== 4. Descargar archivo .sources de WineHQ (Debian/Ubuntu) =====
+    # La URL se arma con los facts de la distro para soportar Debian y Ubuntu.
+    # Se accede vía ansible_facts['...'] porque el repo corre con
+    # inject_facts_as_vars=False (no existe la var top-level ansible_distribution):
+    #   ansible_facts['distribution']         -> Debian | Ubuntu (lower para la ruta)
+    #   ansible_facts['distribution_release'] -> trixie | noble | jammy | ...
+    - name: Wine & MicroSIP | Download WineHQ sources file (Debian/Ubuntu)
+      vars:
+        funcional_winehq_distro: "{{ ansible_facts['distribution'] | lower }}"
+        funcional_winehq_release: "{{ ansible_facts['distribution_release'] }}"
       ansible.builtin.get_url:
-        url: https://dl.winehq.org/wine-builds/debian/dists/trixie/winehq-trixie.sources
-        dest: /etc/apt/sources.list.d/winehq-trixie.sources
+        url: "https://dl.winehq.org/wine-builds/{{ funcional_winehq_distro }}/dists/{{ funcional_winehq_release }}/winehq-{{ funcional_winehq_release }}.sources"
+        dest: "/etc/apt/sources.list.d/winehq-{{ funcional_winehq_release }}.sources"
         mode: "0644"
 
     # ===== 5. Actualizar cache APT con repo WineHQ =====

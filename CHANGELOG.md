@@ -4,6 +4,21 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-06-30]
+
+### Asistencia: `wine-microsip` ahora soporta Debian y Ubuntu
+
+- `funcional/wine-microsip.yml`: la descarga del repo WineHQ estaba clavada a
+  `debian/dists/trixie/winehq-trixie.sources`, así que al aplicar `asistencia=true`
+  sobre una notebook Ubuntu le metía un repo de Debian y rompía APT. Ahora la URL y
+  el `dest` se arman con los facts de la distro (`ansible_distribution | lower` →
+  `debian`/`ubuntu`, `ansible_distribution_release` → `trixie`/`noble`/`jammy`/…),
+  de modo que el bloque `asistencia` corre tal cual en ambas distros
+- Motivación: instalar Wine + MicroSIP en una notebook Ubuntu ya entregada, corriendo
+  `ansible-playbook local.yml -e "asistencia=true" --tags asistencia -K` localmente
+  (el `--tags asistencia` acota la corrida solo al bloque de MicroSIP, sin aplicar el
+  resto del rol `funcional`, que sigue probado solo sobre Debian Trixie)
+
 ## [2026-06-27]
 
 ### Feature: preparación de terreno para adhoc-way (Claude Code + Node)
