@@ -66,6 +66,8 @@ developer_vscode_extension_list:
   - ms-kubernetes-tools.vscode-kubernetes-tools
   # Remote development
   - ms-vscode-remote.vscode-remote-extensionpack
+  # Claude Code (asistente de IA de Anthropic)
+  - anthropic.claude-code
 
 # Paquetes de sistema para el entorno de Python
 developer_python_packages:
