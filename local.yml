@@ -21,6 +21,31 @@
         update_cache: true
       changed_when: false
 
+    - name: Timezone | Configurar zona horaria y sincronización NTP (Debian 13+)
+      tags: always, timezone
+      when: >
+        ansible_facts['distribution'] == 'Debian' and
+        ansible_facts['distribution_version'] | int >= 13
+      block:
+        - name: Timezone | Establecer zona horaria America/Argentina/Buenos_Aires
+          community.general.timezone:
+            name: America/Argentina/Buenos_Aires
+
+        - name: Timezone | Instalar systemd-timesyncd
+          ansible.builtin.apt:
+            name: systemd-timesyncd
+            state: present
+
+        - name: Timezone | Asegurar que systemd-timesyncd esté habilitado y corriendo
+          ansible.builtin.systemd:
+            name: systemd-timesyncd.service
+            enabled: true
+            state: started
+
+        - name: Timezone | Asegurar que la sincronización NTP esté habilitada
+          ansible.builtin.command: timedatectl set-ntp true
+          changed_when: false
+
   # --- SECCIÓN DE ROLES ---
   roles:
     - role: "{{ target_profile }}"
