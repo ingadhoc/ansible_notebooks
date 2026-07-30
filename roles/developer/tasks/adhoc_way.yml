@@ -3,7 +3,7 @@
 #
 # Reparto de responsabilidades (decidido con DevOps, tarea Odoo #67663):
 #   - Playbook (acá, sin credenciales del dev):
-#       * Node/npm en el host (prerrequisito para el futuro 'ad install adhoc-way').
+#       * Node/npm en el host (prerrequisito de 'ad install adhoc-way', adhoc-cli >= 0.1.4).
 #       * Claude Code CLI (único agente preinstalado) vía repo APT oficial.
 #       * ~/.local/bin en el PATH del usuario (npm global user-space).
 #   - Primer 'hola' / 'ad install adhoc-way' (con Tuqui authed por el dev):
