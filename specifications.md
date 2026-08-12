@@ -142,6 +142,33 @@ no en READMEs por rol. NO agregar `roles/<rol>/README.md` ni guías por-perfil e
 `docs/`; si algo es relevante para usuarios va al `README.md`, y si es arquitectura o
 una regla de contribución, acá.
 
+### 3.7. Gestión de Energía (bloque `Power` de `local.yml`)
+
+Decisiones tomadas al sumar la gestión de energía, documentadas para no re-litigarlas:
+
+- **Vive en `pre_tasks` de `local.yml`, no en un rol ni en `funcional`.** Es transversal
+  a todos los perfiles, y `funcional` no alcanza porque `freelance_developer` corre un
+  subset con `tasks_from` sin heredarlo vía `meta`. Se evaluó un rol `power` propio y se
+  descartó: no hay superficie suficiente para justificar la estructura.
+- **Se aplica a la flota solo lo que tiene beneficio medido y riesgo bajo:** umbrales de
+  carga y fact de salud. Quedó deliberadamente **afuera**, como opt-in a decidir con IT:
+  instalar TLP (remueve `power-profiles-daemon` y con él el selector de perfiles de
+  GNOME), `CPU_BOOST_ON_BAT=0` (da ~14 W pero deja la CPU en el base clock a batería —
+  un costo de rendimiento que no se impone por default), `USB_AUTOSUSPEND` (rompe mouse
+  y headsets si no se arma un `USB_DENYLIST`) y el runtime PM de PCI/ASPM
+  (**medido: 0.16 W**, no justifica el riesgo de regresión en una flota).
+- **Los umbrales se re-aplican con un servicio en cada boot**, no con un `echo` one-shot:
+  el EC no los persiste entre reinicios en todos los modelos.
+- **El polling de TLP no es capricho.** En equipos que cargan por USB-C y no exponen un
+  `power_supply` de tipo `Mains`, el kernel no emite uevents de `power_supply`
+  (verificado con `udevadm monitor --subsystem-match=power_supply`), así que ni TLP ni
+  una regla udev propia detectan el cambio de fuente. El timer cada 30s es el único
+  mecanismo que funciona; el script compara contra un state file en `/run` para no
+  re-aplicar cuando no hubo transición.
+- **Molecule no cubre este bloque:** en Docker no existe `/sys/class/power_supply/BAT0`,
+  así que todo se auto-skipea, y tampoco hay escenario de Molecule para el playbook raíz.
+  La verificación fue manual contra el sysfs de un equipo real.
+
 ---
 
 ## 4. Testing Strategy (Molecule)

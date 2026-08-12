@@ -4,6 +4,31 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-08-12]
+
+### Feature: gestión de energía y salud de batería
+
+- Nuevo bloque `Power` en los `pre_tasks` de `local.yml` (tag `power`), transversal a
+  todos los perfiles. No va en `funcional` porque `freelance_developer` corre un subset
+  con `tasks_from` y no lo heredaría
+- **Umbrales de carga 75/80%** vía `/usr/local/bin/adhoc-battery-thresholds` +
+  servicio `adhoc-battery-thresholds.service`, que los re-aplica en cada boot porque el
+  EC no los persiste. Configurables con `adhoc_battery_charge_start` /
+  `adhoc_battery_charge_stop`
+- **Fact local `ansible_local.battery`** (`/etc/ansible/facts.d/battery.fact`) con
+  `full`, `design`, `cycle_count` y `health_pct`, para tener salud de batería en el
+  inventario de la flota. El playbook avisa si la salud queda bajo
+  `adhoc_battery_health_warn` (80%)
+- **Solo si TLP ya está instalado:** fuerza `CPU_BOOST_ON_AC=1`. Sin eso, un `tlp bat`
+  deja el turbo boost apagado también en AC y la CPU queda clavada en el base clock
+- **Solo si el equipo no expone un `power_supply` tipo `Mains`** (carga por USB-C):
+  instala `tlp-powersource.timer`, que aplica el perfil TLP por polling cada 30s. Esas
+  máquinas no emiten uevents de `power_supply`, así que TLP nunca conmuta de perfil solo
+- No instala TLP ni toca `power-profiles-daemon`. Todo el bloque se auto-skipea en
+  equipos sin batería, así que no afecta desktops ni los contenedores de Molecule
+- Medido en un ThinkPad E14 Gen 4 (Ryzen 7 5825U): 31 W → 11.34 W de consumo, o sea de
+  55 min a 2 h 30 de autonomía
+
 ## [2026-06-27]
 
 ### Feature: preparación de terreno para adhoc-way (Claude Code + Node)

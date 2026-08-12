@@ -221,6 +221,39 @@ ansible-playbook assign_laptop.yml \
 
 ---
 
+## 🔋 Energía y Batería
+
+El playbook configura esto solo, en cualquier perfil (tag `power`). Se saltea entero en
+equipos sin batería.
+
+- **Umbrales de carga 75/80%:** la batería deja de cargar al 80% y no reanuda hasta bajar
+  del 75%. Es deliberado — mantener una batería al 100% permanentemente la degrada mucho
+  más rápido. Si necesitás autonomía completa para un viaje:
+
+  ```bash
+  echo 100 | sudo tee /sys/class/power_supply/BAT0/charge_control_end_threshold
+  ```
+
+  Eso vuelve a 80 en el próximo boot. Para cambiarlo de forma permanente, pasale
+  `-e "adhoc_battery_charge_stop=100"` al playbook.
+
+- **Salud de la batería:** queda expuesta como fact de Ansible, consultable en cualquier
+  momento:
+
+  ```bash
+  sudo /etc/ansible/facts.d/battery.fact
+  # {"full": 35800000, "design": 45730000, "cycle_count": 504, "health_pct": 78.3}
+  ```
+
+  `health_pct` es la capacidad actual contra la de fábrica. Por debajo del 80% conviene
+  evaluar el reemplazo; el playbook lo avisa al correr.
+
+Si el equipo tiene **TLP** instalado (no lo instala el playbook), además se asegura de que
+el turbo boost se restaure al enchufar, y en equipos que cargan por USB-C se instala un
+timer que conmuta el perfil de TLP según la fuente de energía.
+
+---
+
 ## 🧪 Testing y Desarrollo
 
 Este proyecto utiliza **Molecule** con Docker para tests automatizados sobre
@@ -254,6 +287,11 @@ gpasswd -a tu_usuario sudo
 exit
 sudo reboot
 ```
+
+### La batería no carga más allá del 80%
+
+Es intencional, no es una falla. Ver [Energía y Batería](#-energía-y-batería) para el
+motivo y cómo subir el tope si necesitás autonomía completa.
 
 ### Error: Paquete no disponible en Debian 13
 

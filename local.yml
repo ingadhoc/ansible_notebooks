@@ -5,6 +5,9 @@
 
   vars:
     target_profile: "{{ profile_override | default('funcional') }}"
+    adhoc_battery_charge_start: 75
+    adhoc_battery_charge_stop: 80
+    adhoc_battery_health_warn: 80
 
   # --- TAREAS PREVIAS ---
   pre_tasks:
@@ -45,6 +48,228 @@
         - name: Timezone | Asegurar que la sincronización NTP esté habilitada
           ansible.builtin.command: timedatectl set-ntp true
           changed_when: false
+
+    - name: Power | Salud de batería y umbrales de carga
+      tags: always, power
+      block:
+        - name: Power | Detectar si el equipo tiene batería
+          ansible.builtin.stat:
+            path: /sys/class/power_supply/BAT0
+          register: adhoc_battery
+
+        - name: Power | Configuración dependiente de batería
+          when: adhoc_battery.stat.exists
+          block:
+            - name: Power | Crear directorio de facts locales
+              ansible.builtin.file:
+                path: /etc/ansible/facts.d
+                state: directory
+                owner: root
+                group: root
+                mode: "0755"
+
+            - name: Power | Instalar fact de salud de batería
+              ansible.builtin.copy:
+                dest: /etc/ansible/facts.d/battery.fact
+                owner: root
+                group: root
+                mode: "0755"
+                content: |
+                  #!/bin/sh
+                  # Expone la salud de la batería como ansible_local.battery
+                  B=/sys/class/power_supply/BAT0
+                  [ -d "$B" ] || { echo '{}'; exit 0; }
+                  # Normaliza a 0 lo vacío o no numérico: sysfs puede devolver un
+                  # archivo vacío, y eso emitiría un JSON inválido
+                  read_num() {
+                    v=$(cat "$1" 2>/dev/null || cat "$2" 2>/dev/null)
+                    case "$v" in
+                      '' | *[!0-9]*) echo 0 ;;
+                      *) echo "$v" ;;
+                    esac
+                  }
+                  full=$(read_num "$B/energy_full" "$B/charge_full")
+                  design=$(read_num "$B/energy_full_design" "$B/charge_full_design")
+                  cycles=$(read_num "$B/cycle_count" /dev/null)
+                  health=0
+                  [ "$design" -gt 0 ] && health=$(awk "BEGIN{printf \"%.1f\", 100*$full/$design}")
+                  printf '{"full": %s, "design": %s, "cycle_count": %s, "health_pct": %s}\n' \
+                    "$full" "$design" "$cycles" "$health"
+
+            - name: Power | Recolectar los facts locales recién instalados
+              ansible.builtin.setup:
+                filter: ansible_local
+
+            - name: Power | Reportar salud de la batería
+              ansible.builtin.debug:
+                msg: >-
+                  Batería al {{ adhoc_bat.health_pct | default('n/d') }}% de su capacidad de fábrica,
+                  {{ adhoc_bat.cycle_count | default('n/d') }} ciclos.
+              vars:
+                adhoc_bat: "{{ ansible_local.battery | default({}) }}"
+
+            - name: Power | Avisar si la batería está degradada
+              ansible.builtin.debug:
+                msg: >-
+                  ATENCIÓN: batería al {{ ansible_local.battery.health_pct }}% con
+                  {{ ansible_local.battery.cycle_count }} ciclos. Evaluar reemplazo.
+              when:
+                - ansible_local.battery.health_pct is defined
+                - ansible_local.battery.health_pct | float < adhoc_battery_health_warn | float
+
+            - name: Power | Detectar si el equipo expone umbrales de carga
+              ansible.builtin.stat:
+                path: /sys/class/power_supply/BAT0/charge_control_end_threshold
+              register: adhoc_charge_threshold
+
+            - name: Power | Umbrales de carga persistentes
+              when: adhoc_charge_threshold.stat.exists
+              block:
+                - name: Power | Instalar el script de umbrales de carga
+                  ansible.builtin.copy:
+                    dest: /usr/local/bin/adhoc-battery-thresholds
+                    owner: root
+                    group: root
+                    mode: "0755"
+                    content: |
+                      #!/bin/sh
+                      # El start debe escribirse antes del stop: el EC valida start < stop
+                      for b in /sys/class/power_supply/BAT*; do
+                        [ -w "$b/charge_control_start_threshold" ] &&
+                          echo {{ adhoc_battery_charge_start }} > "$b/charge_control_start_threshold"
+                        [ -w "$b/charge_control_end_threshold" ] &&
+                          echo {{ adhoc_battery_charge_stop }} > "$b/charge_control_end_threshold"
+                      done
+                      exit 0
+                  register: adhoc_thresholds_script
+
+                - name: Power | Instalar el servicio de umbrales de carga
+                  ansible.builtin.copy:
+                    dest: /etc/systemd/system/adhoc-battery-thresholds.service
+                    owner: root
+                    group: root
+                    mode: "0644"
+                    content: |
+                      [Unit]
+                      Description=Umbrales de carga de bateria (Adhoc)
+                      After=multi-user.target
+
+                      [Service]
+                      Type=oneshot
+                      RemainAfterExit=yes
+                      ExecStart=/usr/local/bin/adhoc-battery-thresholds
+
+                      [Install]
+                      WantedBy=multi-user.target
+                  register: adhoc_thresholds_unit
+
+                - name: Power | Habilitar el servicio de umbrales de carga
+                  ansible.builtin.systemd:
+                    name: adhoc-battery-thresholds.service
+                    daemon_reload: true
+                    enabled: true
+                    state: started
+
+                - name: Power | Re-aplicar los umbrales si cambió la configuración
+                  ansible.builtin.systemd:
+                    name: adhoc-battery-thresholds.service
+                    state: restarted
+                  when: adhoc_thresholds_script is changed or adhoc_thresholds_unit is changed
+
+            - name: Power | Detectar si TLP está instalado
+              ansible.builtin.stat:
+                path: /etc/tlp.conf
+              register: adhoc_tlp_conf
+
+            - name: Power | Ajustes para equipos con TLP
+              when: adhoc_tlp_conf.stat.exists
+              block:
+                # Sin esto, un `tlp bat` deja el turbo apagado también en AC.
+                - name: Power | Asegurar que TLP restaure el turbo boost en AC
+                  ansible.builtin.lineinfile:
+                    path: /etc/tlp.conf
+                    regexp: '^#?\s*CPU_BOOST_ON_AC='
+                    line: CPU_BOOST_ON_AC=1
+                    state: present
+
+                # grep sale 1 si ningún device es Mains (equipos que cargan por USB-C):
+                # es el caso esperado y lo resuelve el `when` del bloque siguiente.
+                - name: Power | Detectar si el equipo expone una fuente AC (tipo Mains)
+                  ansible.builtin.shell: grep -lx Mains /sys/class/power_supply/*/type 2>/dev/null
+                  register: adhoc_ac_device
+                  changed_when: false
+                  failed_when: false
+
+                # Sin device Mains no hay uevents de power_supply: TLP nunca conmuta de perfil.
+                - name: Power | Conmutación de perfil TLP por polling
+                  when: adhoc_ac_device.stdout | trim == ''
+                  block:
+                    - name: Power | Instalar el chequeo de fuente de energía
+                      ansible.builtin.copy:
+                        dest: /usr/local/bin/tlp-powersource
+                        owner: root
+                        group: root
+                        mode: "0755"
+                        content: |
+                          #!/bin/sh
+                          S=/run/tlp-powersource.state
+                          case "$(cat /sys/class/power_supply/BAT0/status)" in
+                            Discharging) m=bat ;;
+                            *)           m=ac  ;;
+                          esac
+                          [ -r "$S" ] && [ "$(cat "$S")" = "$m" ] && exit 0
+                          printf '%s' "$m" > "$S"
+                          /usr/sbin/tlp auto
+
+                    - name: Power | Instalar unidades del chequeo de fuente
+                      ansible.builtin.copy:
+                        dest: "/etc/systemd/system/tlp-powersource.{{ item.ext }}"
+                        owner: root
+                        group: root
+                        mode: "0644"
+                        content: "{{ item.content }}"
+                      loop:
+                        - ext: service
+                          content: |
+                            [Unit]
+                            Description=Aplicar perfil TLP segun la fuente de energia
+
+                            [Service]
+                            Type=oneshot
+                            ExecStart=/usr/local/bin/tlp-powersource
+                        - ext: timer
+                          content: |
+                            [Unit]
+                            Description=Chequear la fuente de energia cada 30s
+
+                            [Timer]
+                            OnBootSec=30
+                            OnUnitActiveSec=30
+                            AccuracySec=5
+
+                            [Install]
+                            WantedBy=timers.target
+                      loop_control:
+                        label: "tlp-powersource.{{ item.ext }}"
+                      register: adhoc_powersource_units
+
+                    - name: Power | Habilitar el timer de fuente de energía
+                      ansible.builtin.systemd:
+                        name: tlp-powersource.timer
+                        daemon_reload: true
+                        enabled: true
+                        state: started
+
+                    - name: Power | Reiniciar el timer si cambiaron las unidades
+                      ansible.builtin.systemd:
+                        name: tlp-powersource.timer
+                        state: restarted
+                      when: adhoc_powersource_units is changed
+
+                    - name: Power | Quitar la regla udev obsoleta
+                      ansible.builtin.file:
+                        path: /etc/udev/rules.d/86-tlp-bat0.rules
+                        state: absent
 
   # --- SECCIÓN DE ROLES ---
   roles:
