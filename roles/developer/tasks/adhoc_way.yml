@@ -88,7 +88,18 @@
           Signed-By: {{ developer_external_repos.claude_code.keyring_path }}
       register: developer_claude_code_repo
 
+    # ~/.local/bin gana en el PATH: si el dev ya tiene Claude Code ahí, el
+    # paquete APT queda tapado y solo aporta una segunda versión que confunde.
+    - name: Adhoc Way | Detectar Claude Code en user-space del dev
+      ansible.builtin.stat:
+        path: "/home/{{ remote_regular_user }}/.local/bin/claude"
+        # Un symlink roto no cuenta como Claude Code: sin follow daría
+        # exists=true y dejaría al dev sin ninguno de los dos.
+        follow: true
+      register: developer_claude_user_space
+
     - name: Adhoc Way | Instalar el paquete 'claude-code'
+      when: not developer_claude_user_space.stat.exists
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: "{{ 0 if (developer_claude_code_repo.changed | default(false)) else (funcional_apt_cache_valid_time | default(3600)) }}"
