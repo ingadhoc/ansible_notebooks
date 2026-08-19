@@ -25,7 +25,7 @@
       changed_when: false
 
     - name: Timezone | Configurar zona horaria y sincronización NTP (Debian 13+)
-      tags: always, timezone
+      tags: timezone
       when: >
         ansible_facts['distribution'] == 'Debian' and
         ansible_facts['distribution_version'] | int >= 13
@@ -50,7 +50,7 @@
           changed_when: false
 
     - name: Power | Salud de batería y umbrales de carga
-      tags: always, power
+      tags: power
       block:
         - name: Power | Detectar si el equipo tiene batería
           ansible.builtin.stat:
