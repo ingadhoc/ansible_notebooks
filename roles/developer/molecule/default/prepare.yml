@@ -11,9 +11,13 @@
       register: developer_systemd_check
       failed_when: developer_systemd_check.rc != 0
 
+    # uid explícito: el postinst de adhoccli copia .adhoc_bash_ps.sh al home del
+    # UID 1000, igual que en una notebook real. Sin fijarlo, que el test
+    # encuentre el dotfile depende de que useradd asigne justo ese uid.
     - name: Prepare | Create test user for SUDO_USER simulation
       ansible.builtin.user:
         name: testuser
+        uid: 1000
         state: present
         create_home: true
         shell: /bin/bash
