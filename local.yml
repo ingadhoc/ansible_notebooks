@@ -18,11 +18,55 @@
         state: directory
         mode: "1777"
 
+    # El apt de Debian 13 (verificador sqv) rechaza las firmas del repo de
+    # Kubernetes anteriores a v1.32 ("Signature Packet v3 is not considered
+    # secure since 2026-02-01"). Con una de esas configurada, `apt update`
+    # entero da error y el play moría acá, ANTES de que kubectl.yml pudiera
+    # reescribir el repo a la versión vigente. Se saca el repo viejo primero;
+    # kubectl.yml escribe el bueno más adelante en la misma corrida.
+    # Solo en Debian 13+: el rechazo es del verificador sqv (apt 3.x). En
+    # Debian 12 / Ubuntu 22-24 ese repo viejo todavía funciona, y borrarlo en
+    # una corrida parcial (--tags sin kubectl) lo dejaría sin reemplazo.
+    - name: Apt | Detectar repos de Kubernetes con firma vieja (<= v1.31)
+      tags: always
+      when: >
+        ansible_facts['distribution'] == 'Debian' and
+        ansible_facts['distribution_version'] | int >= 13
+      ansible.builtin.find:
+        paths: /etc/apt/sources.list.d
+        patterns: "kubernetes*"
+        # OJO: `contains` de find ancla al inicio de línea (re.match), por
+        # eso el .* adelante — sin él no matchea nunca.
+        contains: '.*stable:/v1\.(\d|[12]\d|3[01])/.*'
+      register: apt_k8s_repos_viejos
+
+    - name: Apt | Eliminar los repos de Kubernetes con firma vieja
+      tags: always
+      when: apt_k8s_repos_viejos is not skipped
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ apt_k8s_repos_viejos.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+
+    # Tolerante a propósito: un repo de terceros roto no debe voltear todo el
+    # provisioning — cada task de instalación actualiza su propia caché.
     - name: Actualizar caché de paquetes
       tags: always
       ansible.builtin.apt:
         update_cache: true
       changed_when: false
+      register: apt_cache_inicial
+      failed_when: false
+
+    - name: Apt | Avisar si la caché inicial no se pudo actualizar
+      tags: always
+      ansible.builtin.debug:
+        msg: >-
+          WARNING: el apt update inicial falló ({{ apt_cache_inicial.msg | default('sin detalle') }}).
+          Se sigue igual; revisar los sources de terceros si algo no instala.
+      when: "'Failed to update' in (apt_cache_inicial.msg | default(''))"
 
     - name: Timezone | Configurar zona horaria y sincronización NTP (Debian 13+)
       tags: timezone
@@ -45,9 +89,32 @@
             enabled: true
             state: started
 
+        # `set-ntp` habla con systemd-timedated, que cachea la lista de
+        # unidades NTP: si timesyncd se instaló recién (task anterior), puede
+        # responder "Failed to set ntp: NTP not supported". Se tolera el primer
+        # intento, se refresca timedated y se reintenta; el reintento sí falla
+        # de verdad si algo sigue mal. En containers (molecule) se saltea:
+        # systemd-timesyncd trae ConditionVirtualization=!container.
         - name: Timezone | Asegurar que la sincronización NTP esté habilitada
-          ansible.builtin.command: timedatectl set-ntp true
-          changed_when: false
+          when: ansible_facts['virtualization_type'] | default('NA') not in ['docker', 'container', 'containerd', 'podman', 'lxc']
+          block:
+            - name: Timezone | Activar NTP (hora automática)
+              ansible.builtin.command: timedatectl set-ntp true
+              register: timezone_set_ntp
+              changed_when: false
+              failed_when: false
+
+            - name: Timezone | Refrescar timedated y reintentar
+              when: timezone_set_ntp.rc != 0
+              block:
+                - name: Timezone | Reiniciar systemd-timedated
+                  ansible.builtin.systemd:
+                    name: systemd-timedated.service
+                    state: restarted
+
+                - name: Timezone | Activar NTP (reintento)
+                  ansible.builtin.command: timedatectl set-ntp true
+                  changed_when: false
 
     - name: Power | Salud de batería y umbrales de carga
       tags: power
