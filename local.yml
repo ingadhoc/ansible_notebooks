@@ -251,7 +251,7 @@
                             WantedBy=timers.target
                       loop_control:
                         label: "tlp-powersource.{{ item.ext }}"
-                      register: adhoc_powersource_units
+                      notify: Power | Reiniciar el timer de fuente de energía
 
                     - name: Power | Habilitar el timer de fuente de energía
                       ansible.builtin.systemd:
@@ -260,16 +260,16 @@
                         enabled: true
                         state: started
 
-                    - name: Power | Reiniciar el timer si cambiaron las unidades
-                      ansible.builtin.systemd:
-                        name: tlp-powersource.timer
-                        state: restarted
-                      when: adhoc_powersource_units is changed
-
                     - name: Power | Quitar la regla udev obsoleta
                       ansible.builtin.file:
                         path: /etc/udev/rules.d/86-tlp-bat0.rules
                         state: absent
+
+  handlers:
+    - name: Power | Reiniciar el timer de fuente de energía
+      ansible.builtin.systemd:
+        name: tlp-powersource.timer
+        state: restarted
 
   # --- SECCIÓN DE ROLES ---
   roles:
