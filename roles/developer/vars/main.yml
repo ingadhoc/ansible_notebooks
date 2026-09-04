@@ -191,10 +191,37 @@ developer_external_repos:
 # El rol NO instala adhoc-way ni corre 'adhoc-way init': ambos pasos necesitan la
 # identidad/credenciales del dev (Tuqui), que no existen al aplicar Ansible. Se
 # completan en el primer 'hola' / 'ad install adhoc-way' cuando el dev toma posesión del
-# equipo. Acá solo dejamos: Node/npm + Claude Code + ~/.local/bin en PATH.
+# equipo. Acá solo dejamos: Node/npm + los agentes IA + ~/.local/bin en PATH.
 developer_adhoc_way_node_packages:
   - nodejs
   - npm
 
 # Gate del task. developer/sysadmin = true por política; freelance = opt-in.
 developer_adhoc_way: true
+
+# --- Agentes IA (roles/developer/tasks/agentes_ia.yml) ---
+# Gate por agente. Los tres van por default: el dev elige con cuál trabaja, pero
+# la notebook no debería obligarlo a instalar nada a mano para poder elegir.
+developer_agente_claude: true
+developer_agente_codex: true
+developer_agente_agy: true
+
+# Los ejecutables que la verificación del terreno espera encontrar en el PATH del
+# dev. Se arma desde los gates para que apagar un agente no haga fallar el assert.
+developer_agentes_esperados: >-
+  {{ (['claude'] if developer_agente_claude | bool else [])
+     + (['codex'] if developer_agente_codex | bool else [])
+     + (['agy'] if developer_agente_agy | bool else []) }}
+
+# Codex no publica repo APT ni binario oficial: npm es el camino soportado, y se
+# instala con el prefix del dev para no correr los lifecycle scripts del paquete
+# como root en cada convergencia. Mismo directorio que el rol ya pone en el PATH.
+developer_codex_npm_package: "@openai/codex"
+developer_npm_user_prefix: "/home/{{ remote_regular_user }}/.local"
+
+# agy tampoco está en npm (el paquete '@google/antigravity' no existe) ni tiene
+# repo APT: solo el instalador oficial, que resuelve plataforma, baja el binario
+# y lo verifica por SHA512 contra su manifest. Ojo con la URL: el path es
+# /cli/install.sh — https://antigravity.google/install.sh da 404.
+developer_agy_installer_url: "https://antigravity.google/cli/install.sh"
+developer_agy_bin: "/home/{{ remote_regular_user }}/.local/bin/agy"

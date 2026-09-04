@@ -1,0 +1,216 @@
+---
+# Agentes IA de la notebook — Claude Code, Codex y Antigravity (agy).
+#
+# Se importa desde adhoc_way.yml, después de Node/npm (Codex lo necesita) y antes
+# del bloque de PATH: el instalador de agy agrega su propio export de ~/.local/bin
+# al .bashrc sin chequear si ya está, así que corriendo primero deja al gate de
+# 'Asegurar ~/.local/bin en el PATH' viendo la línea y salteándose — una sola vez
+# el export, venga de donde venga.
+#
+# Cada agente se instala por su camino nativo, y eso define cómo converge:
+#   - claude: paquete APT firmado, 'state: latest'. Upgrades por 'apt upgrade'.
+#   - codex:  npm con el prefix del dev (~/.local), 'state: latest'. Converge al
+#             re-correr el rol, sin lifecycle scripts corriendo como root.
+#   - agy:    binario en ~/.local/bin del dev. No está en npm ni tiene repo APT:
+#             solo el instalador oficial. Se autoactualiza en background, y como
+#             vive en el home del dev tiene permiso para hacerlo — por eso va
+#             per-user y no en /usr/local/bin. 'agy update' lo converge acá.
+#
+# Los tres se saltean si el dev ya los puede ejecutar (nvm, instalador nativo,
+# ~/.local): instalar una segunda copia solo agrega dos binarios peleando por el
+# PATH. Gates por agente: developer_agente_claude / _codex / _agy.
+
+- name: Agentes IA | Claude Code
+  tags: [adhoc_way, agentes_ia]
+  when: developer_agente_claude | default(true) | bool
+  become: true
+  block:
+    # --- Claude Code CLI (repo APT oficial, binario self-contained) ---
+    - name: Agentes IA | Crear directorio para claves GPG
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    # La clave se refresca SIEMPRE (no solo si falta): si Anthropic la rota, una
+    # notebook vieja queda con 'apt update' roto y el rol tiene que repararla.
+    # force + register da las dos cosas: baja siempre, pero solo reporta 'changed'
+    # si el contenido cambió — así el dearmor corre únicamente cuando hace falta
+    # y el rol queda idempotente.
+    - name: Agentes IA | Descargar la clave GPG de Claude Code
+      ansible.builtin.get_url:
+        url: "{{ developer_external_repos.claude_code.gpg_url }}"
+        dest: /etc/apt/keyrings/claude-code.asc
+        mode: "0644"
+        force: true
+      register: developer_claude_code_gpg_download
+      until: developer_claude_code_gpg_download is succeeded
+      retries: 3
+      delay: 2
+
+    - name: Agentes IA | Verificar si el keyring de Claude Code está en su lugar
+      ansible.builtin.stat:
+        path: "{{ developer_external_repos.claude_code.keyring_path }}"
+      register: developer_claude_code_keyring
+
+    - name: Agentes IA | Convertir la clave GPG al keyring
+      ansible.builtin.command: >-
+        gpg --batch --yes --dearmor
+        -o {{ developer_external_repos.claude_code.keyring_path }}
+        /etc/apt/keyrings/claude-code.asc
+      when: developer_claude_code_gpg_download is changed or not developer_claude_code_keyring.stat.exists
+      changed_when: true
+
+    - name: Agentes IA | Eliminar el repositorio legacy en formato .list (migración a deb822)
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/{{ developer_external_repos.claude_code.filename }}.list"
+        state: absent
+
+    - name: Agentes IA | Añadir el repositorio de Claude Code (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: "/etc/apt/sources.list.d/{{ developer_external_repos.claude_code.filename }}.sources"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ developer_external_repos.claude_code.uris }}
+          Suites: {{ developer_external_repos.claude_code.suites }}
+          Components: {{ developer_external_repos.claude_code.components }}
+          Architectures: {{ developer_external_repos.claude_code.architectures | replace(',', ' ') }}
+          Signed-By: {{ developer_external_repos.claude_code.keyring_path }}
+      register: developer_claude_code_repo
+
+    # Si el dev ya puede ejecutar Claude Code (lo tenga donde lo tenga: ~/.local,
+    # el prefix de nvm, el instalador nativo), el paquete APT solo agregaría una
+    # segunda versión peleando por el PATH. Preguntamos por lo que resuelve su
+    # shell, no por una ruta fija.
+    #
+    # bash -i, no -l: el .bashrc de Debian corta en seco si el shell no es
+    # interactivo ("If not running interactively, don't do anything"), y tanto
+    # el bloque de PATH de más abajo como la inicialización de nvm viven después
+    # de ese guard. Con -l no veríamos ninguno de los dos.
+    - name: Agentes IA | Detectar si el dev ya puede ejecutar Claude Code
+      become: true
+      become_user: "{{ remote_regular_user }}"
+      ansible.builtin.command: bash -ic 'command -v claude'
+      register: developer_claude_user_space
+      changed_when: false
+      failed_when: false
+
+    # state: latest, no present: 'present' solo garantiza que exista, así que una
+    # notebook se queda con la versión del día que se provisionó. La spec 0001 de
+    # devops-it dice que las upgrades vienen por apt — re-correr el rol converge.
+    - name: Agentes IA | Instalar el paquete 'claude-code'
+      when: developer_claude_user_space.rc != 0
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: "{{ 0 if (developer_claude_code_repo.changed | default(false)) else (funcional_apt_cache_valid_time | default(3600)) }}"
+        name: claude-code
+        state: latest
+
+- name: Agentes IA | Codex CLI
+  tags: [adhoc_way, agentes_ia]
+  when: developer_agente_codex | default(true) | bool
+  become: true
+  block:
+    # Mismo criterio que Claude: preguntamos por lo que resuelve el shell del dev,
+    # no por una ruta fija. bash -i porque el .bashrc de Debian corta si el shell
+    # no es interactivo, y nvm se inicializa después de ese guard.
+    - name: Agentes IA | Detectar si el dev ya puede ejecutar Codex
+      become: true
+      become_user: "{{ remote_regular_user }}"
+      ansible.builtin.command: bash -ic 'command -v codex'
+      register: developer_codex_user_space
+      changed_when: false
+      failed_when: false
+
+    # Codex no tiene repo APT ni binario oficial: el camino soportado es npm.
+    #
+    # Va al user-space del dev y no global como root, aunque root sería más
+    # cómodo: 'state: latest' vuelve a resolver el paquete contra el registry en
+    # cada corrida, y npm ejecuta los lifecycle scripts de lo que baje. Con root
+    # eso es ejecución privilegiada y escritura en /usr/local cada vez que el rol
+    # converge; con el prefix del dev, el radio de daño de un paquete comprometido
+    # es el mismo que ya tiene agy — la cuenta del dev, no el equipo.
+    #
+    # ~/.local/bin es además el directorio que este rol ya se ocupa de dejar en el
+    # PATH, así que el binario queda donde el resto del terreno lo espera.
+    - name: Agentes IA | Instalar Codex CLI (npm, user-space del dev)
+      when: developer_codex_user_space.rc != 0
+      become: true
+      become_user: "{{ remote_regular_user }}"
+      environment:
+        NPM_CONFIG_PREFIX: "{{ developer_npm_user_prefix }}"
+      community.general.npm:
+        name: "{{ developer_codex_npm_package }}"
+        global: true
+        state: latest
+
+- name: Agentes IA | Antigravity CLI (agy)
+  tags: [adhoc_way, agentes_ia]
+  when: developer_agente_agy | default(true) | bool
+  become: true
+  become_user: "{{ remote_regular_user }}"
+  block:
+    - name: Agentes IA | Detectar si el dev ya puede ejecutar agy
+      ansible.builtin.command: bash -ic 'command -v agy'
+      register: developer_agy_user_space
+      changed_when: false
+      failed_when: false
+
+    - name: Agentes IA | Ver el estado del binario de agy
+      ansible.builtin.stat:
+        path: "{{ developer_agy_bin }}"
+      register: developer_agy_bin_stat
+
+    # El instalador se niega a pisar un binario que ya existe: avisa y sale 0. Si
+    # una instalación quedó a medias —archivo vacío, sin permiso de ejecución, o
+    # un directorio con ese nombre— el rol convergería para siempre sobre algo
+    # roto, porque 'creates' solo mira que la ruta exista. Lo sacamos del camino
+    # y dejamos que el instalador vuelva a hacer su trabajo; es el mismo remedio
+    # que el propio instalador documenta.
+    - name: Agentes IA | Descartar una instalación rota de agy
+      when:
+        - developer_agy_bin_stat.stat.exists
+        - not (developer_agy_bin_stat.stat.isreg and developer_agy_bin_stat.stat.executable)
+      ansible.builtin.file:
+        path: "{{ developer_agy_bin }}"
+        state: absent
+
+    # 'set -o pipefail' no es decorativo: sin eso el pipe devuelve el status de
+    # bash, que con stdin vacío (curl 404 o sin red) sale 0 y el rol daría el
+    # binario por instalado. El instalador ya verifica SHA512 contra su manifest,
+    # así que lo único que falta cubrir es que el download no haya llegado.
+    #
+    # Si el binario ya está, el instalador avisa y sale 0 sin pisarlo; igual lo
+    # gateamos con 'creates' para que el rol reporte 'ok' en vez de 'changed'.
+    - name: Agentes IA | Instalar Antigravity CLI (agy)
+      when: developer_agy_user_space.rc != 0
+      ansible.builtin.shell:
+        cmd: set -o pipefail && curl -fsSL {{ developer_agy_installer_url | quote }} | bash
+        creates: "{{ developer_agy_bin }}"
+        executable: /bin/bash
+
+    # El binario se autoactualiza solo en background, pero eso pasa cuando el dev
+    # lo usa: en una notebook recién provisionada queda en la versión del día.
+    # 'agy update' es el equivalente a 'state: latest' de los otros dos.
+    #
+    # Dos caminos, y hacen falta los dos. Si el shell del dev ya resuelve agy,
+    # converge ese —puede tenerlo en otro prefix y sería el que usa de verdad—.
+    # Si no lo resuelve, va por la ruta absoluta: el caso es un dev que ya tenía
+    # el binario pero sin ~/.local/bin exportado, donde el install se saltea y un
+    # 'agy update' a secas no encontraría nada que actualizar.
+    #
+    # No falla el provisioning si el updater de Google no responde: el binario ya
+    # instalado sirve igual, y voltear el rol entero por eso sería peor.
+    - name: Agentes IA | Converger agy a la última versión
+      ansible.builtin.command:
+        argv:
+          - bash
+          - -ic
+          - "{{ 'agy update' if developer_agy_user_space.rc == 0
+                else (developer_agy_bin | quote) + ' update' }}"
+      register: developer_agy_update
+      changed_when: "'Update successful' in developer_agy_update.stdout"
+      failed_when: false

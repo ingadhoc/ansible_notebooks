@@ -4,6 +4,48 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-09-04]
+
+### Feature: los tres agentes IA en la notebook (Claude Code, Codex y Antigravity)
+
+- Nuevo task `roles/developer/tasks/agentes_ia.yml`, importado desde `adhoc_way.yml`.
+  La instalación de **Claude Code** se movió acá tal cual estaba; se suman **Codex**
+  (`@openai/codex` por npm) y **Antigravity / `agy`** (instalador oficial). Los dos
+  nuevos van al user-space del dev (`~/.local`), que es el directorio que el rol ya
+  se ocupa de dejar en el PATH. Gates por agente: `developer_agente_claude` /
+  `_codex` / `_agy`, los tres en `true`
+- **Codex se instala con el prefix del dev y no global como root.** `state: latest`
+  vuelve a resolver el paquete contra el registry en cada convergencia, y npm corre
+  los lifecycle scripts de lo que baje: como root eso es ejecución privilegiada
+  recurrente sobre código mutable de terceros. Con el prefix del dev el radio de
+  daño es la cuenta del dev, igual que el de `agy`
+- **`agy` va per-user y no en `/usr/local/bin`** justamente para que pueda
+  autoactualizarse: el binario se actualiza solo en background, y en un directorio
+  root-owned no tiene permiso de escritura y queda clavado en la versión del día que
+  se provisionó. El rol igual corre `agy update` —el equivalente a `state: latest` de
+  los otros dos— porque la autoactualización recién ocurre cuando el dev lo usa
+- **Orden dentro de `adhoc_way.yml`:** los agentes se instalan después de Node/npm
+  (Codex lo necesita) y **antes** del bloque de PATH. El instalador de `agy` agrega su
+  propio `export` de `~/.local/bin` al `.bashrc` sin chequear si ya está —verificado
+  contra el binario—, así que corriendo primero el gate del bloque ve esa línea y no
+  agrega una segunda
+- La URL del instalador de `agy` es `https://antigravity.google/cli/install.sh`.
+  `https://antigravity.google/install.sh` da **404**, y el paquete npm
+  `@google/antigravity` **no existe**: son los dos errores que circulan en guías
+- **`agy` se repara si quedó a medias.** El instalador se niega a pisar un binario
+  existente (avisa y sale 0), y `creates` solo mira que la ruta exista: un install
+  interrumpido —archivo vacío, sin permiso de ejecución, un directorio— dejaba al
+  rol convergiendo sobre algo roto para siempre. Ahora se descarta y se reinstala.
+  Y `agy update` cae a la ruta absoluta cuando el shell del dev todavía no resuelve
+  `agy`, en vez de actualizar nada en silencio
+- Los tres se saltean si el dev ya los puede ejecutar (nvm, instalador nativo,
+  `~/.local`), con el mismo criterio que ya tenía Claude Code desde el PR #47:
+  instalar una segunda copia solo deja dos binarios peleando por el PATH
+- **La verificación del terreno pasó de mirar un agente a mirar todos los
+  habilitados** (`developer_agentes_esperados`) y nombra en el mensaje cuál no
+  resuelve. El modo de falla que importa es que uno de los tres no quede en el PATH
+  mientras los otros sí, y un chequeo único no lo veía
+
 ## [2026-08-12]
 
 ### Feature: gestión de energía y salud de batería
