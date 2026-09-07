@@ -4,7 +4,8 @@
 # Reparto de responsabilidades (decidido con DevOps, tarea Odoo #67663):
 #   - Playbook (acá, sin credenciales del dev):
 #       * Node/npm >= 20 en el host (lo pide el paquete adhoc-way).
-#       * Claude Code CLI (único agente preinstalado) vía repo APT oficial.
+#       * Los agentes IA del equipo (Claude Code, Codex, Antigravity) —
+#         detalle e idempotencia de cada uno en agentes_ia.yml.
 #       * ~/.local/bin en el PATH del usuario (npm global user-space).
 #   - Primer run del dev (con su auth de git/gh y Tuqui):
 #       * el preflight de adhoc-way (scripts/preflight.sh) instala o actualiza el
@@ -33,88 +34,14 @@
         state: present
         cache_valid_time: "{{ funcional_apt_cache_valid_time | default(3600) }}"
 
-    # --- Claude Code CLI (repo APT oficial, binario self-contained) ---
-    - name: Adhoc Way | Crear directorio para claves GPG
-      ansible.builtin.file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: "0755"
-
-    # La clave se refresca SIEMPRE (no solo si falta): si Anthropic la rota, una
-    # notebook vieja queda con 'apt update' roto y el rol tiene que repararla.
-    # force + register da las dos cosas: baja siempre, pero solo reporta 'changed'
-    # si el contenido cambió — así el dearmor corre únicamente cuando hace falta
-    # y el rol queda idempotente.
-    - name: Adhoc Way | Descargar la clave GPG de Claude Code
-      ansible.builtin.get_url:
-        url: "{{ developer_external_repos.claude_code.gpg_url }}"
-        dest: /etc/apt/keyrings/claude-code.asc
-        mode: "0644"
-        force: true
-      register: developer_claude_code_gpg_download
-      until: developer_claude_code_gpg_download is succeeded
-      retries: 3
-      delay: 2
-
-    - name: Adhoc Way | Verificar si el keyring de Claude Code está en su lugar
-      ansible.builtin.stat:
-        path: "{{ developer_external_repos.claude_code.keyring_path }}"
-      register: developer_claude_code_keyring
-
-    - name: Adhoc Way | Convertir la clave GPG al keyring
-      ansible.builtin.command: >-
-        gpg --batch --yes --dearmor
-        -o {{ developer_external_repos.claude_code.keyring_path }}
-        /etc/apt/keyrings/claude-code.asc
-      when: developer_claude_code_gpg_download is changed or not developer_claude_code_keyring.stat.exists
-      changed_when: true
-
-    - name: Adhoc Way | Eliminar el repositorio legacy en formato .list (migración a deb822)
-      ansible.builtin.file:
-        path: "/etc/apt/sources.list.d/{{ developer_external_repos.claude_code.filename }}.list"
-        state: absent
-
-    - name: Adhoc Way | Añadir el repositorio de Claude Code (formato deb822 .sources)
-      ansible.builtin.copy:
-        dest: "/etc/apt/sources.list.d/{{ developer_external_repos.claude_code.filename }}.sources"
-        owner: root
-        group: root
-        mode: "0644"
-        content: |
-          Types: deb
-          URIs: {{ developer_external_repos.claude_code.uris }}
-          Suites: {{ developer_external_repos.claude_code.suites }}
-          Components: {{ developer_external_repos.claude_code.components }}
-          Architectures: {{ developer_external_repos.claude_code.architectures | replace(',', ' ') }}
-          Signed-By: {{ developer_external_repos.claude_code.keyring_path }}
-      register: developer_claude_code_repo
-
-    # Si el dev ya puede ejecutar Claude Code (lo tenga donde lo tenga: ~/.local,
-    # el prefix de nvm, el instalador nativo), el paquete APT solo agregaría una
-    # segunda versión peleando por el PATH. Preguntamos por lo que resuelve su
-    # shell, no por una ruta fija.
-    #
-    # bash -i, no -l: el .bashrc de Debian corta en seco si el shell no es
-    # interactivo ("If not running interactively, don't do anything"), y tanto
-    # el bloque de PATH de más abajo como la inicialización de nvm viven después
-    # de ese guard. Con -l no veríamos ninguno de los dos.
-    - name: Adhoc Way | Detectar si el dev ya puede ejecutar Claude Code
-      become_user: "{{ remote_regular_user }}"
-      ansible.builtin.command: bash -ic 'command -v claude'
-      register: developer_claude_user_space
-      changed_when: false
-      failed_when: false
-
-    # state: latest, no present: 'present' solo garantiza que exista, así que una
-    # notebook se queda con la versión del día que se provisionó. La spec 0001 de
-    # devops-it dice que las upgrades vienen por apt — re-correr el rol converge.
-    - name: Adhoc Way | Instalar el paquete 'claude-code'
-      when: developer_claude_user_space.rc != 0
-      ansible.builtin.apt:
-        update_cache: true
-        cache_valid_time: "{{ 0 if (developer_claude_code_repo.changed | default(false)) else (funcional_apt_cache_valid_time | default(3600)) }}"
-        name: claude-code
-        state: latest
+# Los agentes IA se instalan acá y no más abajo por dos razones de orden: Codex
+# necesita el npm que acaba de instalarse, y el instalador de agy agrega su propio
+# export de ~/.local/bin al .bashrc — corriendo antes del bloque de PATH, el gate
+# de ese bloque ve la línea y no agrega una segunda.
+- name: Adhoc Way | Instalar los agentes IA
+  tags: adhoc_way
+  when: developer_adhoc_way | default(true) | bool
+  ansible.builtin.import_tasks: agentes_ia.yml
 
 # --- PATH del usuario (npm global en user-space → ~/.local/bin) ---
 - name: Adhoc Way | Ver si el dev ya exporta ~/.local/bin
@@ -172,11 +99,21 @@
       changed_when: false
       failed_when: false
 
-    - name: Adhoc Way | Confirmar que hay un agente IA ejecutable
-      ansible.builtin.command: bash -ic 'command -v claude'
-      register: developer_agente_ejecutable
+    # Se verifica cada agente habilitado, no uno de muestra: el modo de falla
+    # que importa es justamente que uno de los tres no haya quedado en el PATH
+    # mientras los otros sí, y ahí un chequeo único no ve nada.
+    - name: Adhoc Way | Confirmar que los agentes IA quedaron ejecutables
+      ansible.builtin.command: "bash -ic 'command -v {{ item }}'"
+      loop: "{{ developer_agentes_esperados }}"
+      register: developer_agentes_ejecutables
       changed_when: false
       failed_when: false
+
+    - name: Adhoc Way | Juntar los agentes que no resuelven
+      ansible.builtin.set_fact:
+        developer_agentes_faltantes: >-
+          {{ developer_agentes_ejecutables.results
+             | rejectattr('rc', 'equalto', 0) | map(attribute='item') | list }}
 
     # El playbook está diseñado para Debian 13 (ver README), y ahí el repo trae
     # Node 20.19: el terreno se cumple de verdad, así que lo afirmamos duro.
@@ -187,15 +124,15 @@
           - developer_node_version.rc == 0
           - (developer_node_version.stdout | regex_search('[0-9]+') | int) >= 20
           - developer_path_exportado.rc == 0
-          - developer_agente_ejecutable.rc == 0
+          - developer_agentes_faltantes | length == 0
         fail_msg: >-
           Terreno incompleto para {{ remote_regular_user }} —
           node: {{ developer_node_version.stdout | default('ausente') }} (hace falta >=20),
           ~/.local/bin exportado en .bashrc: {{ developer_path_exportado.rc == 0 }},
-          agente ejecutable: {{ developer_agente_ejecutable.rc == 0 }}.
+          agentes que no resuelven: {{ developer_agentes_faltantes | join(', ') | default('ninguno', true) }}.
         success_msg: >-
           Terreno OK — node {{ developer_node_version.stdout }},
-          ~/.local/bin exportado, Claude Code ejecutable.
+          ~/.local/bin exportado, agentes ejecutables ({{ developer_agentes_esperados | join(', ') }}).
 
     # Las notebooks con Ubuntu son las provisionadas antes de que Debian 13 fuera
     # el estándar: legacy en transición, hasta que se reemplacen. Ahí el repo de
@@ -209,13 +146,13 @@
           developer_node_version.rc != 0
           or (developer_node_version.stdout | regex_search('[0-9]+') | int) < 20
           or developer_path_exportado.rc != 0
-          or developer_agente_ejecutable.rc != 0
+          or developer_agentes_faltantes | length > 0
       ansible.builtin.debug:
         msg: >-
           ATENCIÓN — {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}
           está fuera del estándar (Debian 13) y el terreno de adhoc-way quedó incompleto:
           node {{ developer_node_version.stdout | default('ausente') }} (hace falta >=20),
           ~/.local/bin exportado en .bashrc: {{ developer_path_exportado.rc == 0 }},
-          agente ejecutable: {{ developer_agente_ejecutable.rc == 0 }}.
+          agentes que no resuelven: {{ developer_agentes_faltantes | join(', ') | default('ninguno', true) }}.
           El repo de esta distro no ofrece Node >=20: resolvelo con nvm en la cuenta del dev
           hasta que la notebook se reemplace por Debian 13.
