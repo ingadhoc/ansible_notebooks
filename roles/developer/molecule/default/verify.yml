@@ -108,6 +108,21 @@
         fail_msg: "Missing configuration file {{ item.item }}"
       loop: "{{ developer_dotfiles.results }}"
 
+    - name: Verify | Check devcli (r2) status
+      ansible.builtin.command: dpkg-query -W -f=${db:Status-Status} devcli
+      register: developer_devcli_status
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Assert devcli IS installed on developer
+      ansible.builtin.assert:
+        that:
+          - developer_devcli_status.stdout == 'installed'
+        fail_msg: >-
+          devcli (r2) debe estar instalado en el perfil developer: adhoccli lo
+          declara en Suggests, asi que el rol lo instala explicito via
+          tasks/devcli.yml. Estado encontrado: '{{ developer_devcli_status.stdout }}'
+
     - name: Verify | Check ssh configuration exists
       ansible.builtin.stat:
         path: "/home/{{ developer_remote_user }}/.ssh/config"

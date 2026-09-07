@@ -109,6 +109,33 @@
       become: true
       become_user: "testuser"
 
+    - name: Verify | Check devcli (r2) status
+      ansible.builtin.command: dpkg-query -W -f=${db:Status-Status} devcli
+      register: funcional_devcli_status
+      changed_when: false
+      failed_when: false
+
+    - name: Verify | Get installed adhoccli version
+      ansible.builtin.command: dpkg-query -W -f=${Version} adhoccli
+      register: funcional_adhoccli_pkg_version
+      changed_when: false
+      failed_when: false
+
+    # La politica "funcional sin r2" rige desde adhoccli 0.2.1 (devcli en
+    # Suggests). Con 0.2.0 —lo que sirve el repo APT hasta que salga el tag—
+    # devcli entra por Depends y su presencia es lo esperado, asi que el check
+    # se saltea. El dia que el repo publique 0.2.1, este assert se activa solo:
+    # este PR no queda acoplado al tag, y el tag no queda acoplado a este PR.
+    - name: Verify | Assert devcli is NOT installed on funcional (adhoccli >= 0.2.1)
+      ansible.builtin.assert:
+        that:
+          - funcional_devcli_status.stdout not in ['installed', 'half-configured', 'unpacked']
+        fail_msg: >-
+          devcli (r2) no debe instalarse en el perfil funcional: adhoccli lo
+          declara en Suggests y solo los perfiles que operan clusters lo instalan
+          explicito. Estado encontrado: '{{ funcional_devcli_status.stdout }}'
+      when: funcional_adhoccli_pkg_version.stdout is version('0.2.1', '>=')
+
     - name: Verify | Check sysadmin user exists
       ansible.builtin.user:
         name: sysadmin

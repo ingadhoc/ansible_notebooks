@@ -1,0 +1,18 @@
+---
+# adhoccli declara devcli como Suggests desde v0.2.1, así que apt ya no lo
+# instala solo: el perfil funcional queda sin r2, que es lo buscado. Los perfiles
+# que sí operan clusters lo instalan explícito acá.
+#
+# El repositorio APT de Adhoc y su llave los deja funcional/tasks/adhoccli.yml,
+# que corre antes (funcional es dependencia de rol de developer).
+#
+# Instalarlo explícito además lo marca como "manual" para apt, así que el
+# autoremove de `ad maintenance` no se lo lleva.
+- name: DevCli - Instalar devcli (r2) para los perfiles que operan clusters
+  tags: devcli
+  become: true
+  ansible.builtin.apt:
+    name: devcli
+    state: present
+    update_cache: true
+    cache_valid_time: "{{ funcional_apt_cache_valid_time | default(3600) }}"

@@ -87,6 +87,14 @@
         tasks_from: git.yml
       tags: [developer, git]
 
+    # Este perfil importa gcloud.yml y kubectl.yml a proposito: opera clusters.
+    # Con devcli en Suggests hay que instalarlo explicito o lo perderia.
+    - name: Developer | DevCli (r2)
+      ansible.builtin.include_role:
+        name: developer
+        tasks_from: devcli.yml
+      tags: [developer, devcli]
+
     - name: Developer | Prepare RemoteDev
       ansible.builtin.include_role:
         name: developer
