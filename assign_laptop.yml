@@ -49,6 +49,15 @@
       changed_when: true
       failed_when: false
 
+    # GDM guarda la sesión elegida (Xorg) por nombre de usuario; si queda a
+    # nombre del usuario viejo, el nuevo arranca con el default (Wayland).
+    - name: Mover la preferencia de sesión de AccountsService al nuevo usuario
+      ansible.builtin.command: mv /var/lib/AccountsService/users/{{ old_user }} /var/lib/AccountsService/users/{{ new_user }}
+      args:
+        creates: /var/lib/AccountsService/users/{{ new_user }}
+      changed_when: true
+      failed_when: false
+
     - name: Actualizar el contenido del sudoers
       ansible.builtin.replace:
         path: /etc/sudoers.d/{{ new_user }}

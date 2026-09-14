@@ -217,7 +217,8 @@ ansible-playbook assign_laptop.yml \
 2. Renombra el usuario y mueve su home (`usermod`).
 3. Renombra el grupo primario (`groupmod`).
 4. Actualiza el archivo sudoers si existe.
-5. Configura el `user.name` de Git globalmente.
+5. Mueve la preferencia de sesión (Xorg) de AccountsService al nuevo usuario.
+6. Configura el `user.name` de Git globalmente.
 
 ---
 

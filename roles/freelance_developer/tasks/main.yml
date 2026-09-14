@@ -44,6 +44,12 @@
         tasks_from: adhoccli.yml
       tags: [funcional, adhoccli]
 
+    - name: Funcional | Xorg
+      ansible.builtin.import_role:
+        name: funcional
+        tasks_from: xorg.yml
+      tags: [funcional, xorg_fixes]
+
 - name: Freelance Developer | Developer subset
   tags: [freelance_developer]
   vars:

@@ -4,6 +4,19 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-09-14]
+
+### Fix: GDM arrancaba en Wayland aunque el playbook "forzara" Xorg
+
+- El bloque Xorg escribía `/etc/gdm3/custom.conf`, que es la ruta de Ubuntu. El
+  `gdm3` de Debian lee solo `/etc/gdm3/daemon.conf`, así que `WaylandEnable=false`
+  nunca tuvo efecto. Lo tapaba la preferencia por usuario en AccountsService, que se
+  perdía al reasignar la notebook (queda a nombre del usuario viejo).
+- El bloque se movió a `roles/funcional/tasks/xorg.yml` y ahora lo importa también
+  `freelance_developer`, que no incluía `fixes.yml`.
+- `assign_laptop.yml` mueve `/var/lib/AccountsService/users/<old_user>` al nuevo usuario.
+- `verify.yml` de `funcional` asserta `WaylandEnable=false` y `DefaultSession` en `daemon.conf`.
+
 ## [2026-09-04]
 
 ### Feature: los tres agentes IA en la notebook (Claude Code, Codex y Antigravity)

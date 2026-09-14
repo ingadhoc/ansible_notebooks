@@ -1,0 +1,91 @@
+---
+# Sesión X11 obligatoria: el screen share de streamsnap no funciona en Wayland.
+- name: Xorg | Instalar paquetes Xorg y forzar sesión (Debian 13+)
+  tags: xorg_fixes
+  become: true
+  when: >
+    ansible_facts['distribution'] == 'Debian' and
+    ansible_facts['distribution_version'] | int >= 13
+  block:
+    - name: Xorg | Instalar paquetes necesarios para sesiones Xorg
+      ansible.builtin.apt:
+        name:
+          - xserver-xorg
+          - gnome-session
+          - xorg
+        state: present
+
+    - name: Xorg | Buscar archivo de sesión Xorg disponible
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /usr/share/xsessions/gnome-xorg.desktop
+        - /usr/share/xsessions/gnome.desktop
+      register: funcional_xorg_session_files
+
+    - name: Xorg | Establecer nombre de sesión Xorg encontrada
+      ansible.builtin.set_fact:
+        funcional_xorg_session_name: "{{ (funcional_xorg_session_files.results | selectattr('stat.exists') | first).item | basename | replace('.desktop', '') }}"
+
+    - name: Xorg | Verificar si gdm3 está instalado
+      ansible.builtin.stat:
+        path: /etc/gdm3
+      register: funcional_gdm3_dir
+
+    - name: Xorg | Asegurar que existe el directorio /etc/gdm3
+      ansible.builtin.file:
+        path: /etc/gdm3
+        state: directory
+        mode: "0755"
+      when: not funcional_gdm3_dir.stat.exists
+
+    # El gdm3 de Debian lee /etc/gdm3/daemon.conf; custom.conf es la ruta de Ubuntu y se ignora
+    - name: Xorg | Configurar GDM3 para deshabilitar Wayland (WaylandEnable=false)
+      community.general.ini_file:
+        path: /etc/gdm3/daemon.conf
+        section: daemon
+        option: WaylandEnable
+        value: "false"
+        no_extra_spaces: true
+        mode: "0644"
+        create: true
+      register: funcional_xorg_fix_wayland
+
+    - name: Xorg | Configurar GDM3 para forzar sesión Xorg (DefaultSession)
+      community.general.ini_file:
+        path: /etc/gdm3/daemon.conf
+        section: daemon
+        option: DefaultSession
+        value: "{{ funcional_xorg_session_name }}.desktop"
+        no_extra_spaces: true
+        mode: "0644"
+        create: true
+      register: funcional_xorg_fix_session
+
+    - name: Xorg | Enmascarar reglas udev que re-habilitan Wayland según GPU
+      ansible.builtin.file:
+        src: /dev/null
+        dest: /etc/udev/rules.d/61-gdm.rules
+        state: link
+        force: true
+      register: funcional_xorg_fix_udev
+
+    - name: Xorg | Forzar sesión Xorg en AccountsService (anula preferencia guardada por GDM)
+      community.general.ini_file:
+        path: "/var/lib/AccountsService/users/{{ remote_regular_user }}"
+        section: User
+        option: "{{ item.key }}"
+        value: "{{ item.value }}"
+        no_extra_spaces: true
+        mode: "0600"
+        create: true
+      loop:
+        - { key: XSession, value: "{{ funcional_xorg_session_name }}" }
+        - { key: Session, value: "{{ funcional_xorg_session_name }}" }
+        - { key: SessionType, value: "x11" }
+      register: funcional_xorg_fix_accounts
+
+    - name: Xorg | Informar que se requiere reinicio para aplicar cambio a Xorg
+      ansible.builtin.debug:
+        msg: "GDM3 configurado para Xorg (sesión={{ funcional_xorg_session_name }}). Reiniciá el equipo para que tome efecto."
+      when: funcional_xorg_fix_wayland.changed or funcional_xorg_fix_session.changed or funcional_xorg_fix_udev.changed or funcional_xorg_fix_accounts.changed
