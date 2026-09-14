@@ -116,6 +116,22 @@
                   ansible.builtin.command: timedatectl set-ntp true
                   changed_when: false
 
+            - name: Timezone | Esperar (hasta 30s) a que el reloj sincronice
+              ansible.builtin.command: timedatectl show -p NTPSynchronized --value
+              register: timezone_ntp_sync
+              until: timezone_ntp_sync.stdout == 'yes'
+              retries: 6
+              delay: 5
+              changed_when: false
+              failed_when: false
+
+        # Si NTP corrigió el reloj hacia atrás, la caché de apt queda con mtime
+        # futuro y el módulo apt la cree fresca para siempre: update real acá.
+        - name: Timezone | Refrescar la caché de apt con el reloj ya sincronizado
+          ansible.builtin.command: apt-get update
+          changed_when: false
+          failed_when: false
+
     - name: Power | Salud de batería y umbrales de carga
       tags: power
       block:
