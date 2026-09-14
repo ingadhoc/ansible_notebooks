@@ -35,6 +35,19 @@
         success_msg: "Package {{ item }} is installed"
       loop: "{{ required_packages }}"
 
+    # gdm3 en Debian lee daemon.conf (no custom.conf): si esto falla, GDM arranca en Wayland
+    - name: Verify | Read GDM daemon.conf
+      ansible.builtin.slurp:
+        src: /etc/gdm3/daemon.conf
+      register: funcional_gdm_conf
+
+    - name: Verify | Assert GDM is forced to Xorg
+      ansible.builtin.assert:
+        that:
+          - "'WaylandEnable=false' in funcional_gdm_conf.content | b64decode"
+          - "'DefaultSession=gnome-xorg.desktop' in funcional_gdm_conf.content | b64decode"
+        fail_msg: "/etc/gdm3/daemon.conf no fuerza Xorg"
+
     - name: Verify | Check SSH service is enabled and running
       ansible.builtin.systemd:
         name: ssh
