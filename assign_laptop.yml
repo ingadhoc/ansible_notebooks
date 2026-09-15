@@ -95,10 +95,12 @@
         scope: global
       failed_when: false
 
+    # El hostname viejo sale de los facts: no todas las notebooks nacen como
+    # adhoc-adhoc-nb. Los lookarounds evitan pisar otros hosts que lo contengan.
     - name: Actualizar el hostname en /etc/hosts
       ansible.builtin.replace:
         path: /etc/hosts
-        regexp: "adhoc-adhoc-nb"
+        regexp: '(?<=\s){{ ansible_facts.hostname | regex_escape }}(?=[.\s]|$)'
         replace: "{{ hostname }}"
 
     - name: Establecer el hostname

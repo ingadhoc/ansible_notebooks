@@ -4,6 +4,18 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-09-15]
+
+### Fix: `assign_laptop.yml` no actualizaba `/etc/hosts` si el hostname no era `adhoc-adhoc-nb`
+
+- La tarea buscaba el texto fijo `adhoc-adhoc-nb`. Ahora toma el hostname actual de los
+  facts, así que funciona con cualquier nombre de origen y no pisa otros hosts que lo contengan.
+- README, sección "Reasignación de Laptop": el usuario SSH es `sysadmin` (decía
+  `_sysadmin`), la clave se identifica por su huella contra `sysadmin.pub` (nombraba dos
+  archivos distintos), y se suman dos prerrequisitos: la primera conexión SSH manual para
+  aceptar la huella del host y el rango `192.168.0.0/16` que permite UFW. La lista de pasos
+  queda completa (bookmarks, wallpaper, hostname).
+
 ## [2026-09-14]
 
 ### Fix: GDM arrancaba en Wayland aunque el playbook "forzara" Xorg
