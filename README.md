@@ -191,21 +191,34 @@ Después de que Ansible termine, hay algunas acciones que requieren tu intervenc
 
 ## 🔄 Reasignación de Laptop
 
-Cuando una notebook con el usuario genérico `adhoc` se asigna a un empleado nuevo, el playbook `assign_laptop.yml` renombra el usuario (y su grupo, home y sudoers) de forma remota, sin necesidad de reinstalar el sistema.
+Cuando una notebook con el usuario genérico `adhoc` se asigna a un empleado nuevo, el playbook `assign_laptop.yml` renombra el usuario (y su grupo, home y sudoers) y cambia el hostname de forma remota, sin necesidad de reinstalar el sistema.
 
 **Prerrequisitos:**
 
-- Acceso SSH a la máquina via el usuario `_sysadmin` con la clave `~/.ssh/sysadmin_key`.
-- La notebook debe estar encendida y accesible en la red.
-- Solicitar IP con el comando `hostname -I`
+- La clave privada que corresponde a `roles/funcional/files/sysadmin.pub`, que el perfil `funcional` autoriza para el usuario `sysadmin` de cada notebook. Para confirmar que es la correcta, las dos huellas tienen que coincidir:
+
+  ```bash
+  ssh-keygen -lf roles/funcional/files/sysadmin.pub
+  ssh-keygen -lf ~/.ssh/<clave_privada>
+  ```
+
+- Estar en la red interna: el firewall (UFW) del perfil `funcional` solo acepta SSH desde `192.168.0.0/16`.
+- La notebook encendida y accesible en la red. La IP se consulta en la notebook con `hostname -I`.
+- Una primera conexión SSH manual, para aceptar la huella del host. Sin ese paso Ansible falla con `Host key verification failed`:
+
+  ```bash
+  ssh -i ~/.ssh/<clave_privada> sysadmin@<ip>
+  ```
+
+> ⚠️ Conviene conectar la notebook por cable. El playbook mueve el home del usuario: si la conexión se corta a mitad de camino, el usuario queda renombrado a medias y hay que arreglarlo a mano.
 
 **Comando:**
 
 ```bash
 ansible-playbook assign_laptop.yml \
-  -i 192.168.1.170, \
-  -e "old_user=adhoc new_user=user full_name='Nombre Apellido' hostname=user-adhoc-nb" \
-  --private-key ~/.ssh/sysadmin.txt \
+  -i <ip>, \
+  -e "old_user=adhoc new_user=<usuario> full_name='Nombre Apellido' hostname=<usuario>-adhoc-nb" \
+  --private-key ~/.ssh/<clave_privada> \
   -u sysadmin
 ```
 
@@ -213,12 +226,14 @@ ansible-playbook assign_laptop.yml \
 
 **Qué hace:**
 
-1. Mata los procesos del usuario anterior (`pkill`).
+1. Cierra la sesión y mata los procesos del usuario anterior (`loginctl`, `pkill`).
 2. Renombra el usuario y mueve su home (`usermod`).
 3. Renombra el grupo primario (`groupmod`).
 4. Actualiza el archivo sudoers si existe.
 5. Mueve la preferencia de sesión (Xorg) de AccountsService al nuevo usuario.
-6. Configura el `user.name` de Git globalmente.
+6. Actualiza los bookmarks de GTK y el wallpaper al nuevo home.
+7. Configura el `user.name` de Git globalmente.
+8. Cambia el hostname, también en `/etc/hosts`.
 
 ---
 
