@@ -16,9 +16,10 @@ repos:
     hooks:
       - id: ansible-lint
         # El manifest del hook fija language_version python3.14 por precaución,
-        # pero ansible-lint soporta >=3.10. Lo bajamos al python del entorno
-        # (devcontainer Debian 13 trae python3.13) para no exigir un 3.14 ausente.
-        language_version: python3.13
+        # pero ansible-lint soporta >=3.10. `python3` usa el intérprete del
+        # entorno, sea cual sea: pinear una minor deja el hook sin instalar en
+        # cualquier máquina que traiga otra (el devcontainer de OBA trae 3.12).
+        language_version: python3
         files: \.(yaml|yml)$
         exclude: ^(molecule/|collections/|\.github/)
         args:
@@ -48,6 +49,9 @@ repos:
     rev: v0.39.0
     hooks:
       - id: markdownlint
+        # Sin pin, nodeenv baja el node más nuevo, que necesita libatomic.so.1
+        # y no arranca en todas las imágenes. 24.x es LTS y anda en las dos.
+        language_version: "24.21.0"
         args: [--fix, --disable, MD013, MD033, MD041]
         exclude: ^(docs/TEST_RUN_NOTES\.md|CHANGELOG\.md)
 

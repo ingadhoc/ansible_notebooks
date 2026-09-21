@@ -101,7 +101,7 @@
     # state: latest, no present: 'present' solo garantiza que exista, así que una
     # notebook se queda con la versión del día que se provisionó. La spec 0001 de
     # devops-it dice que las upgrades vienen por apt — re-correr el rol converge.
-    - name: Agentes IA | Instalar el paquete 'claude-code'
+    - name: Agentes IA | Instalar el paquete 'claude-code'  # noqa: package-latest
       when: developer_claude_user_space.rc != 0
       ansible.builtin.apt:
         update_cache: true
