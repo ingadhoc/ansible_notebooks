@@ -15,7 +15,7 @@
       - "{{ developer_docker_packages }}"
       - ["code", "gh"]
     venv_path: "{{ developer_python_venv_path }}"
-    git_hooks_path: "{{ developer_git_hooks_path }}"
+    git_hooks_path: "/home/{{ developer_remote_user }}/.git_hooks"
     linter_packages: "{{ developer_python_linter_packages }}"
 
   tasks:
@@ -90,6 +90,62 @@
         that:
           - developer_git_hooks.stdout.strip() == "/home/{{ developer_remote_user }}/.git_hooks"
         fail_msg: "Expected git hooks path '/home/{{ developer_remote_user }}/.git_hooks', but got '{{ developer_git_hooks.stdout.strip() }}'"
+
+    - name: Verify | Check global hooks delegate to the repo hook
+      become: true
+      become_user: "{{ developer_remote_user }}"
+      # Los hooks del probe escriben a un archivo en vez de a stdout: git manda
+      # la salida del de commit-msg a stderr. Sin `set -e` a propósito: si algo
+      # no delega, queremos el diagnóstico completo en el assert, no un corte.
+      ansible.builtin.shell: |
+        set -uo pipefail
+        hooks_dir="{{ developer_git_hooks.stdout.strip() }}"
+        echo "git: $(git --version)"
+        echo "hooksPath: $hooks_dir"
+        ls -l "$hooks_dir"
+        # El repo va en $HOME, no en /tmp: molecule monta /tmp como tmpfs y docker
+        # le pone noexec, asi que ahi ningun hook del repo puede ejecutarse.
+        repo=$(mktemp -d "$HOME/hook-probe.XXXXXX")
+        cd "$repo" || echo "FALLO: cd al repo temporal"
+        git init -q . || echo "FALLO: git init rc=$?"
+        git config --show-origin --show-scope --get-all core.hooksPath || echo "(sin core.hooksPath)"
+        git rev-parse --git-dir --git-common-dir
+        echo "mensaje de prueba" > msg.txt
+        cat > .git/hooks/commit-msg <<'HOOK'
+        #!/bin/sh
+        echo "commit-msg args=$#" >> delegation.log
+        HOOK
+        cat > .git/hooks/pre-push <<'HOOK'
+        #!/bin/sh
+        echo "pre-push args=$# refs=$(wc -l)" >> delegation.log
+        HOOK
+        chmod +x .git/hooks/commit-msg .git/hooks/pre-push
+        test -x "$hooks_dir/commit-msg" && echo "global commit-msg: ejecutable" || echo "global commit-msg: NO ejecutable"
+        test -x .git/hooks/commit-msg && echo "repo commit-msg: ejecutable" || echo "repo commit-msg: NO ejecutable"
+        echo "--- dispatcher global invocado a mano, con traza ---"
+        sh -x "$hooks_dir/commit-msg" msg.txt 2>&1 | tail -8
+        echo "--- commit real ---"
+        git -c user.name=molecule -c user.email=molecule@test commit -q --allow-empty -m probe 2>&1
+        echo "--- pre-push directo ---"
+        printf 'refs/heads/x 1111111 refs/heads/x 2222222\n' | "$hooks_dir/pre-push" origin url 2>&1
+        echo "--- delegation.log ---"
+        cat delegation.log 2>&1 || echo "(el hook del repo no escribio nada)"
+      args:
+        executable: /bin/bash
+      register: developer_hook_delegation
+      changed_when: false
+
+    - name: Verify | Assert the repo hook keeps its arguments and refs
+      ansible.builtin.assert:
+        that:
+          - "'commit-msg args=1' in developer_hook_delegation.stdout"
+          - "'pre-push args=2 refs=1' in developer_hook_delegation.stdout"
+        fail_msg: >-
+          Los hooks globales tienen que delegar en el hook del repo con sus
+          argumentos y sus refs. Sin los argumentos, pre-commit corta con
+          "hook-impl for commit-msg expected 1 argument"; sin las refs, el
+          pre-push del repo no chequea nada y sale 0.
+          Salida: {{ developer_hook_delegation.stdout }}
 
     - name: Verify | Check dotfiles copied
       ansible.builtin.stat:
