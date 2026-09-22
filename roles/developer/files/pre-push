@@ -24,7 +24,11 @@ url="$2"
 
 z40=0000000000000000000000000000000000000000
 
-while read local_ref local_sha remote_ref remote_sha
+# git feeds the refs on stdin and they can only be read once: keep them so the
+# repo hook still gets them (without refs, pre-commit checks nothing and exits 0).
+refs=$(cat)
+
+printf '%s\n' "$refs" | while read local_ref local_sha remote_ref remote_sha
 do
     if [ "$local_sha" = $z40 ]
     then
@@ -39,11 +43,21 @@ do
             exit 1
         fi
     fi
-done
+done || exit 1
 
-# Si hay un hook local lo ejecutamos
-if [ -x `pwd`/.git/hooks/$(basename $0) ];
-then
-    exec `pwd`/.git/hooks/$(basename $0)
+# Si hay un hook local lo ejecutamos, con sus argumentos y sus refs.
+common_dir="$(git rev-parse --git-common-dir 2>/dev/null)" || common_dir=""
+case "$common_dir" in /*) ;; ?*) common_dir="$(pwd)/$common_dir" ;; esac
+
+HOOK_PATH="$common_dir/hooks/$(basename "$0")"
+if [ -n "$common_dir" ] && [ -x "$HOOK_PATH" ]; then
+    # Con stdin vacio hay que pasarle EOF, no una linea en blanco: el hook del
+    # repo espera lineas de 4 campos y una vacia no es lo mismo que "sin refs".
+    if [ -n "$refs" ]; then
+        printf '%s\n' "$refs" | "$HOOK_PATH" "$@"
+    else
+        "$HOOK_PATH" "$@" < /dev/null
+    fi
+    exit $?
 fi
 exit 0
