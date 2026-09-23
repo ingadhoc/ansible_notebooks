@@ -100,16 +100,18 @@ jobs:
 
       - name: Run ansible-lint
         run: |
+          # pipefail: sin esto el `if` mira el exit code de tee, que es 0 siempre.
+          set -o pipefail
           echo "## 🔍 Ansible Lint Results" >> $GITHUB_STEP_SUMMARY
           if ansible-lint local.yml 2>&1 | tee ansible-lint.log; then
             echo "✅ No Ansible linting issues found" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ Ansible linting warnings found (non-blocking)" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Ansible linting issues found" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             head -20 ansible-lint.log >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            exit 1
           fi
-        continue-on-error: true
 
       - name: Syntax check
         run: |
