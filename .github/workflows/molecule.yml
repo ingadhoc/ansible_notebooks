@@ -87,16 +87,18 @@ jobs:
 
       - name: Run yamllint
         run: |
+          # pipefail: sin esto el `if` mira el exit code de tee, que es 0 siempre.
+          set -o pipefail
           echo "## 🔍 YAML Lint Results" >> $GITHUB_STEP_SUMMARY
           if yamllint . 2>&1 | tee yamllint.log; then
             echo "✅ No YAML linting issues found" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⚠️ YAML linting warnings found (non-blocking)" >> $GITHUB_STEP_SUMMARY
+            echo "❌ YAML linting issues found" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             head -20 yamllint.log >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            exit 1
           fi
-        continue-on-error: true
 
       - name: Run ansible-lint
         run: |
