@@ -65,4 +65,5 @@
         name:
           - adhoccli
           - streamsnap
+          - fleet-health
         state: present
