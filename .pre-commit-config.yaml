@@ -5,14 +5,14 @@
 repos:
   # YAML Linting
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.35.1
+    rev: v1.38.0
     hooks:
       - id: yamllint
         args: [--config-file, .yamllint]
 
   # Ansible Linting
   - repo: https://github.com/ansible/ansible-lint
-    rev: v26.4.0
+    rev: v26.9.0
     hooks:
       - id: ansible-lint
         # El manifest del hook fija language_version python3.14 por precaución,
