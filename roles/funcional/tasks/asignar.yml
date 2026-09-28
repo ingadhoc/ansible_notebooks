@@ -1,0 +1,82 @@
+---
+# Autoservicio de asignación: la notebook de repuesto se asigna sola cuando
+# alguien entra con el usuario genérico. Solo se instala si el usuario que
+# prepara la imagen es uno de los genéricos (funcional_asignar_generic_users).
+- name: Asignar | Autoservicio de asignación para notebooks de repuesto
+  tags: asignar
+  become: true
+  when: remote_regular_user in funcional_asignar_generic_users
+  block:
+    # `ansible` (no `ansible-core`): trae community.general y ansible.posix,
+    # que assign_laptop.yml usa. Va en /usr, no en el home que el playbook mueve.
+    - name: Asignar | Instalar ansible, git y zenity
+      ansible.builtin.apt:
+        name:
+          - ansible
+          - git
+          - zenity
+        state: present
+
+    - name: Asignar | Instalar los scripts en /usr/local/bin
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /usr/local/bin/{{ item }}
+        owner: root
+        group: root
+        mode: "0755"
+      loop:
+        - asignar-pc.sh
+        - asignar-run.sh
+        - asignar-unit.sh
+
+    # Si la notebook se apaga a mitad de una asignación, al arrancar
+    # desbloquea la cuenta y avisa en el login (ver asignar-unit.sh).
+    - name: Asignar | Instalar la unit que recupera una asignación interrumpida
+      ansible.builtin.copy:
+        src: asignar-recuperar.service
+        dest: /etc/systemd/system/asignar-recuperar.service
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Asignar | Habilitar la unit de recuperación
+      ansible.builtin.systemd:
+        name: asignar-recuperar.service
+        enabled: true
+        daemon_reload: true
+
+    - name: Asignar | Configurar repo y rama que usa ansible-pull
+      ansible.builtin.copy:
+        dest: /etc/default/asignar-pc
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          ASIGNAR_REPO={{ funcional_asignar_repo_url }}
+          ASIGNAR_BRANCH={{ funcional_asignar_repo_branch }}
+          ASIGNAR_BANNER={{ funcional_asignar_banner | bool | lower }}
+
+    - name: Asignar | Permitir al usuario genérico lanzar solo asignar-run.sh
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/asignar
+        owner: root
+        group: root
+        mode: "0440"
+        content: "{{ remote_regular_user }} ALL=(root) NOPASSWD: /usr/local/bin/asignar-run.sh\n"
+        validate: /usr/sbin/visudo -cf %s
+
+    - name: Asignar | Asegurar el directorio de autostart del usuario genérico
+      ansible.builtin.file:
+        path: /home/{{ remote_regular_user }}/.config/autostart
+        state: directory
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "0755"
+
+    - name: Asignar | Instalar el autostart que pide los datos al entrar
+      ansible.builtin.copy:
+        src: asignar.desktop
+        dest: /home/{{ remote_regular_user }}/.config/autostart/asignar.desktop
+        owner: "{{ remote_regular_user }}"
+        group: "{{ remote_regular_user }}"
+        mode: "0644"

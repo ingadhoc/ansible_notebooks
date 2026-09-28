@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Asignar equipo
+Comment=Asigna esta notebook a su nuevo usuario
+Exec=/usr/local/bin/asignar-pc.sh
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true

@@ -9,12 +9,20 @@
   tasks:
     - name: Terminar la sesión del usuario anterior
       ansible.builtin.command: loginctl terminate-user {{ old_user }}
-      changed_when: true
+      register: assign_terminate
+      changed_when: assign_terminate.rc == 0
       failed_when: false
 
-    - name: Esperar a que los procesos terminen
-      ansible.builtin.pause:
-        seconds: 3
+    # pgrep sale con 1 cuando no queda ningún proceso; failed_when: false
+    # cubre también el caso de agotar los reintentos (pkill -9 sigue después).
+    - name: Esperar a que no queden procesos del usuario anterior
+      ansible.builtin.command: pgrep -u {{ old_user }}
+      register: assign_old_user_procs
+      until: assign_old_user_procs.rc != 0
+      retries: 30
+      delay: 2
+      changed_when: false
+      failed_when: false
 
     - name: Matar procesos remanentes del usuario
       ansible.builtin.command: pkill -9 -u {{ old_user }}
@@ -24,6 +32,15 @@
     - name: Esperar a que los procesos terminados salgan
       ansible.builtin.pause:
         seconds: 2
+
+    # Matar la sesión a veces deja el VT en negro en vez del login; con
+    # el reinicio GDM vuelve a dibujar el greeter. Sin GDM no hace nada.
+    - name: Volver a mostrar la pantalla de login
+      when: assign_terminate.rc == 0
+      ansible.builtin.systemd:
+        name: gdm3
+        state: restarted
+      failed_when: false
 
     - name: Renombrar el usuario y mover su home
       ansible.builtin.command: >

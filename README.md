@@ -235,6 +235,24 @@ ansible-playbook assign_laptop.yml \
 7. Configura el `user.name` de Git globalmente.
 8. Cambia el hostname, también en `/etc/hosts`.
 
+### Autoservicio (sin server)
+
+Las notebooks de repuesto que se preparan con un usuario genérico (`adhoc` o `adhoc-adhoc-nb`, ver `funcional_asignar_generic_users`) quedan con el autoservicio instalado por `roles/funcional/tasks/asignar.yml` (tag `asignar`). Quien recibe la notebook la prende, entra con el genérico y completa usuario y nombre completo en la ventana que aparece. No hace falta nadie de DevOps ni estar en la oficina.
+
+Qué pasa por detrás:
+
+1. `asignar-pc.sh` (autostart de GNOME) pide los datos y llama por `sudo` a `asignar-run.sh`, el único comando que el genérico puede correr sin clave (`/etc/sudoers.d/asignar`).
+2. `asignar-run.sh` valida `new_user` (minúsculas, números y `-`; no puede existir como usuario ni como grupo) y arma `hostname=<new_user>-adhoc-nb`, y lanza `ansible-pull` en una unit transitoria de systemd (`asignar-pc`) que corre como root fuera de la sesión.
+3. `asignar.yml` bloquea la cuenta y pone el cartel en GDM, corre `assign_laptop.yml`, borra el autostart y el sudoers del autoservicio, desbloquea la cuenta y cambia el cartel a "Listo". No reinicia. El mantenimiento (apt upgrade y limpieza) no va acá: lo corre fleet-health como job asignado desde Odoo.
+
+Repo y rama que usa `ansible-pull` salen de `/etc/default/asignar-pc` (`funcional_asignar_repo_url`, `funcional_asignar_repo_branch`). Mientras dura la asignación la cuenta queda bloqueada y GDM muestra el cartel "Configurando tu equipo" sin lista de usuarios; al terminar dice "Listo" con el usuario para ingresar (`funcional_asignar_banner`, activado por defecto). El cartel desaparece y la lista de usuarios vuelve en el próximo arranque.
+
+Si la asignación falla a mitad de camino o tarda más de 30 minutos, `asignar-unit.sh` desbloquea la cuenta y el login avisa que hay que contactar a DevOps y con qué usuario se puede entrar. Si la notebook se apaga en el medio, hace lo mismo al arrancar (`asignar-recuperar.service`, condicionada a la marca `/var/lib/asignar/en-curso`). Sin internet, la ventana lo dice y no cierra la sesión.
+
+Los scripts quedan fijos en la imagen y `ansible-pull` baja el `main` del momento, que corre como root: `main` tiene que seguir protegida, y las variables que `asignar-run.sh` pasa por `-e` no se cambian sin pensar en las notebooks ya preparadas.
+
+Diagnóstico en la notebook: `journalctl -u asignar-pc` y `/var/log/asignar.log`.
+
 ---
 
 ## 🔋 Energía y Batería
