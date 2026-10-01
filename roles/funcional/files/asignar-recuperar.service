@@ -1,0 +1,11 @@
+[Unit]
+Description=Recupera una asignación de notebook interrumpida
+ConditionPathExists=/var/lib/asignar/en-curso
+After=display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/asignar-unit.sh --recuperar
+
+[Install]
+WantedBy=multi-user.target

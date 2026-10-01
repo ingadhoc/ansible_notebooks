@@ -9,6 +9,17 @@ funcional_gnome_workspace_style: "dynamic"
 # Red interna permitida para SSH (ajustar según entorno)
 funcional_internal_network: "192.168.0.0/16"
 
+# --- Autoservicio de asignación (tasks/asignar.yml) ---
+# Usuarios genéricos de las notebooks de repuesto: solo con uno de estos como
+# usuario que prepara la imagen se instala el autoservicio.
+funcional_asignar_generic_users:
+  - adhoc
+  - adhoc-adhoc-nb
+funcional_asignar_repo_url: https://github.com/ingadhoc/ansible_notebooks.git
+funcional_asignar_repo_branch: main
+# Cartel "Configurando tu equipo" en GDM durante la asignación (ver asignar.yml)
+funcional_asignar_banner: true
+
 # --- Configuración de DNS Públicos ---
 # DNS Primarios: Google
 # DNS Secundarios: Cloudflare

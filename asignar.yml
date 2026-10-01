@@ -1,0 +1,100 @@
+---
+# Autoservicio: lo lanza asignar-run.sh en la notebook vía ansible-pull.
+# Variables (-e): old_user, new_user, full_name, hostname, asignar_banner.
+#
+# El cartel de GDM en Debian 13 va en /etc/gdm3/greeter.dconf-defaults
+# (/etc/dconf/db/gdm.d/ no aplica al greeter). Un `reload` recompila pero
+# el greeter ya dibujado no relee el texto: hace falta reiniciar gdm3, y
+# en ambos momentos no hay sesión que cortar. Al arrancar, GDM recompila
+# desde el archivo, por eso alcanza con dejarlo limpio.
+- name: Avisar en el login que el equipo se está configurando
+  hosts: all
+  become: true
+  vars:
+    asignar_banner: false
+  handlers:
+    - name: Reiniciar GDM
+      ansible.builtin.systemd:
+        name: gdm3
+        state: restarted
+  tasks:
+    - name: Cartel GDM | Configurando, sin lista de usuarios
+      when: asignar_banner | bool
+      ansible.builtin.blockinfile:
+        path: /etc/gdm3/greeter.dconf-defaults
+        marker: "# {mark} ASIGNANDO PC"
+        block: |
+          [org/gnome/login-screen]
+          disable-user-list=true
+          banner-message-enable=true
+          banner-message-text='Configurando tu equipo, no lo apagues. Cuando termine, esta pantalla te avisa.'
+      notify: Reiniciar GDM
+
+    # Con la clave conocida cualquiera entra a mitad de la asignación; la
+    # cuenta se bloquea acá y se desbloquea al final.
+    - name: Bloquear la cuenta mientras dura la asignación
+      ansible.builtin.user:
+        name: "{{ old_user }}"
+        password_lock: true
+
+    - name: Cartel GDM | Mostrarlo antes de seguir
+      ansible.builtin.meta: flush_handlers
+
+- name: Reasignar la notebook al nuevo usuario
+  ansible.builtin.import_playbook: assign_laptop.yml
+
+- name: Cierre del autoservicio
+  hosts: all
+  become: true
+  vars:
+    asignar_banner: false
+  handlers:
+    - name: Reiniciar GDM
+      ansible.builtin.systemd:
+        name: gdm3
+        state: restarted
+  tasks:
+    - name: Cierre | Quitar el autostart del autoservicio
+      ansible.builtin.file:
+        path: /home/{{ new_user }}/.config/autostart/asignar.desktop
+        state: absent
+
+    - name: Cierre | Quitar el permiso sudo del usuario genérico
+      ansible.builtin.file:
+        path: /etc/sudoers.d/asignar
+        state: absent
+
+    # Antes del cartel "Listo": si no, el login rechaza unos segundos.
+    - name: Cierre | Desbloquear la cuenta del nuevo usuario
+      ansible.builtin.user:
+        name: "{{ new_user }}"
+        password_lock: false
+
+    # El mantenimiento (apt upgrade y limpieza) no va acá: lo corre
+    # fleet-health como job asignado desde Odoo.
+    # GDM dibuja el banner solo en la pantalla de contraseña, no en la
+    # lista: sin lista, el aviso es lo primero que se ve. La lista vuelve
+    # en el próximo arranque.
+    - name: Cartel GDM | Listo, con el usuario para ingresar
+      when: asignar_banner | bool
+      ansible.builtin.blockinfile:
+        path: /etc/gdm3/greeter.dconf-defaults
+        marker: "# {mark} ASIGNANDO PC"
+        block: |
+          [org/gnome/login-screen]
+          disable-user-list=true
+          banner-message-enable=true
+          banner-message-text='Listo: ya podés ingresar con el usuario {{ new_user }}.'
+      notify: Reiniciar GDM
+
+    - name: Cartel GDM | Mostrar el aviso final
+      ansible.builtin.meta: flush_handlers
+
+    # Sin reiniciar GDM: el greeter sigue mostrando "Listo" hasta el
+    # próximo arranque, donde GDM recompila desde el archivo ya limpio.
+    - name: Cartel GDM | Dejar limpio el archivo para el próximo arranque
+      when: asignar_banner | bool
+      ansible.builtin.blockinfile:
+        path: /etc/gdm3/greeter.dconf-defaults
+        marker: "# {mark} ASIGNANDO PC"
+        state: absent
