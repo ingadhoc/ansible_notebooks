@@ -13,6 +13,7 @@
     # Paquetes específicos de sysadmin que deben estar instalados
     required_sysadmin_packages:
       - kubecolor
+      - sping
 
     # Paquetes solo en Debian
     required_debian_packages:

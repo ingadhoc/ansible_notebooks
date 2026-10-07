@@ -25,3 +25,18 @@
           - rsync
           - timeshift
           - ripgrep
+
+    - name: Sping - Mapear arquitectura del .deb
+      ansible.builtin.set_fact:
+        sysadmin_sping_arch: "{{ 'arm64' if ansible_facts['architecture'] in ['aarch64', 'arm64'] else 'amd64' }}"
+
+    - name: Sping - Descargar .deb de la release pinneada
+      ansible.builtin.get_url:
+        url: "https://github.com/LambdaBytes/sping/releases/download/v{{ sysadmin_sping_version }}/sping_{{ sysadmin_sping_version }}-1_{{ sysadmin_sping_arch }}.deb"
+        dest: "/tmp/sping_{{ sysadmin_sping_version }}_{{ sysadmin_sping_arch }}.deb"
+        checksum: "sha256:{{ sysadmin_sping_sha256[sysadmin_sping_arch] }}"
+        mode: "0644"
+
+    - name: Sping - Instalar .deb
+      ansible.builtin.apt:
+        deb: "/tmp/sping_{{ sysadmin_sping_version }}_{{ sysadmin_sping_arch }}.deb"

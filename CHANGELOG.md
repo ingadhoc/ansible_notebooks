@@ -4,6 +4,17 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-10-07]
+
+### Feat: `sping` en el rol `sysadmin`
+
+- [`sping`](https://github.com/LambdaBytes/sping) es un ping con diagnóstico: nota de
+  calidad del enlace, picos, tiempo de corte, varios destinos a la vez y salida JSON. No
+  necesita root (usa el socket ICMP sin privilegios, habilitado por defecto en Debian 13).
+- No está en los repos de Debian: se instala el `.deb` de la release de GitHub, con versión
+  fija y sha256 en `vars/main.yml`. El proyecto es nuevo y de un solo autor, por eso no se
+  toma la última release: subir de versión es un PR que revisa el changelog upstream.
+
 ## [2026-09-15]
 
 ### Fix: `assign_laptop.yml` no actualizaba `/etc/hosts` si el hostname no era `adhoc-adhoc-nb`

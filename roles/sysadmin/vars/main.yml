@@ -61,6 +61,14 @@ sysadmin_kvm_user_groups:
 sysadmin_nordvpn_gpg_path: "/usr/share/keyrings/nordvpn-archive-keyring.gpg"
 sysadmin_nordvpn_package: "nordvpn"
 
+# --- Configuración para sping ---
+# Versión pinneada a propósito: al subirla, revisar el CHANGELOG upstream y
+# copiar los hashes de los .deb del SHA256SUMS de la release.
+sysadmin_sping_version: "1.5.5"
+sysadmin_sping_sha256:
+  amd64: d120fac9a2a271b40519af4571f7d2907d0478ffc32cef050b3520541d88be31  # pragma: allowlist secret
+  arm64: 7d59bb321e87522735cbc7e248b548c78a53c10e8eaf533f581632af6ccebdbf  # pragma: allowlist secret
+
 # --- Configuración para AWS CLI ---
 # Directorio de instalación de los binarios de AWS CLI
 sysadmin_awscli_install_dir: /usr/local/aws-cli
