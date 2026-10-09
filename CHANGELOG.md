@@ -4,6 +4,23 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-10-09]
+
+### Fix: `kubectl` salía del repo de gcloud y tardaba ~1,2 s en cada comando
+
+- El repo de gcloud también publica un paquete `kubectl`: es el *dispatcher* de Google, que
+  elige el binario según la versión y suma ~1,2 s a cada llamada, incluida la completion que
+  carga el `.bashrc` al abrir una terminal. Su versión lleva época (`1:588.0.0-0`) y le gana
+  siempre a la de `pkgs.k8s.io` (`1.35.x`), así que `apt` lo elegía aunque el rol instalara el
+  repo de Kubernetes.
+- `funcional/kubectl.yml` agrega una preferencia de apt (`/etc/apt/preferences.d/kubectl-pkgs-k8s`,
+  prioridad 1001) que fija `kubectl` a `pkgs.k8s.io`. En las máquinas que ya tenían el
+  dispatcher, la corrida lo reemplaza (es un downgrade de versión de paquete, permitido).
+- `funcional/kubectl.yml` agrega al `.bashrc` un bloque propio (`kubectl completion`, como el de
+  helm) que carga la completion de kubectl y la habilita también para el alias `k`. Con el
+  binario real cuesta ~30 ms.
+- Molecule de `funcional` falla si el `kubectl` instalado es el dispatcher.
+
 ## [2026-10-07]
 
 ### Feat: `sping` en el rol `sysadmin`

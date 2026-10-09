@@ -94,7 +94,7 @@
       ansible.builtin.command: kubectl version --client
       register: funcional_kubectl_version
       changed_when: false
-      failed_when: funcional_kubectl_version.rc != 0
+      failed_when: funcional_kubectl_version.rc != 0 or 'dispatcher' in funcional_kubectl_version.stdout
 
     - name: Verify | Check gcloud is installed
       ansible.builtin.command: gcloud version
