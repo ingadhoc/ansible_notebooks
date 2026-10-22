@@ -4,6 +4,17 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-10-22]
+
+### Fix: UFW abre el SSH solo a la red de la oficina
+
+- `funcional_internal_network` pasa de `192.168.0.0/16` a `192.168.2.0/24`. El rango
+  anterior incluía la red de casa de casi todos, así que el puerto 22 quedaba abierto
+  también ahí.
+- Solo afecta a las corridas nuevas: la regla vieja queda en las notebooks que ya
+  corrieron el rol, y se borra aparte (`ufw delete allow from 192.168.0.0/16 to any port 22 proto tcp`,
+  después de confirmar que está la de `192.168.2.0/24`).
+
 ## [2026-10-07]
 
 ### Feat: `sping` en el rol `sysadmin`

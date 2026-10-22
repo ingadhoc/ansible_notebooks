@@ -7,7 +7,7 @@ remote_regular_user: "{{ ansible_facts['env'].SUDO_USER | default(ansible_user) 
 funcional_gnome_workspace_style: "dynamic"
 
 # Red interna permitida para SSH (ajustar según entorno)
-funcional_internal_network: "192.168.0.0/16"
+funcional_internal_network: "192.168.2.0/24"
 
 # --- Autoservicio de asignación (tasks/asignar.yml) ---
 # Usuarios genéricos de las notebooks de repuesto: solo con uno de estos como
