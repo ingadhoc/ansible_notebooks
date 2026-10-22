@@ -202,7 +202,7 @@ Cuando una notebook con el usuario genérico `adhoc` se asigna a un empleado nue
   ssh-keygen -lf ~/.ssh/<clave_privada>
   ```
 
-- Estar en la red interna: el firewall (UFW) del perfil `funcional` solo acepta SSH desde `192.168.0.0/16`.
+- Estar en la red interna: el firewall (UFW) del perfil `funcional` solo acepta SSH desde `192.168.2.0/24` (la red de la oficina).
 - La notebook encendida y accesible en la red. La IP se consulta en la notebook con `hostname -I`.
 - Una primera conexión SSH manual, para aceptar la huella del host. Sin ese paso Ansible falla con `Host key verification failed`:
 
