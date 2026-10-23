@@ -5,9 +5,10 @@ remote_regular_user_uid: "{{ ansible_facts['env'].SUDO_UID | default(ansible_fac
 
 # --- Configuración para Pulumi ---
 # Pulumi se instala como binario en /usr/local/bin/pulumi.
-# Por defecto instala la última release estable. Para pinnear:
+# Versión pinneada; el sha256 se valida contra el checksums.txt de la release de GitHub.
+# Para otra versión:
 # ansible-playbook local.yml -e "profile_override=sysadmin" -e "sysadmin_pulumi_version=3.x.y" -K
-sysadmin_pulumi_version: "latest"
+sysadmin_pulumi_version: "3.271.0"
 sysadmin_pulumi_install_root: "/opt/pulumi"
 
 # Extensiones predefinidas para sysadmin
@@ -69,14 +70,25 @@ sysadmin_sping_sha256:
   amd64: d120fac9a2a271b40519af4571f7d2907d0478ffc32cef050b3520541d88be31  # pragma: allowlist secret
   arm64: 7d59bb321e87522735cbc7e248b548c78a53c10e8eaf533f581632af6ccebdbf  # pragma: allowlist secret
 
+# --- Configuración para Helm ---
+# Versión pinneada: al subirla, copiar los sha256 de las notas de la release.
+sysadmin_helm_version: "3.22.1"
+sysadmin_helm_sha256:
+  amd64: 896cf63684a42a723d61c980369d6e588330927deb13676ca0d85006dd6da0ea  # pragma: allowlist secret
+  arm64: 4c29e286b279d170fa048ddfc3e4e83dcd069ca9c52102766ba672d7149e694d  # pragma: allowlist secret
+
 # --- Configuración para AWS CLI ---
+# Versión pinneada. AWS no publica sha256: al subirla, verificar la firma .sig de
+# cada zip con la clave del AWS CLI Team (FB5DB77FD5C118B80511ADA8A6310ACC4672475C)
+# y recién ahí copiar el sha256 del zip.
+sysadmin_awscli_version: "2.34.31"
+sysadmin_awscli_sha256:
+  x86_64: d1540db414d48650c87cea7e2b585368b864d2be5fc4034f9af3b1e3dc2f678a  # pragma: allowlist secret
+  aarch64: 932ff651397d5c56f78987fcdf736dfc62c2a32ed2c0e9c9ae96e9a7ff1e85ea  # pragma: allowlist secret
 # Directorio de instalación de los binarios de AWS CLI
 sysadmin_awscli_install_dir: /usr/local/aws-cli
 # Directorio donde se crean los symlinks (aws, aws_completer)
 sysadmin_awscli_bin_dir: /usr/local/bin
-# Forzar actualización aunque ya esté instalado:
-#   ansible-playbook local.yml -e "profile_override=sysadmin" -e "sysadmin_awscli_force_update=true" -K
-sysadmin_awscli_force_update: false
 
 # --- Configuración del Tema de Iconos Numix ---
 sysadmin_icon_packages:

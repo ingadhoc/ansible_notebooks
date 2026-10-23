@@ -50,13 +50,13 @@
       ansible.builtin.command: pulumi version
       register: sysadmin_verify_pulumi_version
       changed_when: false
-      failed_when: sysadmin_verify_pulumi_version.rc != 0
+      failed_when: sysadmin_verify_pulumi_version.rc != 0 or sysadmin_pulumi_version not in sysadmin_verify_pulumi_version.stdout
 
     - name: Verify | Check helm binary
       ansible.builtin.command: helm version
       register: sysadmin_verify_helm_version
       changed_when: false
-      failed_when: sysadmin_verify_helm_version.rc != 0
+      failed_when: sysadmin_verify_helm_version.rc != 0 or sysadmin_helm_version not in sysadmin_verify_helm_version.stdout
 
     - name: Verify | Check KVM installation (skip if not installed)
       ansible.builtin.command: virsh version
@@ -78,7 +78,7 @@
       ansible.builtin.command: aws --version
       register: sysadmin_verify_awscli_version
       changed_when: false
-      failed_when: sysadmin_verify_awscli_version.rc != 0
+      failed_when: sysadmin_verify_awscli_version.rc != 0 or sysadmin_awscli_version not in sysadmin_verify_awscli_version.stdout
 
     - name: Verify | Check aws_completer binary exists
       ansible.builtin.stat:

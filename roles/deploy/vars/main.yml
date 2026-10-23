@@ -3,7 +3,7 @@
 remote_regular_user: "{{ ansible_facts['env'].SUDO_USER | default(ansible_user) }}"  # noqa: var-naming[no-role-prefix]
 
 # --- Configuración para Pulumi ---
-# Por defecto instala la última release estable. Para pinnear:
+# Versión pinneada, la misma que sysadmin_pulumi_version. Para otra versión:
 # ansible-playbook local.yml --tags deploy -e "deploy_pulumi_version=3.x.y" -K
-deploy_pulumi_version: "latest"
+deploy_pulumi_version: "3.271.0"
 deploy_pulumi_install_root: "/opt/pulumi"

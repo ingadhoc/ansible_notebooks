@@ -14,30 +14,9 @@
         sysadmin_pulumi_version_installed_normalized: >-
           {{ (sysadmin_pulumi_version_installed.stdout | default('') | trim) | regex_replace('^v', '') }}
 
-    - name: Pulumi | Resolve desired version
-      when: sysadmin_pulumi_version | lower == 'latest'
-      block:
-        - name: Pulumi | Fetch latest stable release tag from GitHub
-          ansible.builtin.uri:
-            url: https://api.github.com/repos/pulumi/pulumi/releases/latest
-            return_content: true
-          register: sysadmin_pulumi_latest_release
-          changed_when: false
-
-        - name: Pulumi | Set resolved version
-          ansible.builtin.set_fact:
-            sysadmin_pulumi_version_resolved: >-
-              {{ (sysadmin_pulumi_latest_release.json.tag_name | default('') | regex_replace('^v', '')) }}
-
-    - name: Pulumi | Set resolved version (pinned)
-      when: sysadmin_pulumi_version | lower != 'latest'
+    - name: Pulumi | Set resolved version
       ansible.builtin.set_fact:
         sysadmin_pulumi_version_resolved: "{{ sysadmin_pulumi_version }}"
-
-    - name: Pulumi | Fail if resolved version is empty
-      ansible.builtin.fail:
-        msg: "Could not resolve Pulumi version (sysadmin_pulumi_version={{ sysadmin_pulumi_version }})"
-      when: (sysadmin_pulumi_version_resolved | default('') | trim) == ''
 
     - name: Pulumi | Map architecture
       ansible.builtin.set_fact:
@@ -59,6 +38,8 @@
       ansible.builtin.get_url:
         url: "https://get.pulumi.com/releases/sdk/pulumi-v{{ sysadmin_pulumi_version_resolved }}-{{ sysadmin_pulumi_arch }}.tar.gz"
         dest: "/tmp/pulumi-v{{ sysadmin_pulumi_version_resolved }}-{{ sysadmin_pulumi_arch }}.tar.gz"
+        # Hashes from the GitHub release, a different host than the download.
+        checksum: "sha256:https://github.com/pulumi/pulumi/releases/download/v{{ sysadmin_pulumi_version_resolved }}/pulumi-{{ sysadmin_pulumi_version_resolved }}-checksums.txt"
         mode: "0644"
 
     - name: Pulumi | Create version directory

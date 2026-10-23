@@ -1,36 +1,51 @@
 ---
-# https://helm.sh/docs/intro/install/#from-script
+# https://helm.sh/docs/intro/install/#from-the-binary-releases
 - name: SysAdmin - Install helm cli
   tags: helm_cli
   block:
-    - name: Helm | Verificar si el binario de helm ya está instalado
-      become: true
-      ansible.builtin.stat:
-        path: /usr/local/bin/helm
-      register: sysadmin_helm_bin
+    - name: Helm | Detectar versión instalada
+      ansible.builtin.command: /usr/local/bin/helm version --short
+      register: sysadmin_helm_installed
+      changed_when: false
+      failed_when: false
 
-    - name: Helm | Descargar script de instalación
-      become: true
-      ansible.builtin.get_url:
-        url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-        dest: /tmp/get_helm.sh
-        mode: "0755"
-      when: not sysadmin_helm_bin.stat.exists
+    - name: Helm | Mapear arquitectura
+      ansible.builtin.set_fact:
+        sysadmin_helm_arch: "{{ 'arm64' if ansible_facts['architecture'] in ['aarch64', 'arm64'] else 'amd64' }}"
 
-    - name: Helm | Ejecutar script de instalación si no existe el binario
+    - name: Helm | Instalar la release pinneada
+      when: not (sysadmin_helm_installed.stdout | default('')).startswith('v' ~ sysadmin_helm_version ~ '+')
       become: true
-      ansible.builtin.command: bash /tmp/get_helm.sh
-      args:
-        creates: /usr/local/bin/helm
-      when: not sysadmin_helm_bin.stat.exists
-      changed_when: true
+      block:
+        - name: Helm | Descargar tarball de la release
+          ansible.builtin.get_url:
+            url: "https://get.helm.sh/helm-v{{ sysadmin_helm_version }}-linux-{{ sysadmin_helm_arch }}.tar.gz"
+            dest: "/tmp/helm-v{{ sysadmin_helm_version }}-linux-{{ sysadmin_helm_arch }}.tar.gz"
+            checksum: "sha256:{{ sysadmin_helm_sha256[sysadmin_helm_arch] }}"
+            mode: "0644"
 
-    - name: Helm | Limpiar el script de instalación
-      become: true
-      ansible.builtin.file:
-        path: /tmp/get_helm.sh
-        state: absent
-      when: not sysadmin_helm_bin.stat.exists
+        - name: Helm | Descomprimir tarball
+          ansible.builtin.unarchive:
+            src: "/tmp/helm-v{{ sysadmin_helm_version }}-linux-{{ sysadmin_helm_arch }}.tar.gz"
+            dest: /tmp
+            remote_src: true
+
+        - name: Helm | Instalar binario
+          ansible.builtin.copy:
+            src: "/tmp/linux-{{ sysadmin_helm_arch }}/helm"
+            dest: /usr/local/bin/helm
+            remote_src: true
+            owner: root
+            group: root
+            mode: "0755"
+
+        - name: Helm | Limpiar archivos temporales
+          ansible.builtin.file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - "/tmp/helm-v{{ sysadmin_helm_version }}-linux-{{ sysadmin_helm_arch }}.tar.gz"
+            - "/tmp/linux-{{ sysadmin_helm_arch }}"
 
     - name: Helm | Configurar autocompletado de bash para el usuario
       ansible.builtin.blockinfile:

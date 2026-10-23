@@ -20,16 +20,21 @@
             'x86_64'
           }}
 
+    - name: AWS CLI | Comparar con la versión pinneada
+      ansible.builtin.set_fact:
+        sysadmin_awscli_outdated: "{{ not (sysadmin_awscli_installed.stdout | default('')).startswith('aws-cli/' ~ sysadmin_awscli_version ~ ' ') }}"
+
     - name: AWS CLI | Descargar instalador
-      when: sysadmin_awscli_installed.rc != 0 or (sysadmin_awscli_force_update | default(false) | bool)
+      when: sysadmin_awscli_outdated | bool
       ansible.builtin.get_url:
-        url: "https://awscli.amazonaws.com/awscli-exe-linux-{{ sysadmin_awscli_arch }}.zip"
+        url: "https://awscli.amazonaws.com/awscli-exe-linux-{{ sysadmin_awscli_arch }}-{{ sysadmin_awscli_version }}.zip"
         dest: /tmp/awscliv2.zip
+        checksum: "sha256:{{ sysadmin_awscli_sha256[sysadmin_awscli_arch] }}"
         mode: "0644"
         force: true
 
     - name: AWS CLI | Descomprimir instalador
-      when: sysadmin_awscli_installed.rc != 0 or (sysadmin_awscli_force_update | default(false) | bool)
+      when: sysadmin_awscli_outdated | bool
       ansible.builtin.unarchive:
         src: /tmp/awscliv2.zip
         dest: /tmp
@@ -45,7 +50,7 @@
         creates: "{{ sysadmin_awscli_bin_dir }}/aws"
 
     - name: AWS CLI | Actualizar versión existente
-      when: sysadmin_awscli_installed.rc == 0 and (sysadmin_awscli_force_update | default(false) | bool)
+      when: sysadmin_awscli_installed.rc == 0 and sysadmin_awscli_outdated | bool
       ansible.builtin.command:
         cmd: >-
           bash /tmp/aws/install
@@ -55,7 +60,7 @@
       changed_when: true
 
     - name: AWS CLI | Limpiar archivos temporales
-      when: sysadmin_awscli_installed.rc != 0 or (sysadmin_awscli_force_update | default(false) | bool)
+      when: sysadmin_awscli_outdated | bool
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent

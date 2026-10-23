@@ -6,6 +6,21 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ## [2026-10-22]
 
+### Fix: Helm, AWS CLI y Pulumi se instalan con versión fija y checksum
+
+- Helm deja de instalarse con el script `get-helm-3` de la rama `main` de upstream, que
+  corría como root. Ahora baja el tarball de la release `3.22.1` y valida su sha256
+  (`sysadmin_helm_version` y `sysadmin_helm_sha256`).
+- AWS CLI baja el zip de la versión `2.34.31` y valida su sha256. AWS publica solo la
+  firma PGP: el hash se copió después de verificar esa firma. Desaparece
+  `sysadmin_awscli_force_update`: si la versión instalada no es la fijada, se actualiza.
+- Pulumi deja de resolver `latest` contra la API de GitHub. Queda en `3.271.0`, y el
+  sha256 se valida contra el `checksums.txt` de la release.
+- Las notebooks con otra versión instalada pasan a la fijada en la próxima corrida.
+- `requirements-dev.txt` fija versiones exactas, las del último CI verde, para que el
+  entorno de pruebas no cambie solo.
+- El log de Ansible pasa de `./ansible.log` (adentro del clon) a `~/.ansible/ansible.log`.
+
 ### Fix: UFW abre el SSH solo a la red de la oficina
 
 - `funcional_internal_network` pasa de `192.168.0.0/16` a `192.168.2.0/24`. El rango
