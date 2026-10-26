@@ -5,6 +5,7 @@
   block:
     - name: Pulumi | Detect installed version (if any)
       ansible.builtin.command: pulumi version
+      check_mode: false
       register: sysadmin_pulumi_version_installed
       changed_when: false
       failed_when: false
@@ -49,14 +50,18 @@
         state: directory
         mode: "0755"
 
+    # In check mode the tarball is not downloaded: skip what needs it
     - name: Pulumi | Extract tarball
-      when: sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved
+      when:
+        - sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved
+        - not ansible_check_mode
       ansible.builtin.unarchive:
         src: "/tmp/pulumi-v{{ sysadmin_pulumi_version_resolved }}-{{ sysadmin_pulumi_arch }}.tar.gz"
         dest: "{{ sysadmin_pulumi_install_root }}/{{ sysadmin_pulumi_version_resolved }}"
         remote_src: true
 
     - name: Pulumi | Find pulumi binary
+      when: not (ansible_check_mode and sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved)
       ansible.builtin.find:
         paths:
           - "{{ sysadmin_pulumi_install_root }}/{{ sysadmin_pulumi_version_resolved }}"
@@ -69,9 +74,12 @@
     - name: Pulumi | Fail if pulumi binary not found
       ansible.builtin.fail:
         msg: "Pulumi binary not found after extraction under {{ sysadmin_pulumi_install_root }}/{{ sysadmin_pulumi_version_resolved }}"
-      when: (sysadmin_pulumi_find.matched | int) < 1
+      when:
+        - not (ansible_check_mode and sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved)
+        - (sysadmin_pulumi_find.matched | int) < 1
 
     - name: Pulumi | Symlink pulumi into /usr/local/bin
+      when: not (ansible_check_mode and sysadmin_pulumi_version_installed_normalized != sysadmin_pulumi_version_resolved)
       ansible.builtin.file:
         src: "{{ (sysadmin_pulumi_find.files | map(attribute='path') | list | first) }}"
         dest: /usr/local/bin/pulumi

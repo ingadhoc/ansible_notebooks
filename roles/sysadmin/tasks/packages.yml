@@ -37,6 +37,8 @@
         checksum: "sha256:{{ sysadmin_sping_sha256[sysadmin_sping_arch] }}"
         mode: "0644"
 
+    # In check mode get_url does not download, so there is no .deb to install
     - name: Sping - Instalar .deb
+      when: not ansible_check_mode
       ansible.builtin.apt:
         deb: "/tmp/sping_{{ sysadmin_sping_version }}_{{ sysadmin_sping_arch }}.deb"

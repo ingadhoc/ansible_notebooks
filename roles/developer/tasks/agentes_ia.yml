@@ -94,6 +94,7 @@
       become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.command: bash -ic 'command -v claude'
+      check_mode: false
       register: developer_claude_user_space
       changed_when: false
       failed_when: false
@@ -121,6 +122,7 @@
       become: true
       become_user: "{{ remote_regular_user }}"
       ansible.builtin.command: bash -ic 'command -v codex'
+      check_mode: false
       register: developer_codex_user_space
       changed_when: false
       failed_when: false
@@ -155,13 +157,16 @@
   block:
     - name: Agentes IA | Detectar si el dev ya puede ejecutar agy
       ansible.builtin.command: bash -ic 'command -v agy'
+      check_mode: false
       register: developer_agy_user_space
       changed_when: false
       failed_when: false
 
+    # The installer leaves agy as a symlink: judge the file it points to
     - name: Agentes IA | Ver el estado del binario de agy
       ansible.builtin.stat:
         path: "{{ developer_agy_bin }}"
+        follow: true
       register: developer_agy_bin_stat
 
     # El instalador se niega a pisar un binario que ya existe: avisa y sale 0. Si
@@ -177,6 +182,7 @@
       ansible.builtin.file:
         path: "{{ developer_agy_bin }}"
         state: absent
+      register: developer_agy_bin_removed
 
     # 'set -o pipefail' no es decorativo: sin eso el pipe devuelve el status de
     # bash, que con stdin vacío (curl 404 o sin red) sale 0 y el rol daría el
@@ -186,7 +192,7 @@
     # Si el binario ya está, el instalador avisa y sale 0 sin pisarlo; igual lo
     # gateamos con 'creates' para que el rol reporte 'ok' en vez de 'changed'.
     - name: Agentes IA | Instalar Antigravity CLI (agy)
-      when: developer_agy_user_space.rc != 0
+      when: developer_agy_user_space.rc != 0 or developer_agy_bin_removed is changed
       ansible.builtin.shell:
         cmd: set -o pipefail && curl -fsSL {{ developer_agy_installer_url | quote }} | bash
         creates: "{{ developer_agy_bin }}"

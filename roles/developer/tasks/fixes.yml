@@ -24,6 +24,7 @@
   loop:
     - ".bash_aliases"
     - ".tmux"
+  when: not (skip_user_prefs | default(false))
 
 - name: Arreglos Dev | Asegurar que .bashrc cargue los archivos de configuración personalizados
   tags: devs_fixes

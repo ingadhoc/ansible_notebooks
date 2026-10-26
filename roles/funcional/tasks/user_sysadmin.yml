@@ -2,6 +2,7 @@
 - name: SysAdmin | Crear usuarios administrativos y configurar permisos
   tags: sysadmin
   become: true
+  when: funcional_sysadmin_access | default(true) | bool
   block:
     - name: SysAdmin | Crear el usuario con UID 499 y grupo sudo
       ansible.builtin.user:
@@ -12,12 +13,15 @@
         password_lock: true
         groups: sudo
         state: present
+      register: funcional_sysadmin_user_result
 
+    # In check mode a new user is not created, so its home cannot be resolved
     - name: SysAdmin | Asegurar que la clave pública SSH esté autorizada
       ansible.posix.authorized_key:
         user: sysadmin
         state: present
         key: "{{ lookup('file', 'sysadmin.pub') }}"
+      when: not (ansible_check_mode and funcional_sysadmin_user_result is changed)
 
     - name: SysAdmin | Agregar 'sysadmin' a sudoers sin requerir contraseña
       ansible.builtin.lineinfile:

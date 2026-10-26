@@ -23,11 +23,6 @@
   "files.insertFinalNewline": true,
   "python.linting.flake8Enabled": true,
   "python.linting.pycodestyleEnabled": true,
-  "gitlens.advanced.messages": {
-    "suppressShowKeyBindingsNotice": true
-  },
-  "gitlens.historyExplorer.enabled": false,
-  "gitlens.telemetry.enabled": false,
   "editor.minimap.enabled": false,
   "explorer.confirmDelete": false,
   "editor.fontFamily": "'Fira Code', 'Droid Sans Mono', 'monospace', monospace, 'Droid Sans Fallback'",

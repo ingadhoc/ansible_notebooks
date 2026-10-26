@@ -21,12 +21,6 @@ sysadmin_vscode_extension_list:
   - ms-azuretools.vscode-docker
   # Docker DX
   - docker.docker
-  # GitHub Copilot
-  - github.copilot
-  # GitHub Copilot Chat
-  - github.copilot-chat
-  # GitLens
-  - eamodio.gitlens
   # Kubernetes
   - ms-kubernetes-tools.vscode-kubernetes-tools
   # Pylance

@@ -135,6 +135,25 @@ ansible-playbook local.yml -e "profile_override=sysadmin" --tags "kvm" -K --verb
 > ansible-playbook local.yml -e "profile_override=developer" -e "asistencia=true" -K --verbose
 > ```
 
+### Volver a correr el playbook en una notebook ya aprovisionada
+
+Los ajustes personales se aplican solo en el primer aprovisionamiento: escritorio
+(GNOME, atajos, dock, fondo, teclado), `~/.ssh/config`, la configuración de VS Code y
+los dotfiles (`.bash_aliases`, `.tmux`). Después cada persona los ajusta, y una corrida
+nueva no los pisa. La marca queda en `/etc/ansible/facts.d/provisioned.fact`.
+
+| Variable | Por defecto | Para qué |
+|---|---|---|
+| `reset_user_prefs=true` | `false` | Vuelve a aplicar los ajustes personales. |
+| `adhoc_battery_thresholds=false` | `true` | No instala el límite de carga (75–80 %). Para quien usa la notebook casi siempre sin cargador. |
+| `funcional_sysadmin_access=false` | `false` en el perfil `sysadmin`, `true` en el resto | No crea el usuario `sysadmin` de IT ni abre SSH. |
+
+Para ver qué cambiaría antes de aplicarlo:
+
+```bash
+ansible-playbook local.yml -e "profile_override=sysadmin" --check --diff -K
+```
+
 ---
 
 ## 👩‍💻 Developers Freelance (perfil `freelance_developer`)

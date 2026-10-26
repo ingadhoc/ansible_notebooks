@@ -5,6 +5,7 @@
   block:
     - name: Helm | Detectar versión instalada
       ansible.builtin.command: /usr/local/bin/helm version --short
+      check_mode: false
       register: sysadmin_helm_installed
       changed_when: false
       failed_when: false
@@ -24,13 +25,16 @@
             checksum: "sha256:{{ sysadmin_helm_sha256[sysadmin_helm_arch] }}"
             mode: "0644"
 
+        # In check mode the tarball is not downloaded: skip what needs it
         - name: Helm | Descomprimir tarball
+          when: not ansible_check_mode
           ansible.builtin.unarchive:
             src: "/tmp/helm-v{{ sysadmin_helm_version }}-linux-{{ sysadmin_helm_arch }}.tar.gz"
             dest: /tmp
             remote_src: true
 
         - name: Helm | Instalar binario
+          when: not ansible_check_mode
           ansible.builtin.copy:
             src: "/tmp/linux-{{ sysadmin_helm_arch }}/helm"
             dest: /usr/local/bin/helm
