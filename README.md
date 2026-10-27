@@ -290,6 +290,15 @@ equipos sin batería.
   Eso vuelve a 80 en el próximo boot. Para cambiarlo de forma permanente, pasale
   `-e "adhoc_battery_charge_stop=100"` al playbook.
 
+  Si usás la notebook casi siempre sin cargador, pasale
+  `-e "adhoc_battery_thresholds=false"` y el playbook no instala los umbrales. No
+  saca los que ya están instalados; para eso:
+
+  ```bash
+  sudo systemctl disable --now adhoc-battery-thresholds.service
+  echo 100 | sudo tee /sys/class/power_supply/BAT0/charge_control_end_threshold
+  ```
+
 - **Salud de la batería:** queda expuesta como fact de Ansible, consultable en cualquier
   momento:
 
