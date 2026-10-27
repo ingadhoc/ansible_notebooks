@@ -8,6 +8,10 @@
     adhoc_battery_charge_start: 75
     adhoc_battery_charge_stop: 80
     adhoc_battery_health_warn: 80
+    # Turn off with -e adhoc_battery_thresholds=false (laptops used mostly on battery)
+    adhoc_battery_thresholds: true
+    # IT remote access (sysadmin user + SSH): not for the sysadmin profile itself
+    funcional_sysadmin_access: "{{ target_profile != 'sysadmin' }}"
 
   # --- TAREAS PREVIAS ---
   pre_tasks:
@@ -17,6 +21,24 @@
         path: /tmp
         state: directory
         mode: "1777"
+
+    # Laptops provisioned before the marker existed are detected by the role's wallpaper
+    - name: Preferencias | Detectar aprovisionamiento previo sin marca
+      tags: always
+      ansible.builtin.stat:
+        path: "/home/{{ ansible_facts['env'].SUDO_USER | default(ansible_user) }}/.wallpaper.png"
+      register: adhoc_legacy_wallpaper
+
+    # Personal settings only on first run; -e reset_user_prefs=true applies them again
+    - name: Preferencias | Decidir si se aplican los ajustes personales
+      tags: always
+      ansible.builtin.set_fact:
+        skip_user_prefs: "{{ adhoc_prefs_applied }}"
+        skip_gnome_tasks: "{{ adhoc_prefs_applied }}"
+      vars:
+        adhoc_prefs_applied: >-
+          {{ (ansible_local.provisioned is defined or adhoc_legacy_wallpaper.stat.exists)
+             and not (reset_user_prefs | default(false) | bool) }}
 
     # El apt de Debian 13 (verificador sqv) rechaza las firmas del repo de
     # Kubernetes anteriores a v1.32 ("Signature Packet v3 is not considered
@@ -118,6 +140,7 @@
 
             - name: Timezone | Esperar (hasta 30s) a que el reloj sincronice
               ansible.builtin.command: timedatectl show -p NTPSynchronized --value
+              check_mode: false
               register: timezone_ntp_sync
               until: timezone_ntp_sync.stdout == 'yes'
               retries: 6
@@ -206,7 +229,9 @@
               register: adhoc_charge_threshold
 
             - name: Power | Umbrales de carga persistentes
-              when: adhoc_charge_threshold.stat.exists
+              when:
+                - adhoc_charge_threshold.stat.exists
+                - adhoc_battery_thresholds | bool
               block:
                 - name: Power | Instalar el script de umbrales de carga
                   ansible.builtin.copy:
@@ -246,18 +271,22 @@
                       WantedBy=multi-user.target
                   register: adhoc_thresholds_unit
 
+                # In check mode a new unit file is not written, so systemd cannot find it
                 - name: Power | Habilitar el servicio de umbrales de carga
                   ansible.builtin.systemd:
                     name: adhoc-battery-thresholds.service
                     daemon_reload: true
                     enabled: true
                     state: started
+                  when: not (ansible_check_mode and adhoc_thresholds_unit is changed)
 
                 - name: Power | Re-aplicar los umbrales si cambió la configuración
                   ansible.builtin.systemd:
                     name: adhoc-battery-thresholds.service
                     state: restarted
-                  when: adhoc_thresholds_script is changed or adhoc_thresholds_unit is changed
+                  when:
+                    - adhoc_thresholds_script is changed or adhoc_thresholds_unit is changed
+                    - not (ansible_check_mode and adhoc_thresholds_unit is changed)
 
             - name: Power | Detectar si TLP está instalado
               ansible.builtin.stat:
@@ -366,6 +395,27 @@
 
   # --- TAREAS POSTERIORES ---
   post_tasks:
+    # Only a full run marks the laptop: a partial --tags run did not apply the settings
+    - name: Preferencias | Crear directorio de facts locales
+      tags: always
+      when: "'all' in ansible_run_tags"
+      ansible.builtin.file:
+        path: /etc/ansible/facts.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Preferencias | Marcar la notebook como aprovisionada
+      tags: always
+      when: "'all' in ansible_run_tags"
+      ansible.builtin.copy:
+        dest: /etc/ansible/facts.d/provisioned.fact
+        owner: root
+        group: root
+        mode: "0644"
+        content: '{"provisioned": true}'
+
     - name: Limpiar paquetes huérfanos (con purge)
       tags: always
       ansible.builtin.apt:

@@ -28,9 +28,15 @@
         state: present
         cache_valid_time: "{{ funcional_apt_cache_valid_time | default(3600) }}"
 
+    - name: Adhoc Way | Ver si ya hay un npm del sistema
+      ansible.builtin.stat:
+        path: /usr/bin/npm
+      register: developer_npm_bin
+
+    # NodeSource's nodejs ships its own npm and conflicts with Debian's npm package
     - name: Adhoc Way | Instalar Node.js y npm (prerrequisito de adhoc-way)
       ansible.builtin.apt:
-        name: "{{ developer_adhoc_way_node_packages }}"
+        name: "{{ developer_adhoc_way_node_packages | reject('equalto', 'npm') | list if developer_npm_bin.stat.exists else developer_adhoc_way_node_packages }}"
         state: present
         cache_valid_time: "{{ funcional_apt_cache_valid_time | default(3600) }}"
 
@@ -50,6 +56,7 @@
   become: true
   become_user: "{{ remote_regular_user }}"
   ansible.builtin.command: grep -q '\.local/bin' "/home/{{ remote_regular_user }}/.bashrc"
+  check_mode: false
   register: developer_path_ya_exportado
   changed_when: false
   failed_when: false
@@ -76,11 +83,13 @@
 # El rol instalaba y se iba: una notebook donde el terreno no quedaba servible
 # terminaba en verde igual. Estas tres afirmaciones convierten una re-ejecución
 # en un diagnóstico.
+# Read-only checks: they run in check mode too, or the assert sees empty output
 - name: Adhoc Way | Verificar el terreno
   tags: adhoc_way
   when: developer_adhoc_way | default(true) | bool
   become: true
   become_user: "{{ remote_regular_user }}"
+  check_mode: false
   block:
     - name: Adhoc Way | Leer la versión de Node que resuelve el dev
       ansible.builtin.command: bash -ic 'node --version'
@@ -117,8 +126,10 @@
 
     # El playbook está diseñado para Debian 13 (ver README), y ahí el repo trae
     # Node 20.19: el terreno se cumple de verdad, así que lo afirmamos duro.
+    # In check mode the agents to install are not installed yet: report, do not stop the run
     - name: Adhoc Way | El terreno tiene que ser servible (Debian, plataforma soportada)
       when: ansible_facts['distribution'] == 'Debian'
+      ignore_errors: "{{ ansible_check_mode }}"
       ansible.builtin.assert:
         that:
           - developer_node_version.rc == 0

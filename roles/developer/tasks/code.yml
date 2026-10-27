@@ -102,6 +102,7 @@
     - name: Code | Establecer como editor por defecto para ciertos tipos de archivo
       ansible.builtin.command: "xdg-mime default code.desktop application/x-shellscript text/plain text/markdown application/x-yaml text/x-python"
       changed_when: false
+      when: not (skip_user_prefs | default(false))
 
     - name: Code | Crear directorios de configuración en el home del usuario
       ansible.builtin.file:
@@ -121,3 +122,4 @@
         group: "{{ remote_regular_user }}"
         mode: "0644"
       loop: "{{ developer_vscode_config_files }}"
+      when: not (skip_user_prefs | default(false))

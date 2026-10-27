@@ -40,8 +40,11 @@
 
     - name: Eliminar el repositorio legacy en formato .list (migración a deb822)
       ansible.builtin.file:
-        path: /etc/apt/sources.list.d/google-cloud-cli.list
+        path: "/etc/apt/sources.list.d/{{ item }}"
         state: absent
+      loop:
+        - google-cloud-cli.list
+        - google-cloud-sdk.list
 
     - name: Agregar el repositorio de Google Cloud CLI (formato deb822 .sources)
       ansible.builtin.copy:

@@ -4,6 +4,42 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-10-26]
+
+### Fix: volver a correr el playbook no pisa los ajustes de cada persona
+
+- Los ajustes personales se aplican solo en el primer aprovisionamiento: escritorio
+  (todo lo que ya respetaba `skip_gnome_tasks`), `~/.ssh/config` y la clave SSH que
+  genera el rol, `settings.json` y `keybindings.json` de VS Code, las asociaciones de
+  `xdg-mime` y los dotfiles. Antes, una corrida nueva reemplazaba el `~/.ssh/config`
+  entero y la configuración de VS Code.
+- La marca es `/etc/ansible/facts.d/provisioned.fact`, que se escribe al final de una
+  corrida completa (sin `--tags`) y sin errores. Las notebooks aprovisionadas antes
+  de la marca se reconocen por el fondo de pantalla del rol (`~/.wallpaper.png`).
+- `-e reset_user_prefs=true` vuelve a aplicar los ajustes personales.
+- El perfil `sysadmin` ya no crea el usuario `sysadmin` de IT ni abre el puerto 22
+  (`funcional_sysadmin_access`). Quien usa ese perfil ya tiene acceso de administrador.
+- `adhoc_battery_thresholds=false` saltea el límite de carga. No revierte un límite
+  ya instalado.
+- gcloud: se borra también el repo viejo `google-cloud-sdk.list`, que quedaba
+  duplicado con `google-cloud-cli.sources`.
+- npm: si `/usr/bin/npm` ya existe (por ejemplo, el `nodejs` de NodeSource lo trae),
+  no se instala el `npm` de Debian, que chocaba con ese paquete.
+- `--check` ya no falla en la espera de NTP, en el servicio de umbrales de carga, en
+  la clave SSH del usuario `sysadmin` ni en la verificación del terreno de adhoc-way
+  (la versión de Node salía vacía). Si falta instalar un agente IA, el `--check` lo
+  muestra como cambio y avisa en la verificación, sin cortar la corrida.
+- VS Code: el rol deja de instalar GitHub Copilot (fallaba en cada corrida), Copilot Chat, GitLens, Code Spell Checker (y su diccionario en
+  español), Odoo y Odoo Snippets. Tampoco están en el devcontainer. No se desinstalan
+  de las notebooks que ya las tienen. Se sacan también las claves `gitlens.*` del `settings.json`
+  de base.
+- agy: el rol borraba `~/.local/bin/agy` cuando era un enlace simbólico (así lo deja
+  el instalador) y después no lo reinstalaba. Ahora sigue el enlace, y si borra una
+  instalación rota la vuelve a instalar.
+- Rol `sysadmin` en `--check`: las detecciones de versión (Pulumi, Helm, AWS CLI,
+  extensiones de VS Code, KVM) corren de verdad, y los pasos que usan un archivo
+  descargado (sping, Pulumi, Helm, AWS CLI) se saltean, porque `--check` no descarga.
+
 ## [2026-10-22]
 
 ### Fix: Helm, AWS CLI y Pulumi se instalan con versión fija y checksum

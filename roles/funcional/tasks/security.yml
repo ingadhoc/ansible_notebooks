@@ -22,6 +22,7 @@
         port: "22"
         proto: tcp
       notify: Restart UFW
+      when: funcional_sysadmin_access | default(true) | bool
 
     - name: Firewall | Activar y habilitar el servicio UFW
       community.general.ufw:
