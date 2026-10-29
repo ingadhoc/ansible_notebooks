@@ -30,6 +30,14 @@ developer_docker_prerequisites:
   - gnupg
   - lsb-release
 
+# Prerrequisitos para añadir el repositorio de Kubernetes. gnupg: el task hace
+# gpg --dearmor y antes lo heredaba de gcloud.yml; importado solo (deploy) falla sin él.
+developer_kubectl_prerequisites:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+
 # Configuraciones de dconf para Meld
 developer_meld_dconf_settings:
   - { key: "/org/gnome/meld/indent-width", value: "4" }
@@ -158,6 +166,10 @@ developer_external_repos:
     architectures: "amd64,arm64,armhf"
     signed_by: "/etc/apt/keyrings/packages.microsoft.gpg"
     filename: "vscode"
+  kubectl:
+    gpg_url: "https://pkgs.k8s.io/core:/stable:/v1.35/deb/Release.key"
+    repo_url: "https://pkgs.k8s.io/core:/stable:/v1.35/deb/"
+    keyring_path: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
   github_cli:
     gpg_url: "https://cli.github.com/packages/githubcli-archive-keyring.gpg"
     keyring_path: "/usr/share/keyrings/githubcli-archive-keyring.gpg"

@@ -99,12 +99,6 @@ funcional_python_for_functionals:
   - pylint
   - python3
 
-# Prerrequisitos para añadir el repositorio de Kubernetes
-funcional_kubectl_prerequisites:
-  - apt-transport-https
-  - ca-certificates
-  - curl
-
 # Extensiones de GNOME
 funcional_gnome_extensions_common:
   - { id: 744, uuid: "Hide_Activities@shay.shayel.org" }
@@ -204,10 +198,6 @@ funcional_external_repos:
     gpg_url: "https://dl.google.com/linux/linux_signing_key.pub"
     repo_url: "https://dl.google.com/linux/chrome/deb/"
     keyring_path: "/usr/share/keyrings/google-chrome.gpg"
-  kubectl:
-    gpg_url: "https://pkgs.k8s.io/core:/stable:/v1.35/deb/Release.key"
-    repo_url: "https://pkgs.k8s.io/core:/stable:/v1.35/deb/"
-    keyring_path: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
   adhoccli:
     gpg_url: "https://apt.dev-adhoc.com/adhoc-devops.asc"
     repo_url: "https://apt.dev-adhoc.com/"

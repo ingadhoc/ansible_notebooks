@@ -4,6 +4,25 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-10-29]
+
+### Refactor: `kubectl` pasa del perfil `funcional` al perfil `developer`
+
+- `kubectl` estaba en `funcional` porque el prompt de `adhoccli` lo usaba; hoy nada
+  del perfil funcional lo necesita (el prompt lo detecta con `command -v` y sigue
+  andando sin él). Instalado sin credenciales no sirve ni expone nada, pero cuantos
+  menos paquetes en la base, mejor.
+- `tasks/kubectl.yml` y sus vars (`*_kubectl_prerequisites`, entrada `kubectl` de
+  `*_external_repos`) se mueven al rol `developer`. Los perfiles `developer`,
+  `sysadmin` (por herencia), `freelance_developer` y `deploy` lo siguen instalando
+  igual que antes.
+- Las notebooks funcionales ya aprovisionadas conservan el paquete: el playbook no
+  lo desinstala; se retira a mano cuando se interviene el equipo.
+- De paso se corrige un defecto latente: `kubectl.yml` hace `gpg --dearmor` pero no
+  declaraba `gnupg` como prerrequisito — lo heredaba de `gcloud.yml`, que corre antes
+  en `funcional`. En el rol `deploy` (kubectl primero) fallaba en una máquina pelada.
+  Ahora `gnupg` está en `developer_kubectl_prerequisites`.
+
 ## [2026-10-26]
 
 ### Fix: volver a correr el playbook no pisa los ajustes de cada persona

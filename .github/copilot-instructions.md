@@ -133,7 +133,7 @@ Use "check-then-install" pattern (see `roles/developer/tasks/code.yml`):
 ### The "deploy" role special case
 
 - Has `tags: [deploy, never]` in `local.yml` - means it ONLY runs when explicitly tagged
-- Reuses tasks from other roles via relative paths: `../roles/funcional/tasks/kubectl.yml`
+- Reuses tasks from other roles via relative paths: `../roles/developer/tasks/kubectl.yml`
 - Used for lightweight tooling on deployment-only machines
 
 ## Configuration

@@ -45,7 +45,8 @@
     # secure since 2026-02-01"). Con una de esas configurada, `apt update`
     # entero da error y el play moría acá, ANTES de que kubectl.yml pudiera
     # reescribir el repo a la versión vigente. Se saca el repo viejo primero;
-    # kubectl.yml escribe el bueno más adelante en la misma corrida.
+    # kubectl.yml (perfiles developer+) escribe el bueno más adelante en la
+    # misma corrida; en funcional el repo ya no corresponde y queda afuera.
     # Solo en Debian 13+: el rechazo es del verificador sqv (apt 3.x). En
     # Debian 12 / Ubuntu 22-24 ese repo viejo todavía funciona, y borrarlo en
     # una corrida parcial (--tags sin kubectl) lo dejaría sin reemplazo.
