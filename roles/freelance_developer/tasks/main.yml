@@ -32,12 +32,6 @@
         tasks_from: gcloud.yml
       tags: [funcional, gcloud]
 
-    - name: Funcional | Kubectl
-      ansible.builtin.import_role:
-        name: funcional
-        tasks_from: kubectl.yml
-      tags: [funcional, kubectl]
-
     - name: Funcional | AdhocCli
       ansible.builtin.import_role:
         name: funcional
@@ -68,6 +62,12 @@
         name: developer
         tasks_from: docker.yml
       tags: [developer, docker]
+
+    - name: Developer | Kubectl
+      ansible.builtin.include_role:
+        name: developer
+        tasks_from: kubectl.yml
+      tags: [developer, kubectl]
 
     - name: Developer | Meld
       ansible.builtin.include_role:

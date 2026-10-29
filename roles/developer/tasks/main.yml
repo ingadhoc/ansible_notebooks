@@ -6,6 +6,8 @@
       ansible.builtin.import_tasks: packages_dev.yml
     - name: Developer - Docker
       ansible.builtin.import_tasks: docker.yml
+    - name: Developer - Kubectl
+      ansible.builtin.import_tasks: kubectl.yml
     - name: Developer - Meld
       ansible.builtin.import_tasks: meld.yml
     - name: Developer - Code

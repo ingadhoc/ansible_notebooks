@@ -12,8 +12,6 @@
       ansible.builtin.import_tasks: packages.yml
     - name: Gcloud
       ansible.builtin.import_tasks: gcloud.yml
-    - name: Kubectl
-      ansible.builtin.import_tasks: kubectl.yml
     - name: Browsers
       ansible.builtin.import_tasks: browsers.yml
     - name: Ext

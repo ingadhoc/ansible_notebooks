@@ -60,8 +60,8 @@ seguir este patrón:
 7. Actualizar cache condicionalmente (`when: repo_added.changed`).
 
 Las URLs, claves y rutas de keyring de cada repo se centralizan en el
-`funcional_external_repos` de `vars/main.yml` del rol. Ver implementación de referencia en
-`roles/funcional/tasks/kubectl.yml` y `gcloud.yml`.
+`<rol>_external_repos` de `vars/main.yml` del rol dueño. Ver implementación de referencia en
+`roles/developer/tasks/kubectl.yml` y `roles/funcional/tasks/gcloud.yml`.
 
 **El patrón se mantiene inline en cada rol, NO en un helper compartido.** Se evaluó
 extraer un `include_role`/task reutilizable y se descartó: la mayoría de los repos
@@ -94,7 +94,7 @@ veracidad** — ni mentir que no cambiaron, ni reportar `changed` cuando no hubo
   saltea la tarea, así que da `changed=0` sin haber mentido en la primera.
   Referencia: `gpg --dearmor` en `roles/funcional/tasks/browsers.yml` /
   `roles/funcional/tasks/gcloud.yml`; descarga→instalación de binarios en
-  `roles/funcional/tasks/kubectl.yml` / `roles/sysadmin/tasks/helm.yml`.
+  `roles/developer/tasks/kubectl.yml` / `roles/sysadmin/tasks/helm.yml`.
 - **Comando cuya salida indica si cambió → `changed_when` calculado:** evaluar el
   resultado real, p.ej. `changed_when: "'already installed' not in result.stdout"`
   (VS Code), o comparar contra una consulta previa (`localectl status` antes de

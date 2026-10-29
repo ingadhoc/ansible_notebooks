@@ -20,7 +20,6 @@
       - ufw
       - google-chrome-stable
       - google-cloud-cli
-      - kubectl
 
   tasks:
     - name: Verify | Check that required packages are installed
@@ -89,12 +88,6 @@
       register: funcional_python_version
       changed_when: false
       failed_when: funcional_python_version.rc != 0
-
-    - name: Verify | Check kubectl is installed
-      ansible.builtin.command: kubectl version --client
-      register: funcional_kubectl_version
-      changed_when: false
-      failed_when: funcional_kubectl_version.rc != 0
 
     - name: Verify | Check gcloud is installed
       ansible.builtin.command: gcloud version
@@ -183,7 +176,6 @@
       loop:
         - /usr/share/keyrings/cloud.google.gpg
         - /usr/share/keyrings/google-chrome.gpg
-        - /etc/apt/keyrings/kubernetes-apt-keyring.gpg
         - /usr/share/keyrings/adhoc-devops.gpg
       register: funcional_gpg_keyrings
 
@@ -201,7 +193,6 @@
       loop:
         - /etc/apt/sources.list.d/google-cloud-cli.sources
         - /etc/apt/sources.list.d/google-chrome.sources
-        - /etc/apt/sources.list.d/kubernetes-pkgs.sources
         - /etc/apt/sources.list.d/adhoc.sources
       register: funcional_repo_files
 
@@ -237,7 +228,6 @@
           - "✅ SSH service operational"
           - "✅ Security services configured"
           - "✅ Python3 available: {{ funcional_python_version.stdout }}"
-          - "✅ kubectl available: {{ funcional_kubectl_version.stdout_lines[0] }}"
           - "✅ gcloud available: {{ funcional_gcloud_version.stdout_lines[0] }}"
           - "✅ Chrome available: {{ funcional_chrome_version.stdout }}"
           - "✅ adhoccli available: {{ funcional_adhoccli_version.stdout }}"
@@ -245,6 +235,6 @@
           - "✅ SSH hardened (PasswordAuthentication disabled)"
           - "✅ PolicyKit rules in place: {{ funcional_polkit_rules.stat.exists }}"
           - "✅ DNS configuration present: {{ funcional_dns_config.stat.exists }}"
-          - "✅ All GPG keyrings verified (4 keyrings)"
-          - "✅ All repository files verified (4 repos)"
+          - "✅ All GPG keyrings verified (3 keyrings)"
+          - "✅ All repository files verified (3 repos)"
           - "✅ UFW firewall configured correctly"
