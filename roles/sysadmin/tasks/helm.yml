@@ -1,57 +1,63 @@
 ---
-# https://helm.sh/docs/intro/install/#from-the-binary-releases
+# https://helm.sh/docs/intro/install/#from-apt-debianubuntu
 - name: SysAdmin - Install helm cli
   tags: helm_cli
+  become: true
   block:
-    - name: Helm | Detectar versión instalada
-      ansible.builtin.command: /usr/local/bin/helm version --short
-      check_mode: false
-      register: sysadmin_helm_installed
-      changed_when: false
-      failed_when: false
+    - name: Helm | Verificar si la clave GPG ya está instalada
+      ansible.builtin.stat:
+        path: "{{ sysadmin_external_repos.helm.keyring_path }}"
+      register: sysadmin_helm_gpg_key
 
-    - name: Helm | Mapear arquitectura
-      ansible.builtin.set_fact:
-        sysadmin_helm_arch: "{{ 'arm64' if ansible_facts['architecture'] in ['aarch64', 'arm64'] else 'amd64' }}"
+    - name: Helm | Descargar la clave GPG de Helm
+      ansible.builtin.get_url:
+        url: "{{ sysadmin_external_repos.helm.gpg_url }}"
+        dest: /tmp/helm-signing.asc
+        mode: "0644"
+      when: not sysadmin_helm_gpg_key.stat.exists
 
-    - name: Helm | Instalar la release pinneada
-      when: not (sysadmin_helm_installed.stdout | default('')).startswith('v' ~ sysadmin_helm_version ~ '+')
-      become: true
-      block:
-        - name: Helm | Descargar tarball de la release
-          ansible.builtin.get_url:
-            url: "https://get.helm.sh/helm-v{{ sysadmin_helm_version }}-linux-{{ sysadmin_helm_arch }}.tar.gz"
-            dest: "/tmp/helm-v{{ sysadmin_helm_version }}-linux-{{ sysadmin_helm_arch }}.tar.gz"
-            checksum: "sha256:{{ sysadmin_helm_sha256[sysadmin_helm_arch] }}"
-            mode: "0644"
+    - name: Helm | Convertir y guardar la clave GPG
+      ansible.builtin.shell: >
+        gpg --dearmor -o {{ sysadmin_external_repos.helm.keyring_path }} /tmp/helm-signing.asc
+      when: not sysadmin_helm_gpg_key.stat.exists
+      changed_when: true
 
-        # In check mode the tarball is not downloaded: skip what needs it
-        - name: Helm | Descomprimir tarball
-          when: not ansible_check_mode
-          ansible.builtin.unarchive:
-            src: "/tmp/helm-v{{ sysadmin_helm_version }}-linux-{{ sysadmin_helm_arch }}.tar.gz"
-            dest: /tmp
-            remote_src: true
+    - name: Helm | Remover archivo temporal de clave GPG
+      ansible.builtin.file:
+        path: /tmp/helm-signing.asc
+        state: absent
+      when: not sysadmin_helm_gpg_key.stat.exists
 
-        - name: Helm | Instalar binario
-          when: not ansible_check_mode
-          ansible.builtin.copy:
-            src: "/tmp/linux-{{ sysadmin_helm_arch }}/helm"
-            dest: /usr/local/bin/helm
-            remote_src: true
-            owner: root
-            group: root
-            mode: "0755"
+    - name: Helm | Añadir el repositorio de Helm (formato deb822 .sources)
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/helm-stable-debian.sources
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Types: deb
+          URIs: {{ sysadmin_external_repos.helm.repo_url }}
+          Suites: all
+          Components: main
+          Signed-By: {{ sysadmin_external_repos.helm.keyring_path }}
+      register: sysadmin_helm_repo
 
-        - name: Helm | Limpiar archivos temporales
-          ansible.builtin.file:
-            path: "{{ item }}"
-            state: absent
-          loop:
-            - "/tmp/helm-v{{ sysadmin_helm_version }}-linux-{{ sysadmin_helm_arch }}.tar.gz"
-            - "/tmp/linux-{{ sysadmin_helm_arch }}"
+    - name: Helm | Instalar helm
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: "{{ 0 if (sysadmin_helm_repo.changed | default(false)) else (funcional_apt_cache_valid_time | default(3600)) }}"
+        name: helm
+        state: present
+
+    # Migración: el get_helm.sh de antes dejaba el binario en /usr/local/bin,
+    # que pisa al de apt en el PATH y queda congelado en su versión de alta.
+    - name: Helm | Eliminar el binario instalado por script (quedaba congelado)
+      ansible.builtin.file:
+        path: /usr/local/bin/helm
+        state: absent
 
     - name: Helm | Configurar autocompletado de bash para el usuario
+      become: false
       ansible.builtin.blockinfile:
         path: "/home/{{ remote_regular_user }}/.bashrc"
         owner: "{{ remote_regular_user }}"
@@ -64,6 +70,7 @@
           fi
 
     - name: Helm | Asegurar permisos correctos en .bashrc
+      become: false
       ansible.builtin.file:
         path: "/home/{{ remote_regular_user }}/.bashrc"
         owner: "{{ remote_regular_user }}"

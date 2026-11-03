@@ -90,3 +90,10 @@ sysadmin_icon_packages:
   - gnome-tweaks
 
 sysadmin_numix_icon_theme_name: "Numix-Circle"
+
+# URLs y configuraciones de repositorios externos
+sysadmin_external_repos:
+  helm:
+    gpg_url: "https://baltocdn.com/helm/signing.asc"
+    repo_url: "https://baltocdn.com/helm/stable/debian/"
+    keyring_path: "/usr/share/keyrings/helm.gpg"
