@@ -18,6 +18,7 @@
       - vlc
       - fail2ban
       - ufw
+      - unattended-upgrades
       - google-chrome-stable
       - google-cloud-cli
 
@@ -82,6 +83,18 @@
           - funcional_fail2ban_service.status.LoadState == "loaded"
         fail_msg: "Security services not properly configured"
         success_msg: "Security services (UFW, fail2ban) are installed and loaded"
+
+    - name: Verify | Check automatic security updates are enabled
+      ansible.builtin.command: apt-config dump APT::Periodic::Unattended-Upgrade
+      register: funcional_unattended_config
+      changed_when: false
+
+    - name: Verify | Assert automatic security updates are enabled
+      ansible.builtin.assert:
+        that:
+          - "'\"1\"' in funcional_unattended_config.stdout"
+        fail_msg: "unattended-upgrades is installed but not enabled"
+        success_msg: "Automatic security updates are enabled"
 
     - name: Verify | Check Python3 is installed
       ansible.builtin.command: python3 --version
