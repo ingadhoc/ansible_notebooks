@@ -23,6 +23,19 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
   en `funcional`. En el rol `deploy` (kubectl primero) fallaba en una máquina pelada.
   Ahora `gnupg` está en `developer_kubectl_prerequisites`.
 
+## [2026-11-07]
+
+### Fix: las actualizaciones automáticas de seguridad quedan activas
+
+- El rol `funcional` instala `unattended-upgrades` y escribe
+  `/etc/apt/apt.conf.d/20auto-upgrades`. Antes el paquete podía estar instalado y el
+  servicio activo sin instalar nada: sin ese archivo, apt no corre las actualizaciones
+  periódicas. Una auditoría de una notebook lo detectó con parches de seguridad
+  pendientes.
+- Molecule verifica que `APT::Periodic::Unattended-Upgrade` quede en `"1"`.
+
+---
+
 ## [2026-10-26]
 
 ### Fix: volver a correr el playbook no pisa los ajustes de cada persona
