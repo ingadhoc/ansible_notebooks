@@ -40,3 +40,27 @@
     owner: root
     group: root
     mode: "0644"
+
+- name: Logs | Guardar el journal entre reinicios
+  tags: journal, security
+  become: true
+  block:
+    - name: Logs | Asegurar el directorio de configuración de journald
+      ansible.builtin.file:
+        path: /etc/systemd/journald.conf.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Logs | Configurar el journal persistente
+      ansible.builtin.copy:
+        dest: /etc/systemd/journald.conf.d/50-adhoc.conf
+        content: |
+          [Journal]
+          Storage=persistent
+          SystemMaxUse=500M
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart journald

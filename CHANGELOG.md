@@ -25,6 +25,16 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ## [2026-11-07]
 
+### Fix: servidor SSH más estricto y journal entre reinicios
+
+- En las notebooks con acceso de IT por SSH (`funcional_sysadmin_access`), el rol escribe
+  `/etc/ssh/sshd_config.d/50-adhoc-hardening.conf`: sin login de root, sin X11
+  forwarding, sin los MACs `umac-64`, `LoginGraceTime 30` y corte de conexiones
+  muertas a los 15 minutos. Root ya no entraba por `AllowUsers`; ahora queda explícito.
+- El journal se guarda en disco (`Storage=persistent`, hasta 500 MB). Antes los logs se
+  perdían en cada reinicio.
+- Molecule verifica la configuración efectiva con `sshd -T` y que exista la del journal.
+
 ### Fix: las actualizaciones automáticas de seguridad quedan activas
 
 - El rol `funcional` instala `unattended-upgrades` y escribe
