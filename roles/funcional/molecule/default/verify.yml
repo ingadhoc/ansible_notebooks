@@ -173,6 +173,32 @@
       register: funcional_ssh_config
       failed_when: false
 
+    - name: Verify | Read the effective SSH server configuration
+      ansible.builtin.command: /usr/sbin/sshd -T
+      register: funcional_sshd_effective
+      changed_when: false
+
+    - name: Verify | Assert SSH server hardening is effective
+      ansible.builtin.assert:
+        that:
+          - "'permitrootlogin no' in funcional_sshd_effective.stdout_lines"
+          - "'x11forwarding no' in funcional_sshd_effective.stdout_lines"
+          - "'umac-64' not in funcional_sshd_effective.stdout"
+        fail_msg: "SSH server hardening is not applied"
+        success_msg: "SSH server hardening is applied"
+
+    - name: Verify | Check persistent journal configuration
+      ansible.builtin.stat:
+        path: /etc/systemd/journald.conf.d/50-adhoc.conf
+      register: funcional_journald_conf
+
+    - name: Verify | Assert persistent journal configuration exists
+      ansible.builtin.assert:
+        that:
+          - funcional_journald_conf.stat.exists
+        fail_msg: "Persistent journal is not configured"
+        success_msg: "Persistent journal is configured"
+
     - name: Verify | Check PolicyKit rules exist
       ansible.builtin.stat:
         path: /etc/polkit-1/rules.d/49-deny-sysadmin-interactive.rules

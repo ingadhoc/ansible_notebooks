@@ -59,6 +59,22 @@
         state: started
         enabled: true
 
+    - name: SSH | Endurecer el servidor (root, X11, MACs y timeouts)
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/50-adhoc-hardening.conf
+        content: |
+          PermitRootLogin no
+          X11Forwarding no
+          LoginGraceTime 30
+          ClientAliveInterval 300
+          ClientAliveCountMax 3
+          MACs -umac-64-etm@openssh.com,umac-64@openssh.com
+        owner: root
+        group: root
+        mode: "0644"
+        validate: /usr/sbin/sshd -t -f %s
+      notify: Restart sshd
+
     - name: PolicyKit | Asegurar que el directorio de reglas existe
       ansible.builtin.file:
         path: /etc/polkit-1/rules.d

@@ -27,3 +27,9 @@
     name: fail2ban
     state: restarted
   failed_when: false
+
+- name: Restart journald
+  ansible.builtin.systemd:
+    name: systemd-journald
+    state: restarted
+  failed_when: false
