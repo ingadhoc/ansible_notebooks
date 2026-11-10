@@ -4,6 +4,18 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-11-09]
+
+### Fix: Helm se instala desde el repo APT oficial
+
+- Helm pasa del tarball con versión fija al repo APT del proyecto
+  (`packages.buildkite.com/helm-linux/helm-debian`), así se actualiza con el `apt upgrade`
+  como cualquier paquete. El repo viejo (`baltocdn.com`) ya no es el que documenta Helm, y
+  falla en Debian 13 porque su certificado usa una raíz que `ca-certificates` todavía no trae.
+- El repo publica también Helm 4: un pin en `/etc/apt/preferences.d/helm` deja la serie 3.
+- Se borra el binario de `/usr/local/bin/helm`, que pisaba al de APT en el PATH.
+- Salen `sysadmin_helm_version` y `sysadmin_helm_sha256`: la integridad la da la firma del repo.
+
 ## [2026-10-29]
 
 ### Refactor: `kubectl` pasa del perfil `funcional` al perfil `developer`

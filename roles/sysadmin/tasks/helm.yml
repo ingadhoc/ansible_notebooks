@@ -37,10 +37,21 @@
         content: |
           Types: deb
           URIs: {{ sysadmin_external_repos.helm.repo_url }}
-          Suites: all
+          Suites: any
           Components: main
           Signed-By: {{ sysadmin_external_repos.helm.keyring_path }}
       register: sysadmin_helm_repo
+
+    - name: Helm | Fijar la serie de versiones de helm
+      ansible.builtin.copy:
+        dest: /etc/apt/preferences.d/helm
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Package: helm
+          Pin: version {{ sysadmin_external_repos.helm.version_pin }}
+          Pin-Priority: 1001
 
     - name: Helm | Instalar helm
       ansible.builtin.apt:

@@ -56,7 +56,7 @@
       ansible.builtin.command: helm version
       register: sysadmin_verify_helm_version
       changed_when: false
-      failed_when: sysadmin_verify_helm_version.rc != 0 or sysadmin_helm_version not in sysadmin_verify_helm_version.stdout
+      failed_when: sysadmin_verify_helm_version.rc != 0 or 'v3.' not in sysadmin_verify_helm_version.stdout
 
     - name: Verify | Check KVM installation (skip if not installed)
       ansible.builtin.command: virsh version
