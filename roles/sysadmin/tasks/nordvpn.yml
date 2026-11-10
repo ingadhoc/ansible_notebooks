@@ -72,3 +72,16 @@
         name: "{{ remote_regular_user }}"
         groups: nordvpn
         append: true
+
+    # The NordVPN firewall only lets local traffic reach private ranges; the dev
+    # network "adhoc" (172.60.0.0/16) is not one, so its containers are unreachable
+    # while the VPN is connected.
+    - name: NordVPN | Permitir las subredes locales de desarrollo con la VPN conectada
+      ansible.builtin.command: nordvpn allowlist add subnet {{ item }}
+      loop: "{{ sysadmin_nordvpn_allowlist_subnets }}"
+      register: sysadmin_nordvpn_allowlist
+      changed_when: sysadmin_nordvpn_allowlist.rc == 0
+      failed_when:
+        - sysadmin_nordvpn_allowlist.rc != 0
+        - "'already on the allowlist' not in (sysadmin_nordvpn_allowlist.stdout + sysadmin_nordvpn_allowlist.stderr)"
+      when: not (sysadmin_skip_nordvpn_service | default(false))

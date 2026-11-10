@@ -55,6 +55,9 @@ sysadmin_kvm_user_groups:
 # --- Configuración para NordVPN ---
 sysadmin_nordvpn_gpg_path: "/usr/share/keyrings/nordvpn-archive-keyring.gpg"
 sysadmin_nordvpn_package: "nordvpn"
+# Red "adhoc" de docker-compose-context (init.sh)
+sysadmin_nordvpn_allowlist_subnets:
+  - "172.60.0.0/16"
 
 # --- Configuración para sping ---
 # Versión pinneada a propósito: al subirla, revisar el CHANGELOG upstream y
