@@ -4,6 +4,15 @@ Registro de cambios relevantes del proyecto. Formato basado en [Keep a Changelog
 
 ---
 
+## [2026-11-13]
+
+### Feat: el perfil `sysadmin` instala `cosign`
+
+- `cosign` (Sigstore) sirve para firmar y verificar imágenes y artefactos OCI.
+- Se instala el `.deb` de la release pinneada (`sysadmin_cosign_version`, hoy 3.1.4),
+  validado contra el sha256 fijado en `vars/main.yml`, igual que `sping`.
+- Molecule verifica el paquete y que `cosign version` reporte la versión pinneada.
+
 ## [2026-10-29]
 
 ### Refactor: `kubectl` pasa del perfil `funcional` al perfil `developer`

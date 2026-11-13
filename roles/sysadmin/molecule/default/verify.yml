@@ -14,6 +14,7 @@
     required_sysadmin_packages:
       - kubecolor
       - sping
+      - cosign
 
     # Paquetes solo en Debian
     required_debian_packages:
@@ -58,6 +59,12 @@
       changed_when: false
       failed_when: sysadmin_verify_helm_version.rc != 0 or sysadmin_helm_version not in sysadmin_verify_helm_version.stdout
 
+    - name: Verify | Check cosign binary
+      ansible.builtin.command: cosign version
+      register: sysadmin_verify_cosign_version
+      changed_when: false
+      failed_when: sysadmin_verify_cosign_version.rc != 0 or sysadmin_cosign_version not in sysadmin_verify_cosign_version.stdout
+
     - name: Verify | Check KVM installation (skip if not installed)
       ansible.builtin.command: virsh version
       register: sysadmin_verify_kvm_version
@@ -101,6 +108,7 @@
         msg:
           - "Pulumi version: {{ sysadmin_verify_pulumi_version.stdout | default('Not available') }}"
           - "Helm version: {{ sysadmin_verify_helm_version.stdout | default('Not available') }}"
+          - "Cosign version: {{ sysadmin_verify_cosign_version.stdout | default('Not available') }}"
           - "KVM/Libvirt version: {{ sysadmin_verify_kvm_version.stdout | default('Not installed') }}"
           - "NordVPN version: {{ sysadmin_verify_nordvpn_version.stdout | default('Not installed') }}"
           - "AWS CLI version: {{ sysadmin_verify_awscli_version.stdout | default('Not available') }}"
