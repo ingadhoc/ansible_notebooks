@@ -42,3 +42,20 @@
       when: not ansible_check_mode
       ansible.builtin.apt:
         deb: "/tmp/sping_{{ sysadmin_sping_version }}_{{ sysadmin_sping_arch }}.deb"
+
+    - name: Cosign - Mapear arquitectura del .deb
+      ansible.builtin.set_fact:
+        sysadmin_cosign_arch: "{{ 'arm64' if ansible_facts['architecture'] in ['aarch64', 'arm64'] else 'amd64' }}"
+
+    - name: Cosign - Descargar .deb de la release pinneada
+      ansible.builtin.get_url:
+        url: "https://github.com/sigstore/cosign/releases/download/v{{ sysadmin_cosign_version }}/cosign_{{ sysadmin_cosign_version }}_{{ sysadmin_cosign_arch }}.deb"
+        dest: "/tmp/cosign_{{ sysadmin_cosign_version }}_{{ sysadmin_cosign_arch }}.deb"
+        checksum: "sha256:{{ sysadmin_cosign_sha256[sysadmin_cosign_arch] }}"
+        mode: "0644"
+
+    # In check mode get_url does not download, so there is no .deb to install
+    - name: Cosign - Instalar .deb
+      when: not ansible_check_mode
+      ansible.builtin.apt:
+        deb: "/tmp/cosign_{{ sysadmin_cosign_version }}_{{ sysadmin_cosign_arch }}.deb"
